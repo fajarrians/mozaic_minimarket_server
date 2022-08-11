@@ -162,11 +162,20 @@
 	// 	});
 	// });
 
+    function function_change_amount(key, value){
+        quantity = document.getElementById((key)+'_quantity').value;
+        total_price = document.getElementById((key)+'_total_price').value;
+        total_amount = quantity * total_price;
+        
+        $('#'+key+'_total_amount').val(total_amount);
+    }
+
     $(document).ready(function(){
         var subtotal = $('#subtotal').val();
         if (subtotal != undefined) {
             $("#subtotal_total").text(toRp("Rp. "+subtotal));
         }
+
         $('body').on('input','#item_code',function(){
             var item_code = $('#item_code').val();
             $.ajax({
@@ -283,7 +292,7 @@
                     <div style="font-weight: bold; font-size: 20px">TOTAL</div>
                 </div>
                 <div class="text-right">
-                    <div style="font-weight: bold; font-size: 50px" id="subtotal_total">Rp. 00,0000,00</div>
+                    <div class="text-danger" style="font-weight: bold; font-size: 50px" id="subtotal_total">Rp. 00,0000,00</div>
                 </div>
             </div>
         </div>
@@ -303,7 +312,7 @@
                             <th style="width: 20%;">Kategori Barang</th>
                             <th style="width: 20%;">Nama Barang</th>
                             <th style="width: 20%;">Satuan Barang</th>
-                            <th style="width: 20%;">Jumlah</th>
+                            <th style="width: 20%;">Jumlah Barang</th>
                         </thead>
                         @if ($dataitem !== null)
                             <?php 
@@ -315,17 +324,17 @@
                             <tr>
                                 <td style="text-align: center">{{ $no++ }}.</td>
                                 <td>{{ $SalesInvoice->getCategoryName($val['item_category_id']) }}</td>
-                                <td>{{ $val['item_name'] }}</td>
+                                <td>{{ $SalesInvoice->getItemName($val['item_id']) }}</td>
                                 <td>{{ $SalesInvoice->getItemUnitName($val['item_unit_id']) }}</td>
                                 <td>
-                                    <input type="number" name="quantity" id="quantity" style="width: 100%; text-align: center; height: 30px; font-weight: bold; font-size: 15px" class="form-control input-bb" value="{{ $val['quantity'] }}" autocomplete="off">
-                                    <input type="number" name="total_price" id="total_price" value="{{ $val['item_unit_price'] }}" hidden>
-                                    <input type="number" name="total_amount" id="total_amount" value="{{ $total_amount = $val['item_unit_price'] * $val['quantity']}}" hidden>
+                                    <input type="number" name="{{ $key }}_quantity" id="{{ $key }}_quantity" style="width: 100%; text-align: center; height: 30px; font-weight: bold; font-size: 15px" class="form-control input-bb" value="{{ $val['quantity'] }}" autocomplete="off" onchange="function_change_amount({{ $key }}, this.value)">
+                                    <input type="number" name="{{ $key }}_total_price" id="{{ $key }}_total_price" value="{{ $val['item_unit_price'] }}" >
+                                    <input type="number" name="{{ $key }}_total_amount" id="{{ $key }}_total_amount" value="{{ $total_amount = $val['item_unit_price'] * $val['quantity']}}" >
                                      <?php $subtotal += $total_amount ?>
                                 </td>
                             </tr>
                             @endforeach
-                            <input type="number" name="subtotal" id="subtotal" value="{{ $subtotal }}" hidden>
+                            <input type="number" name="subtotal" id="subtotal" value="{{ $subtotal }}" >
                             {{-- <input type="text" value="{{ $key }}" hidden id="key"> --}}
                         @else
                         <tr>

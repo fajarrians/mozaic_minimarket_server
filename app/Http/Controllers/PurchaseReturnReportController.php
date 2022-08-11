@@ -36,18 +36,28 @@ class PurchaseReturnReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
-        $warehouse   = InvtWarehouse::where('data_state',0)
+        $warehouse = InvtWarehouse::where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('warehouse_name','warehouse_id');
-        $data        = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
-        ->where('purchase_return.warehouse_id', $warehouse_id)
-        ->where('purchase_return.purchase_return_date','>=',$start_date)
-        ->where('purchase_return.purchase_return_date','<=',$end_date)
-        ->where('purchase_return.company_id', Auth::user()->company_id)
-        ->where('purchase_return.data_state',0)
-        ->get();
-        return view('content.PurchaseReturnReport.ListPurchaseReturnReport', compact('warehouse', 'data', 'start_date', 'end_date'));
+        if ($warehouse_id == '') {
+            $data = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
+            ->where('purchase_return.purchase_return_date','>=',$start_date)
+            ->where('purchase_return.purchase_return_date','<=',$end_date)
+            ->where('purchase_return.company_id', Auth::user()->company_id)
+            ->where('purchase_return.data_state',0)
+            ->get();
+        } else {
+            $data = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
+            ->where('purchase_return.warehouse_id', $warehouse_id)
+            ->where('purchase_return.purchase_return_date','>=',$start_date)
+            ->where('purchase_return.purchase_return_date','<=',$end_date)
+            ->where('purchase_return.company_id', Auth::user()->company_id)
+            ->where('purchase_return.data_state',0)
+            ->get();
+        }
+        
+        return view('content.PurchaseReturnReport.ListPurchaseReturnReport', compact('warehouse', 'data', 'start_date', 'end_date','warehouse_id'));
     }
 
     public function filterPurchaseReturnReport(Request $request)
@@ -95,13 +105,22 @@ class PurchaseReturnReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
-        $data        = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
-        ->where('purchase_return.warehouse_id', $warehouse_id)
-        ->where('purchase_return.purchase_return_date','>=',$start_date)
-        ->where('purchase_return.purchase_return_date','<=',$end_date)
-        ->where('purchase_return.company_id', Auth::user()->company_id)
-        ->where('purchase_return.data_state',0)
-        ->get();
+        if ($warehouse_id == '') {
+            $data = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
+            ->where('purchase_return.purchase_return_date','>=',$start_date)
+            ->where('purchase_return.purchase_return_date','<=',$end_date)
+            ->where('purchase_return.company_id', Auth::user()->company_id)
+            ->where('purchase_return.data_state',0)
+            ->get();
+        } else {
+            $data = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
+            ->where('purchase_return.warehouse_id', $warehouse_id)
+            ->where('purchase_return.purchase_return_date','>=',$start_date)
+            ->where('purchase_return.purchase_return_date','<=',$end_date)
+            ->where('purchase_return.company_id', Auth::user()->company_id)
+            ->where('purchase_return.data_state',0)
+            ->get();
+        }
 
         $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
 
@@ -190,13 +209,22 @@ class PurchaseReturnReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
-        $data        = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
-        ->where('purchase_return.warehouse_id', $warehouse_id)
-        ->where('purchase_return.purchase_return_date','>=',$start_date)
-        ->where('purchase_return.purchase_return_date','<=',$end_date)
-        ->where('purchase_return.company_id', Auth::user()->company_id)
-        ->where('purchase_return.data_state',0)
-        ->get();
+        if ($warehouse_id == '') {
+            $data = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
+            ->where('purchase_return.purchase_return_date','>=',$start_date)
+            ->where('purchase_return.purchase_return_date','<=',$end_date)
+            ->where('purchase_return.company_id', Auth::user()->company_id)
+            ->where('purchase_return.data_state',0)
+            ->get();
+        } else {
+            $data = PurchaseReturn::join('purchase_return_item','purchase_return.purchase_return_id','=','purchase_return_item.purchase_return_id')
+            ->where('purchase_return.warehouse_id', $warehouse_id)
+            ->where('purchase_return.purchase_return_date','>=',$start_date)
+            ->where('purchase_return.purchase_return_date','<=',$end_date)
+            ->where('purchase_return.company_id', Auth::user()->company_id)
+            ->where('purchase_return.data_state',0)
+            ->get();
+        }
 
         $spreadsheet = new Spreadsheet();
 

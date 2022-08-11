@@ -1,7 +1,7 @@
 @inject('PurchaseReturn', 'App\Http\Controllers\PurchaseReturnController')
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
     function function_elements_add(name, value){
@@ -147,104 +147,109 @@
     @endforeach
 </div>
 @endif
-    <div class="card border border-dark">
-    <div class="card-header border-dark bg-dark">
-        <h5 class="mb-0 float-left">
-            Form Tambah
-        </h5>
-        <div class="float-right">
-            <button onclick="location.href='{{ url('purchase-return') }}'" name="Find" class="btn btn-sm btn-info" title="Back"><i class="fa fa-angle-left"></i>  Kembali</button>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="card border border-dark">
+        <div class="card-header border-dark bg-dark">
+            <h5 class="mb-0 float-left">
+                Form Tambah
+            </h5>
+            <div class="float-right">
+                <button onclick="location.href='{{ url('purchase-return') }}'" name="Find" class="btn btn-sm btn-info" title="Back"><i class="fa fa-angle-left"></i>  Kembali</button>
+            </div>
         </div>
-    </div>
-
-    <?php 
-            // if (empty($coresection)){
-            //     $coresection['section_name'] = '';
-            // }
-        ?>
-
-    <form method="post" action="{{ route('process-add-purchase-return') }}" enctype="multipart/form-data">
-        @csrf
-        <div class="card-body">
-            <div class="row form-group">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Nama Pemasok<a class='red'> *</a></a>
-                        <input class="form-control input-bb" name="purchase_return_supplier" id="purchase_return_supplier" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_return_supplier'] }}"/>
+    
+        <?php 
+                // if (empty($coresection)){
+                //     $coresection['section_name'] = '';
+                // }
+            ?>
+    
+        <form method="post" action="{{ route('process-add-purchase-return') }}" enctype="multipart/form-data">
+            @csrf
+            <div class="card-body">
+                <div class="row form-group">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Nama Pemasok<a class='red'> *</a></a>
+                            <input class="form-control input-bb" name="purchase_return_supplier" id="purchase_return_supplier" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_return_supplier'] }}"/>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Nama Gudang<a class='red'> *</a></a>
-                        {!! Form::select('warehouse_id',  $warehouses, $datases['warehouse_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Nama Gudang<a class='red'> *</a></a>
+                            {!! Form::select('warehouse_id',  $warehouses, $datases['warehouse_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <a class="text-dark">Tanggal Retur Pembelian<a class='red'> *</a></a>
-                        <input class="form-control input-bb" name="purchase_return_date" id="purchase_return_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_return_date'] ? $datases['purchase_return_date'] : date('Y-m-d') }}"/>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <a class="text-dark">Tanggal Retur Pembelian<a class='red'> *</a></a>
+                            <input class="form-control input-bb" name="purchase_return_date" id="purchase_return_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_return_date'] ? $datases['purchase_return_date'] : date('Y-m-d') }}"/>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-
-                </div>
-                <div class="col-md-9 mt-3">
-                    <div class="form-group">
-                        <a class="text-dark">Keterangan</a>
-                        <textarea class="form-control input-bb" name="purchase_return_remark" id="purchase_return_remark" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)">{{ $datases['purchase_return_remark'] }}</textarea>
+                    <div class="col-md-6">
+    
                     </div>
-                </div>
-
-                <h6 class="col-md-8 mt-4 mb-3"><b>Data Retur Pembelian Barang</b></h6>
-
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Nama Kategori Barang<a class='red'> *</a></a>
-                        {!! Form::select('item_category_id',  $categorys, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_category_id', 'name' => 'item_category_id']) !!}
+                    <div class="col-md-9 mt-3">
+                        <div class="form-group">
+                            <a class="text-dark">Keterangan</a>
+                            <textarea class="form-control input-bb" name="purchase_return_remark" id="purchase_return_remark" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)">{{ $datases['purchase_return_remark'] }}</textarea>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Nama Barang<a class='red'> *</a></a>
-                        {{-- {!! Form::select('item_id',  $items, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_id', 'name' => 'item_id']) !!} --}}
-                        <select name="item_id" id="item_id" class="form-control selection-search-clear select-form"></select>
+    
+                    <h6 class="col-md-8 mt-4 mb-3"><b>Data Retur Pembelian Barang</b></h6>
+    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Nama Kategori Barang<a class='red'> *</a></a>
+                            {!! Form::select('item_category_id',  $categorys, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_category_id', 'name' => 'item_category_id']) !!}
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Kode Satuan<a class='red'> *</a></a>
-                        {{-- {!! Form::select('item_unit_id',  $units, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_unit_id', 'name' => 'item_unit_id']) !!} --}}
-                        <select name="item_unit_id" id="item_unit_id" class="form-control selection-search-clear select-form"></select>
-
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Nama Barang<a class='red'> *</a></a>
+                            {{-- {!! Form::select('item_id',  $items, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_id', 'name' => 'item_id']) !!} --}}
+                            <select name="item_id" id="item_id" class="form-control selection-search-clear select-form"></select>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Biaya Barang Satuan<a class='red'> *</a></a>
-                        <input class="form-control input-bb" name="purchase_return_cost" id="purchase_return_cost" type="text" autocomplete="off" value=""/>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Kode Satuan<a class='red'> *</a></a>
+                            {{-- {!! Form::select('item_unit_id',  $units, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_unit_id', 'name' => 'item_unit_id']) !!} --}}
+                            <select name="item_unit_id" id="item_unit_id" class="form-control selection-search-clear select-form"></select>
+    
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Jumlah<a class='red'> *</a></a>
-                        <input class="form-control input-bb" name="purchase_return_quantity" id="purchase_return_quantity" type="text" autocomplete="off" value=""/>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Biaya Barang Satuan<a class='red'> *</a></a>
+                            <input class="form-control input-bb" name="purchase_return_cost" id="purchase_return_cost" type="text" autocomplete="off" value=""/>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <a class="text-dark">Subtotal<a class='red'> *</a></a>
-                        <input class="form-control input-bb" name="purchase_return_subtotal_view" id="purchase_return_subtotal_view" type="text" autocomplete="off" value="" disabled/>
-                        <input class="form-control input-bb" name="purchase_return_subtotal" id="purchase_return_subtotal" type="text" autocomplete="off" value="" hidden/>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Jumlah<a class='red'> *</a></a>
+                            <input class="form-control input-bb" name="purchase_return_quantity" id="purchase_return_quantity" type="text" autocomplete="off" value=""/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Subtotal<a class='red'> *</a></a>
+                            <input class="form-control input-bb" name="purchase_return_subtotal_view" id="purchase_return_subtotal_view" type="text" autocomplete="off" value="" disabled/>
+                            <input class="form-control input-bb" name="purchase_return_subtotal" id="purchase_return_subtotal" type="text" autocomplete="off" value="" hidden/>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="card-footer text-muted">
-            <div class="form-actions float-right">
-                <a type="submit" name="Save" class="btn btn-success" title="Save" onclick="processAddArrayPurchaseReturn()"> Tambah</a>
+            <div class="card-footer text-muted">
+                <div class="form-actions float-right">
+                    <a type="submit" name="Save" class="btn btn-success" title="Save" onclick="processAddArrayPurchaseReturn()"> Tambah</a>
+                </div>
             </div>
         </div>
-    </div>
+        </div>
     </div>
 
 
@@ -320,6 +325,7 @@
             </div>
         </div>
 </form>
+</div>
 </div>
 
 

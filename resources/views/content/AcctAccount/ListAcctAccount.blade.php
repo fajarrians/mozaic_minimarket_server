@@ -1,7 +1,7 @@
 @inject('AcctAccount','App\Http\Controllers\AcctAccountController')
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -54,7 +54,7 @@
                     <?php $no = 1; ?>
                     @foreach($data as $row)
                     <tr>
-                        <td style='text-align:center'>{{ $no++ }}</td>
+                        <td style='text-align:center'>{{ $no++ }}.</td>
                         <td>{{ $row['account_code'] }}</td>
                         <td>{{ $row['account_name'] }}</td>
                         <td>{{ $row['account_group'] }}</td>

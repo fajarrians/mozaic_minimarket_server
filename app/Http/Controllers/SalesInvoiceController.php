@@ -68,7 +68,26 @@ class SalesInvoiceController extends Controller
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('customer_name','customer_id');
-        return view('content.SalesInvoice.FormAddSalesInvoice',compact('date','categorys','items','units','arraydatases','customers'));
+        $dataitem = Session::get('dataitemsales');
+        // foreach ($dataitem as $key => $val) {
+        //     if ($val['item_name'] == "P-XL 10RB") {
+        //         $dataku = $val['quantity'] + 1; 
+        //     } else {
+        //         $data = "no";
+        //     }
+        // }
+        // Session::flush('dataitemsales', $dataku);
+        // $arrayBaru = [];
+        // foreach($dataitem as $key=>$val){
+        //     $arrayBaru[$key] = array(
+        //         'name' => $val['item_name'],
+        //         'quantity' => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
+        //     );    
+        // }
+        // Session::forget('dataitemsales');
+        // Session::put('dataitemsales', $arrayBaru);
+        // dd($dataitem);
+        return view('content.SalesInvoice.FormAddSalesInvoice',compact('date','categorys','items','units','arraydatases','customers','dataitem'));
     }
 
     public function addArraySalesInvoice(Request $request)
@@ -275,6 +294,7 @@ class SalesInvoiceController extends Controller
     public function resetSalesInvoice()
     {
         Session::forget('arraydatases');
+        Session::forget('dataitemsales');
 
         return redirect('/sales-invoice/add');
     }
@@ -484,5 +504,97 @@ class SalesInvoiceController extends Controller
         $data = SalesCustomer::where('customer_id', $customer_id)->first();
 
         return $data['customer_name'];
+    }
+
+    public function selectSalesInvoice($item)
+    {
+        $data = InvtItem::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('item_code',$item)
+        ->first();
+
+        if ($data !== null) {
+            $data_array = array(
+                'item_id'           => $data['item_id'],
+                'item_name'         => $data['item_name'],
+                'item_category_id'  => $data['item_category_id'],
+                'item_unit_id'      => $data['item_unit_id'],
+                'item_unit_price'   => $data['item_unit_price'],
+                'quantity'          => 1
+            );
+        }
+
+        $dataitem = Session::get('dataitemsales');
+        // $arrayBaru = [];
+        // foreach($dataitem as $key=>$val){
+        //     $arrayBaru[$key] = array(
+        //         'name' => $val['item_name'],
+        //         'quantity' => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
+        //     );    
+        // }
+        if($dataitem !== null){
+            foreach($dataitem as $key=>$val){
+                $arrayBaru[$key] = array(
+                    'item_id'           => $val['item_id'],
+                    'item_name'         => $val['item_name'],
+                    'item_category_id'  => $val['item_category_id'],
+                    'item_unit_id'      => $val['item_unit_id'],
+                    'item_unit_price'   => $val['item_unit_price'],
+                    'quantity'          => $val['item_id'] == $data_array['item_id'] ? $val['quantity'] + 1 : $val['quantity']
+                );
+            }
+            foreach($dataitem as $key=>$val){
+                if ($val['item_id'] == $data_array['item_id']) {
+                    Session::forget('dataitemsales');
+                    Session::put('dataitemsales', $arrayBaru);
+                } else {
+                    array_push($dataitem, $data_array);
+                    Session::put('dataitemsales', $dataitem);
+                } 
+            
+            }
+        } else {
+            $dataitem = [];
+            // foreach($dataitem as $key=>$val){
+            //     $arrayBaru[$key] = array(
+            //         'item_id'           => $val['item_id'],
+            //         'item_name'         => $val['item_name'],
+            //         'item_category_id'  => $val['item_category_id'],
+            //         'item_unit_id'      => $val['item_unit_id'],
+            //         'item_unit_price'   => $val['item_unit_price'],
+            //         'quantity'          => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
+            //     );    
+            // }
+            array_push($dataitem, $data_array);
+            Session::push('dataitemsales', $data_array);
+        }
+
+        // $dataitem = Session::get('dataitemsales');
+        // foreach($dataitem as $key=>$val){
+        //     if ($val['item_name'] == $data_array['item_name']) {
+        //         $arrayBaru[$key] = array(
+        //             'item_id'           => $val['item_id'],
+        //             'item_name'         => $val['item_name'],
+        //             'item_category_id'  => $val['item_category_id'],
+        //             'item_unit_id'      => $val['item_unit_id'],
+        //             'item_unit_price'   => $val['item_unit_price'],
+        //             'quantity'          => $val['item_name'] == $data_array['item_name'] ? $val['quantity'] + 1 : $val['quantity']
+        //         );
+        //     }
+            
+        // }
+        // Session::forget('dataitemsales');
+        // array_push($dataitem, $arrayBaru);
+        // Session::put('dataitemsales', $dataitem);
+        $data_item = '';
+        $data_item .= "
+            <tr>
+                <td>$data[item_name]</td>
+                <td>$data[item_code]</td>
+            </tr>
+        ";
+        return $data_item;
+    
+
     }
 }

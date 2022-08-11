@@ -48,7 +48,29 @@ class InvtStockAdjustmentReportController extends Controller
         // ->where('invt_stock_adjustment.company_id', Auth::user()->company_id)
         // ->where('invt_stock_adjustment.data_state',0)
         // ->get();
-        if ($category_id == "" && $warehouse_id == "" ) {
+        if ($warehouse_id == ""){
+            if ($category_id == "") {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            } else {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('item_category_id',$category_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            }
+        } else if ($category_id == "") {
+            if ($warehouse_id == "") {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            } else {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('warehouse_id',$warehouse_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            }
+        } else if ($warehouse_id == "" && $category_id == "") {
             $data = InvtItemStock::where('data_state',0)
             ->where('company_id', Auth::user()->company_id)
             ->get();
@@ -59,6 +81,17 @@ class InvtStockAdjustmentReportController extends Controller
             ->where('company_id', Auth::user()->company_id)
             ->get();
         }
+        // if ($category_id == "" && $warehouse_id == "" ) {
+        //     $data = InvtItemStock::where('data_state',0)
+        //     ->where('company_id', Auth::user()->company_id)
+        //     ->get();
+        // } else {
+        //     $data = InvtItemStock::where('data_state',0)
+        //     ->where('item_category_id',$category_id)
+        //     ->where('warehouse_id',$warehouse_id)
+        //     ->where('company_id', Auth::user()->company_id)
+        //     ->get();
+        // }
         return view('content.InvtStockAdjustmentReport.ListInvtStockAdjustmentReport',compact('category','warehouse','category_id','warehouse_id','data'));
     }
 
@@ -134,7 +167,29 @@ class InvtStockAdjustmentReportController extends Controller
         // ->where('invt_stock_adjustment.company_id', Auth::user()->company_id)
         // ->where('invt_stock_adjustment.data_state',0)
         // ->get();
-        if ($category_id == "" && $warehouse_id == "" ) {
+        if ($warehouse_id == ""){
+            if ($category_id == "") {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            } else {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('item_category_id',$category_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            }
+        } else if ($category_id == "") {
+            if ($warehouse_id == "") {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            } else {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('warehouse_id',$warehouse_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            }
+        } else if ($warehouse_id == "" && $category_id == "") {
             $data = InvtItemStock::where('data_state',0)
             ->where('company_id', Auth::user()->company_id)
             ->get();
@@ -237,7 +292,29 @@ class InvtStockAdjustmentReportController extends Controller
         // ->where('invt_stock_adjustment.company_id', Auth::user()->company_id)
         // ->where('invt_stock_adjustment.data_state',0)
         // ->get();
-        if ($category_id == "" && $warehouse_id == "" ) {
+        if ($warehouse_id == ""){
+            if ($category_id == "") {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            } else {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('item_category_id',$category_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            }
+        } else if ($category_id == "") {
+            if ($warehouse_id == "") {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            } else {
+                $data = InvtItemStock::where('data_state',0)
+                ->where('warehouse_id',$warehouse_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+            }
+        } else if ($warehouse_id == "" && $category_id == "") {
             $data = InvtItemStock::where('data_state',0)
             ->where('company_id', Auth::user()->company_id)
             ->get();

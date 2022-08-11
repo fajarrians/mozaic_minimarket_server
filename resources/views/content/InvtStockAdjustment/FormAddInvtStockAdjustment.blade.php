@@ -1,7 +1,7 @@
 @inject('ISAC','App\Http\Controllers\InvtStockAdjustmentController')
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
       function function_elements_add(name, value){
@@ -49,6 +49,55 @@
 		});
 	}
 
+    $(document).ready(function(){
+        var warehouse_id    = {!! json_encode($warehouse_id) !!};
+        var category_id     = {!! json_encode($category_id) !!};
+        var item_id         = {!! json_encode($item_id) !!};
+        var unit_id         = {!! json_encode($unit_id) !!};
+
+        if (warehouse_id == "") {
+            $('#warehouse_id').select2('val',' ');
+        }
+        if (category_id == "") {
+            $('#item_category_id').select2('val',' ');
+        }
+        if (item_id == "") {
+            $('#item_id').empty('val',' ');
+        }
+        if (unit_id == "") {
+            $('#item_unit_id').empty('val',' ');
+        }
+
+        $('#item_category_id').change(function(){
+            $('#item_id').empty();
+            $('#item_unit_id').empty();
+            var id = $('#item_category_id').val();
+            $.ajax({
+                url: "{{ url('select-item') }}"+'/'+id,
+                type: "GET",
+                dataType: "html",
+                success:function(data)
+                {
+                    $('#item_id').html(data);
+
+                }
+            });
+        });
+        $('#item_id').change(function(){
+            $('#item_unit_id').empty();
+            var id = $('#item_id').val();
+            $.ajax({
+                url: "{{ url('select-item-unit') }}"+'/'+id,
+                type: "GET",
+                dataType: "html",
+                success:function(data)
+                {
+                    $('#item_unit_id').html(data);
+
+                }
+            });
+        });
+    });
 </script>
 @stop
 @section('content_header')

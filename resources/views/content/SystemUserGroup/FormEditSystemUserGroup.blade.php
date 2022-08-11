@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('js')
 <script>

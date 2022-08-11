@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\PurchaseInvoice;
+use App\Models\SalesInvoice;
+use App\Models\SalesInvoiceItem;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -35,8 +38,130 @@ class HomeController extends Controller
         // ->where('system_menu_mapping.company_id', Auth::user()->company_id)
         ->orderBy('system_menu_mapping.id_menu','ASC')
         ->get();
+        
+        $max_day = date('t') + 1;
+        for ($i=1; $i < $max_day; $i++) { 
+            $data[$i]['day'] = $i;
+            $data[$i]['sales'] = $this->getAmountSalesInvoice($i);
+            $data[$i]['purchase'] = $this->getAmountPurchaseInvoice($i);
+        }
 
-        return view('home',compact('menus'));
+
+        $now 		= date('Y-m-d');
+        $seminggu 	= abs(6*86400);
+        $awal 		= strtotime($now)-$seminggu;
+        $akhir 		= strtotime($now);
+        for($i=$awal; $i <=$akhir;$i+=86400)
+        {
+            $date 		= date('Y-m-d', $i);
+            $x 			= mktime(0, 0, 0, date("m", strtotime($date)), date("d", strtotime($date)), date("Y", strtotime($date)));
+            $day 		= date("l", $x);
+            $dayname = [
+                'Monday'    => 'Senin',
+                'Tuesday'   => 'Selasa',
+                'Wednesday' => 'Rabu',
+                'Thursday'  => 'Kamis',
+                'Friday'    => 'Jumat',
+                'Saturday'  => 'Sabtu',
+                'Sunday'    => 'Minggu',
+            ];
+
+            $datasalesinvoiceweekly[$i]['day']				= $dayname[$day];
+            $datasalesinvoiceweekly[$i]['sales']			= $this->getAmountSalesInvoiceWeekly($date);
+            $datasalesinvoiceweekly[$i]['purchase']			= $this->getAmountPurchaseInvoiceWeekly($date);
+        }
+
+        $item_data = InvtItem::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get();
+        foreach ($item_data as $key => $val) {
+            $item[$key]['item_name'] =  $val['item_name'];
+            $item[$key]['quantity'] = $this->getQuantitySalesInvoice($val['item_id']);
+        }
+
+        return view('home',compact('menus','data','datasalesinvoiceweekly','item'));
+    }
+
+    public function getQuantitySalesInvoice($item_id)
+    {
+        $data = SalesInvoiceItem::join('sales_invoice','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        ->where('sales_invoice.data_state',0)
+        ->where('sales_invoice.company_id', Auth::user()->company_id)
+        ->where('sales_invoice_item.item_id', $item_id)
+        ->whereMonth('sales_invoice.sales_invoice_date', date('m'))
+        ->whereYear('sales_invoice.sales_invoice_date',date('Y'))
+        ->get();
+
+        $amount = 0;
+        foreach ($data as $val) {
+            $amount += $val['quantity'];
+        }
+        return $amount;
+        
+    }
+
+    public function getAmountSalesInvoice($day)
+    {
+        $data = SalesInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->whereDay('sales_invoice_date', $day)
+        ->whereMonth('sales_invoice_date', date('m'))
+        ->whereYear('sales_invoice_date',date('Y'))
+        ->get();
+
+        $amount = 0;
+        foreach ($data as $val) {
+            $amount += $val['total_amount'];
+        }
+        return $amount;
+        
+    }
+
+    public function getAmountPurchaseInvoice($day)
+    {
+        $data = PurchaseInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->whereDay('purchase_invoice_date', $day)
+        ->whereMonth('purchase_invoice_date', date('m'))
+        ->whereYear('purchase_invoice_date',date('Y'))
+        ->get();
+
+        $amount = 0;
+        foreach ($data as $val) {
+            $amount += $val['total_amount'];
+        }
+        return $amount;
+        
+    }
+
+    public function getAmountSalesInvoiceWeekly($date)
+    {
+        $data = SalesInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('sales_invoice_date', $date)
+        ->get();
+
+        $amount = 0;
+        foreach ($data as $val) {
+            $amount += $val['total_amount'];
+        }
+        return $amount;
+        
+    }
+
+    public function getAmountPurchaseInvoiceWeekly($date)
+    {
+        $data = PurchaseInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('purchase_invoice_date',$date)
+        ->get();
+
+        $amount = 0;
+        foreach ($data as $val) {
+            $amount += $val['total_amount'];
+        }
+        return $amount;
+        
     }
 
     public function selectItemCategory()

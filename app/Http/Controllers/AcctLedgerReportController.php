@@ -479,8 +479,8 @@ class AcctLedgerReportController extends Controller
         
         if(count($acctgeneralledgerreport)>=0){
             
-            $spreadsheet->getProperties()->setCreator("MOZAIC Point Of Sales")
-                                 ->setLastModifiedBy("MOZAIC Point Of Sales")
+            $spreadsheet->getProperties()->setCreator("MOZAIC Minimarket")
+                                 ->setLastModifiedBy("MOZAIC Minimarket")
                                  ->setTitle("Buku Besar")
                                  ->setSubject("")
                                  ->setDescription("Buku Besar")

@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
     function reset_add(){
@@ -15,6 +15,14 @@
 
 		});
 	}
+
+    $(document).ready(function(){
+        var warehouse_id    = {!! json_encode($warehouse_id) !!}
+
+        if (warehouse_id == "") {
+            $('#warehouse_id').select2('val', ' ');
+        }
+    });
 </script>
 @stop
 @section('content_header')
@@ -71,7 +79,7 @@
                     <div class = "col-md-6">
                         <div class="form-group form-md-line-input">
                             <section class="control-label">Nama Gudang</section>
-                            {!! Form::select('warehouse_id',  $warehouse, 0, ['class' => 'selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id']) !!}
+                            {!! Form::select('warehouse_id',  $warehouse, $warehouse_id, ['class' => 'selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id']) !!}
                             
                         </div>
                     </div>

@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -97,7 +97,7 @@
                     ?>
                    @foreach ($data as $row)
                        <tr>
-                        <td>{{ $no++ }}</td>
+                        <td class="text-center">{{ $no++ }}.</td>
                         <td>{{ $row['expenditure_remark'] }}</td>
                         <td>{{ date('d-m-Y', strtotime($row['expenditure_date'])) }}</td>
                         <td style="text-align: right">{{ number_format($row['expenditure_amount'],2,'.',',') }}</td>

@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
     function reset_add(){
@@ -113,7 +113,7 @@
                         }else {
                            foreach ($data as $key => $row) {
                             echo "<tr>
-                                    <td>". $no++."</td>
+                                    <td class='text-center'>". $no++.".</td>
                                     <td>". $SIBIRC->getCategoryName($row['item_category_id'])."</td>
                                     <td>". $SIBIRC->getItemName($row['item_id'])."</td>
                                 </tr>";

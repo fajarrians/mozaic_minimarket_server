@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
     function reset_add(){
@@ -15,6 +15,13 @@
 
 		});
 	}
+    $(document).ready(function(){
+        var warehouse_id    = {!! json_encode($warehouse_id) !!}
+
+        if (warehouse_id == "") {
+            $('#warehouse_id').select2('val', ' ');
+        }
+    });
 </script>
 @stop
 @section('content_header')

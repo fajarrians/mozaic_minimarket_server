@@ -57,6 +57,9 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/select-item-category',[HomeController::class, 'selectItemCategory']);
 Route::get('/select-item/{id}',[HomeController::class, 'selectItem']);
 Route::get('/select-item-unit/{id}',[HomeController::class, 'selectItemUnit']);
+Route::get('/amount/sales-invoice/{day}', [HomeController::class, 'getAmountSalesInvoice']);
+Route::get('/amount/purchase-invoice/{day}', [HomeController::class, 'getAmountPurchaseInvoice']);
+Route::get('/select-sales/{item}',[SalesInvoiceController::class, 'selectSalesInvoice']);
 
 Route::get('/item-unit',[InvtItemUnitController::class, 'index'])->name('item-unit');
 Route::get('/item-unit/add',[InvtItemUnitController::class, 'addInvtItemUnit'])->name('add-item-unit');

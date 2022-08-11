@@ -1,7 +1,7 @@
 @inject('AcctAccount','App\Http\Controllers\AcctAccountController')
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     

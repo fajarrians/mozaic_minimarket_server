@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
 
@@ -54,7 +54,7 @@
                   <?php $no=1; ?>
                     @foreach ($data as $val)
                         <tr>
-                            <td>{{ $no++ }}</td>
+                            <td class="text-center">{{ $no++ }}.</td>
                             <td>{{ $SIBYRC->getCategoryName($val['item_category_id']) }}</td>
                             <td>{{ $SIBYRC->getItemName($val['item_id']) }}</td>
                             <td style="text-align: right">{{ $val['quantity'] }}</td>

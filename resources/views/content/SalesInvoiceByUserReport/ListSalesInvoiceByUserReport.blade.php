@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
     function reset_add(){
@@ -126,7 +126,7 @@
                     <?php $no =1;?>
                     @foreach ($data as $row)
                         <tr>
-                            <td>{{ $no++ }}</td>
+                            <td class="text-center">{{ $no++ }}.</td>
                             <td>{{ $SIBURC->getUserName($row['created_id']) }}</td>
                             <td>{{ $row['sales_invoice_no'] }}</td>
                             <td>{{ date('d-m-Y', strtotime($row['sales_invoice_date'])) }}</td>

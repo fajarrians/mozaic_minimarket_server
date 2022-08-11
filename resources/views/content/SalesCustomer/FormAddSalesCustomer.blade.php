@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -33,7 +33,7 @@
     @endforeach
 </div>
 @endif
-    <div class="card border border-dark">
+<div class="card border border-dark">
     <div class="card-header border-dark bg-dark">
         <h5 class="mb-0 float-left">
             Form Tambah
@@ -62,7 +62,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <a class="text-dark">Jenis Kelamin<a class='red'> *</a></a>
-                        {!! Form::select(0, $listgender, 0, ['class' => 'selection-search-clear select-form', 'id' => 'customer_gender', 'name' => 'customer_gender']) !!}
+                        {!! Form::select(0, $listgender, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'customer_gender', 'name' => 'customer_gender']) !!}
                     </div>
                 </div>
             </div>
@@ -73,9 +73,8 @@
                 <button type="submit" name="Save" class="btn btn-success" title="Save"><i class="fa fa-check"></i> Simpan</button>
             </div>
         </div>
-    </div>
-    </div>
-</form>
+    </form>
+</div>  
 
 @stop
 

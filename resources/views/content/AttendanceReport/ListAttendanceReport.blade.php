@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -86,7 +86,7 @@
                         $no =1;
                         foreach ($user as $key => $val) {
                             echo "<tr>
-                                    <td style='text-align: center'>".$no++."</td>                                
+                                    <td style='text-align: center'>".$no++.".</td>                                
                                     <td>".$val['name']."</td>                                
                                     <td>".$val['full_name']."</td>                                
                                     <td>".$AttendanceReport->getRemark($val['user_id'])."</td>                                

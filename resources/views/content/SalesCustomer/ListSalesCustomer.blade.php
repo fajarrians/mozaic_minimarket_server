@@ -1,7 +1,7 @@
 @inject('SalesCustomer', 'App\Http\Controllers\SalesCustomerController')
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -51,7 +51,7 @@
                   <?php $no = 1;?>
                     @foreach ($data as $row)
                         <tr>
-                          <td style="text-align: center">{{ $no++ }}</td>
+                          <td style="text-align: center">{{ $no++ }}.</td>
                           <td>{{ $row['customer_name'] }}</td>
                           <td>{{ $SalesCustomer->getGenderName($row['customer_gender']) }}</td>
                           <td style="text-align: center">

@@ -1,7 +1,7 @@
 @inject('AcctLedgerReport','App\Http\Controllers\AcctLedgerReportController')
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -206,7 +206,7 @@
                         foreach ($acctgeneralledgerreport as $key => $val) {
                             if($val['data_state']==0){
                                 echo "<tr>
-                                    <td>".$no++."</td>
+                                    <td class='text-center'>".$no++.".</td>
                                     <td>".$val['date']."</td>
                                     <td>".$val['no_journal']."</td>
                                     <td>".$val['description']."</td>

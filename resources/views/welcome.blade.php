@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>MOZAIC Point Of Sales</title>
+        <title>MOZAIC Minimarket</title>
         <link rel="icon" type="image/x-icon" href="{{ asset('resources/assets/img/logo_baru_mozaic/logo baru set-09.png') }}" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
@@ -29,7 +29,7 @@
                         <img src="{{asset('resources/assets/img/logo_baru_mozaic/logo baru set-09.png')}}" id="logo" style="width: 115px; height: 115px;" class="mt-2">
                         <div>
                             <h1 class="fst-italic lh-1 mb-2">MOZAIC</h1>
-                            <div class="mb-3">Point Of Sales</div>
+                            <div class="mb-3">Minimarket</div>
                         </div>
                     </div>
                     <form>

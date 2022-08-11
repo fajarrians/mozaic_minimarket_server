@@ -125,11 +125,18 @@ class InvtStockAdjustmentController extends Controller
 
     public function filterAddStockAdjustment(Request $request)
     {
-        $category_id = $request->item_category_id;
-        $item_id     = $request->item_id;
-        $unit_id     = $request->item_unit_id;
-        $warehouse_id = $request->warehouse_id;
-        $date        = $request->stock_adjustment_date;
+        $request->validate([
+            'item_category_id'      => 'required',
+            'item_id'               => 'required',
+            'item_unit_id'          => 'required',
+            'warehouse_id'          => 'required',
+            'stock_adjustment_date' => 'required',
+        ]);
+        $category_id    = $request->item_category_id;
+        $item_id        = $request->item_id;
+        $unit_id        = $request->item_unit_id;
+        $warehouse_id   = $request->warehouse_id;
+        $date           = $request->stock_adjustment_date;
 
         Session::put('category_id', $category_id);
         Session::put('item_id', $item_id);

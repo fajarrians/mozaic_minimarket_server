@@ -2,7 +2,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
 
 @section('content_header')
     
@@ -193,6 +193,7 @@
             </div>
         </div>
   </div>
+</div>
 </div>
 
 @stop

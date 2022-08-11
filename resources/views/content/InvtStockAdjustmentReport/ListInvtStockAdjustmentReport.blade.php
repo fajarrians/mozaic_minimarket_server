@@ -2,7 +2,22 @@
 
 @extends('adminlte::page')
 
-@section('title', 'MOZAIC Point of Sales')
+@section('title', 'MOZAIC Minimarket')
+@section('js')
+    <script>
+        $(document).ready(function(){
+            var warehouse_id    = {!! json_encode($warehouse_id) !!}
+            var category_id     = {!! json_encode($category_id) !!}
+
+            if (warehouse_id == "") {
+                $('#warehouse_id').select2('val', ' ');
+            }
+            if (category_id == "") {
+                $('#category_id').select2('val', ' ');
+            }
+        });
+    </script>
+@endsection
 
 @section('content_header')
     

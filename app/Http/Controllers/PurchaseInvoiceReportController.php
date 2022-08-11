@@ -40,19 +40,29 @@ class PurchaseInvoiceReportController extends Controller
             $warehouse_id = Session::get('warehouse_id');
         }
 
-        $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-        ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-        ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-        ->where('purchase_invoice.warehouse_id', $warehouse_id)
-        ->where('purchase_invoice.company_id', Auth::user()->company_id)
-        ->where('purchase_invoice.data_state',0)
-        ->get();
+        if ($warehouse_id == '') {
+            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
+            ->where('purchase_invoice.company_id', Auth::user()->company_id)
+            ->where('purchase_invoice.data_state',0)
+            ->get();
+        } else {
+            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
+            ->where('purchase_invoice.warehouse_id', $warehouse_id)
+            ->where('purchase_invoice.company_id', Auth::user()->company_id)
+            ->where('purchase_invoice.data_state',0)
+            ->get();
+        }
+        
        
         $warehouse = InvtWarehouse::where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('warehouse_name','warehouse_id');
-        return view('content.PurchaseInvoiceReport.ListPurchaseInvoiceReport', compact('data','warehouse','start_date','end_date'));
+        return view('content.PurchaseInvoiceReport.ListPurchaseInvoiceReport', compact('data','warehouse','start_date','end_date','warehouse_id'));
     }
 
     public function filterPurchaseInvoiceReport(Request $request)
@@ -116,13 +126,22 @@ class PurchaseInvoiceReportController extends Controller
             $warehouse_id = Session::get('warehouse_id');
         }
 
-        $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-        ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-        ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-        ->where('purchase_invoice.warehouse_id', $warehouse_id)
-        ->where('purchase_invoice.company_id', Auth::user()->company_id)
-        ->where('purchase_invoice.data_state',0)
-        ->get();
+        if ($warehouse_id == '') {
+            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
+            ->where('purchase_invoice.company_id', Auth::user()->company_id)
+            ->where('purchase_invoice.data_state',0)
+            ->get();
+        } else {
+            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
+            ->where('purchase_invoice.warehouse_id', $warehouse_id)
+            ->where('purchase_invoice.company_id', Auth::user()->company_id)
+            ->where('purchase_invoice.data_state',0)
+            ->get();
+        }
 
         $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
 
@@ -222,13 +241,22 @@ class PurchaseInvoiceReportController extends Controller
             $warehouse_id = Session::get('warehouse_id');
         }
 
-        $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-        ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-        ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-        ->where('purchase_invoice.warehouse_id', $warehouse_id)
-        ->where('purchase_invoice.company_id', Auth::user()->company_id)
-        ->where('purchase_invoice.data_state',0)
-        ->get();
+        if ($warehouse_id == '') {
+            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
+            ->where('purchase_invoice.company_id', Auth::user()->company_id)
+            ->where('purchase_invoice.data_state',0)
+            ->get();
+        } else {
+            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
+            ->where('purchase_invoice.warehouse_id', $warehouse_id)
+            ->where('purchase_invoice.company_id', Auth::user()->company_id)
+            ->where('purchase_invoice.data_state',0)
+            ->get();
+        }
         
         $spreadsheet = new Spreadsheet();
 

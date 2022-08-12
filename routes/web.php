@@ -60,6 +60,7 @@ Route::get('/select-item-unit/{id}',[HomeController::class, 'selectItemUnit']);
 Route::get('/amount/sales-invoice/{day}', [HomeController::class, 'getAmountSalesInvoice']);
 Route::get('/amount/purchase-invoice/{day}', [HomeController::class, 'getAmountPurchaseInvoice']);
 Route::get('/select-sales/{item}',[SalesInvoiceController::class, 'selectSalesInvoice']);
+Route::get('/sales-invoice/change-qty/{item}/{qty}',[SalesInvoiceController::class, 'changeQtySalesInvoice']);
 
 Route::get('/item-unit',[InvtItemUnitController::class, 'index'])->name('item-unit');
 Route::get('/item-unit/add',[InvtItemUnitController::class, 'addInvtItemUnit'])->name('add-item-unit');

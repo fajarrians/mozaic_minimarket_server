@@ -162,19 +162,68 @@
 	// 	});
 	// });
 
-    function function_change_amount(key, value){
-        quantity = document.getElementById((key)+'_quantity').value;
-        total_price = document.getElementById((key)+'_total_price').value;
-        total_amount = quantity * total_price;
+    function function_change_quantity(key, value){
+        quantity = parseInt(document.getElementById((key)+'_quantity').value);
+        total_price = parseInt(document.getElementById((key)+'_price').value);
+        var total_amount = quantity * total_price;
+
+        $.ajax({
+            url: "{{ url('sales-invoice/change-qty') }}"+'/'+key+'/'+value,
+            type: "GET",
+            dataType: "html",
+            success:function(data)
+            {
+                // if (data != "") {
+                //     location.reload();
+                // }
+                console.log(data);
+                // var a = JSON.parse(data);
+                // $('#table_data').html(a.item_name);
+                // console.log(a);
+            }
+        });
         
-        $('#'+key+'_total_amount').val(total_amount);
+        $('#'+key+'_price_amount').text(toRp(total_amount));
+
+        first_key = parseInt(document.getElementById('first_key').value);
+        end_key = parseInt(document.getElementById('end_key').value) + 1;
+        // console.log(first_key)
+        var subtotal = 0;
+        for (let i = first_key; i < end_key; i++) {
+            quantity = parseInt(document.getElementById((i)+'_quantity').value);
+            price = parseInt(document.getElementById((i)+'_price').value);
+            // console.log(quantity);
+            $('#'+i+'_price_amount').text(toRp(quantity * price));
+            subtotal += quantity * price;
+
+        }
+        $('#subtotal_amount_view').text(toRp("Rp. "+subtotal));
+        $('#subtotal_amount').val(subtotal);
+        // kunci = document.getElementById('kunci').value;
+        // var subtotal = total_amount;
+        // for (let i = 0; i < kunci; i++) {
+        //     subtotal = document.getElementById((i)+'_total_amount').value; 
+        //     console.log(i);
+        // }
+        // $('#subtotal_total').val(subtotal);
+        
     }
 
     $(document).ready(function(){
-        var subtotal = $('#subtotal').val();
-        if (subtotal != undefined) {
-            $("#subtotal_total").text(toRp("Rp. "+subtotal));
+        first_key = parseInt(document.getElementById('first_key').value);
+        end_key = parseInt(document.getElementById('end_key').value) + 1;
+        // console.log(first_key)
+        var subtotal = 0;
+        for (let i = first_key; i < end_key; i++) {
+            quantity = parseInt(document.getElementById((i)+'_quantity').value);
+            price = parseInt(document.getElementById((i)+'_price').value);
+            // console.log(quantity);
+            $('#'+i+'_price_amount').text(toRp(quantity * price));
+            subtotal += quantity * price;
+
         }
+        $('#subtotal_amount_view').text(toRp("Rp. "+subtotal));
+        $('#subtotal_amount').val(subtotal);
 
         $('body').on('input','#item_code',function(){
             var item_code = $('#item_code').val();
@@ -184,7 +233,10 @@
                 dataType: "html",
                 success:function(data)
                 {
-                    location.reload();
+                    if (data != "") {
+                        location.reload();
+                    }
+                    // console.log(data);
                     // var a = JSON.parse(data);
                     // $('#table_data').html(a.item_name);
                     // console.log(a);
@@ -192,6 +244,32 @@
             });
         });
     });
+
+    $('body').on('input','#discount_percentage_total',function(){
+
+        subtotal_amount = $('#subtotal_amount').val();
+        discount_percentage_total = $('#discount_percentage_total').val();
+        // if (discount_percentage_total == "") {
+        //     discount_percentage_total = 0;
+        // }
+        discount_amount_total = (subtotal_amount * discount_percentage_total) / 100;
+        total_amount = subtotal_amount - discount_amount_total;
+
+        $('#subtotal_amount_view').text(toRp("Rp. "+total_amount));
+        $('#subtotal_amount').val(total_amount);
+        console.log(discount_percentage_total);
+    }); 
+    
+    $('body').on('input','#paid_amount',function(){
+        subtotal_amount = $('#subtotal_amount').val();
+        paid_amount = $('#paid_amount').val();
+        change_amount = paid_amount - subtotal_amount;
+
+        $('#change_amount').val(change_amount);
+        $('#change_amount_view').val(toRp(change_amount));
+    });
+ 
+
     // $('#item_code').keyup(function(){
     //     var value = $('#item_code').val();
     //     $.ajax({
@@ -292,7 +370,8 @@
                     <div style="font-weight: bold; font-size: 20px">TOTAL</div>
                 </div>
                 <div class="text-right">
-                    <div class="text-danger" style="font-weight: bold; font-size: 50px" id="subtotal_total">Rp. 00,0000,00</div>
+                    <div class="text-danger" style="font-weight: bold; font-size: 50px" id="subtotal_amount_view">Rp. 00,0000,00</div>
+                    <input type="text" id="subtotal_amount" name="subtotal_amount" >
                 </div>
             </div>
         </div>
@@ -309,39 +388,44 @@
                     <table class="table table-bordered table-advance table-hover">
                         <thead style="text-align: center">
                             <th style="width: 5%;">No.</th>
-                            <th style="width: 20%;">Kategori Barang</th>
-                            <th style="width: 20%;">Nama Barang</th>
-                            <th style="width: 20%;">Satuan Barang</th>
-                            <th style="width: 20%;">Jumlah Barang</th>
+                            {{-- <th style="width: 19%;">Kategori Barang</th> --}}
+                            <th style="width: 19%;">Nama Barang</th>
+                            <th style="width: 19%;">Satuan Barang</th>
+                            <th style="width: 19%;">Harga Satuan</th>
+                            <th style="width: 19%;">Jumlah Barang</th>
+                            <th style="width: 19%;">Total</th>
                         </thead>
-                        @if ($dataitem !== null)
+                        @if ($data_itemses !== null)
                             <?php 
-                            $subtotal = 0;
-                            $total_amount = 0;
                             $no = 1; 
                             ?>
-                            @foreach ($dataitem as $key=>$val)
+                            @foreach ($data_itemses as $key=>$val)
+                            <input type="text" value="{{ $key }}" id="first_key" hidden>
+
                             <tr>
                                 <td style="text-align: center">{{ $no++ }}.</td>
-                                <td>{{ $SalesInvoice->getCategoryName($val['item_category_id']) }}</td>
+                                {{-- <td>{{ $SalesInvoice->getCategoryName($val['item_category_id']) }}</td> --}}
                                 <td>{{ $SalesInvoice->getItemName($val['item_id']) }}</td>
                                 <td>{{ $SalesInvoice->getItemUnitName($val['item_unit_id']) }}</td>
+                                <td style="text-align: right">{{ number_format($val['item_unit_price'],2,'.',',') }}</td>
                                 <td>
-                                    <input type="number" name="{{ $key }}_quantity" id="{{ $key }}_quantity" style="width: 100%; text-align: center; height: 30px; font-weight: bold; font-size: 15px" class="form-control input-bb" value="{{ $val['quantity'] }}" autocomplete="off" onchange="function_change_amount({{ $key }}, this.value)">
-                                    <input type="number" name="{{ $key }}_total_price" id="{{ $key }}_total_price" value="{{ $val['item_unit_price'] }}" >
-                                    <input type="number" name="{{ $key }}_total_amount" id="{{ $key }}_total_amount" value="{{ $total_amount = $val['item_unit_price'] * $val['quantity']}}" >
-                                     <?php $subtotal += $total_amount ?>
+                                    <input oninput="function_change_quantity({{ $key }}, this.value)" type="number" name="{{ $key }}_quantity" id="{{ $key }}_quantity" style="width: 100%; text-align: center; height: 30px; font-weight: bold; font-size: 15px" class="form-control input-bb" value="{{ $val['quantity'] }}" autocomplete="off">
+                                    <input type="number" name="{{ $key }}_price" id="{{ $key }}_price" value="{{ $val['item_unit_price'] }}" hidden>
+                                </td>
+                                <td>
+                                    <div id="{{ $key }}_price_amount" name="{{ $key }}_price_amount" class="text-right"></div>
+                                    {{-- <input type="number" name="{{ $key }}_price_amount" id="{{ $key }}_price_amount" value="{{ $val['item_unit_price'] }}"> --}}
                                 </td>
                             </tr>
                             @endforeach
-                            <input type="number" name="subtotal" id="subtotal" value="{{ $subtotal }}" >
-                            {{-- <input type="text" value="{{ $key }}" hidden id="key"> --}}
+                            <input type="text" value="{{ $key }}" id="end_key" hidden>
                         @else
-                        <tr>
-                            <td colspan="5" style="text-align: center; font-weight: bold">Data Kosong</td>
-                        </tr>
+                            <tr>
+                                <td colspan="6" style="text-align: center; font-weight: bold">Data Kosong</td>
+                            </tr>
+                            <input type="text" value="" id="first_key" hidden>
+                            <input type="text" value="" id="end_key" hidden>
                         @endif
-                        <div id="table_data"></div>
                     </table>
                 </div>
             </div>
@@ -355,7 +439,7 @@
                         <a class="text-dark col-form-label">Diskon (%)<a class='red'> *</a></a>
                     </div>
                     <div class="col-sm-8">
-                        <input class="form-control input-bb"/>
+                        <input class="form-control input-bb" id="discount_percentage_total" name="discount_percentage_total" autocomplete="off"/>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -363,7 +447,7 @@
                         <a class="text-dark col-form-label">Bayar</a><a class='red'> *</a></a>
                     </div>
                     <div class="col-sm-8">
-                        <input class="form-control input-bb" id="myText"/>
+                        <input class="form-control input-bb text-right" id="paid_amount" name="paid_amount" autocomplete="off"/>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -371,7 +455,8 @@
                         <a class="text-dark col-form-label">Kembalian</a><a class='red'> *</a></a>
                     </div>
                     <div class="col-sm-8">
-                        <input class="form-control input-bb" disabled/>
+                        <input class="form-control input-bb text-right" id="change_amount_view" name="change_amount_view" disabled/>
+                        <input class="form-control input-bb" id="change_amount" name="change_amount" disabled hidden/>
                     </div>
                 </div>
                 <br>

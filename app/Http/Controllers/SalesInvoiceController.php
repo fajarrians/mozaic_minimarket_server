@@ -68,7 +68,32 @@ class SalesInvoiceController extends Controller
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('customer_name','customer_id');
-        $dataitem = Session::get('dataitemsales');
+
+        $data_input = Session::get('data_input');
+        if ($data_input != null) {
+            $count_values = array_count_values($data_input);
+            foreach ($count_values as $key => $val) {
+                $data_items[$key] = InvtItem::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->where('item_id', $key)
+                ->first();
+            }
+            foreach ($data_items as $key => $val) {
+                $data_itemses[$key] = array(
+                    'item_id'           => $val['item_id'],
+                    'item_name'         => $val['item_name'],
+                    'item_category_id'  => $val['item_category_id'],
+                    'item_unit_id'      => $val['item_unit_id'],
+                    'item_unit_price'   => $val['item_unit_price'],
+                    'quantity'          => $count_values[$key]
+                );
+            }
+        } else {
+            $data_itemses = null;
+        }
+        
+        Session::put('data_itemses', $data_itemses);
+
         // foreach ($dataitem as $key => $val) {
         //     if ($val['item_name'] == "P-XL 10RB") {
         //         $dataku = $val['quantity'] + 1; 
@@ -86,8 +111,8 @@ class SalesInvoiceController extends Controller
         // }
         // Session::forget('dataitemsales');
         // Session::put('dataitemsales', $arrayBaru);
-        // dd($dataitem);
-        return view('content.SalesInvoice.FormAddSalesInvoice',compact('date','categorys','items','units','arraydatases','customers','dataitem'));
+        // dd($data_itemses);
+        return view('content.SalesInvoice.FormAddSalesInvoice',compact('date','categorys','items','units','arraydatases','customers','data_itemses'));
     }
 
     public function addArraySalesInvoice(Request $request)
@@ -294,7 +319,8 @@ class SalesInvoiceController extends Controller
     public function resetSalesInvoice()
     {
         Session::forget('arraydatases');
-        Session::forget('dataitemsales');
+        Session::forget('data_input');
+        Session::forget('data_itemses');
 
         return redirect('/sales-invoice/add');
     }
@@ -508,23 +534,39 @@ class SalesInvoiceController extends Controller
 
     public function selectSalesInvoice($item)
     {
-        $data = InvtItem::where('data_state',0)
+        $data_item = InvtItem::where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->where('item_code',$item)
         ->first();
+        // if ()
 
-        if ($data !== null) {
-            $data_array = array(
-                'item_id'           => $data['item_id'],
-                'item_name'         => $data['item_name'],
-                'item_category_id'  => $data['item_category_id'],
-                'item_unit_id'      => $data['item_unit_id'],
-                'item_unit_price'   => $data['item_unit_price'],
-                'quantity'          => 1
-            );
+        $data_session = Session::get('data_input');
+        if ($data_item != null) {
+
+            if($data_session !== null){
+                array_push($data_session, $data_item['item_id']);
+                Session::put('data_input', $data_session);
+            } else {
+                $data_session = [];
+                array_push($data_session, $data_item['item_id']);
+                Session::push('data_input', $data_item['item_id']);
+            }
         }
+        
+        return $data_item;
 
-        $dataitem = Session::get('dataitemsales');
+        // if ($data !== null) {
+        //     $data_array = array(
+        //         'item_id'           => $data['item_id'],
+        //         'item_name'         => $data['item_name'],
+        //         'item_category_id'  => $data['item_category_id'],
+        //         'item_unit_id'      => $data['item_unit_id'],
+        //         'item_unit_price'   => $data['item_unit_price'],
+        //         'quantity'          => 1
+        //     );
+        // }
+
+        // $dataitem = Session::get('dataitemsales');
         // $arrayBaru = [];
         // foreach($dataitem as $key=>$val){
         //     $arrayBaru[$key] = array(
@@ -532,29 +574,29 @@ class SalesInvoiceController extends Controller
         //         'quantity' => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
         //     );    
         // }
-        if($dataitem !== null){
-            foreach($dataitem as $key=>$val){
-                $arrayBaru[$key] = array(
-                    'item_id'           => $val['item_id'],
-                    'item_name'         => $val['item_name'],
-                    'item_category_id'  => $val['item_category_id'],
-                    'item_unit_id'      => $val['item_unit_id'],
-                    'item_unit_price'   => $val['item_unit_price'],
-                    'quantity'          => $val['item_id'] == $data_array['item_id'] ? $val['quantity'] + 1 : $val['quantity']
-                );
-            }
-            foreach($dataitem as $key=>$val){
-                if ($val['item_id'] == $data_array['item_id']) {
-                    Session::forget('dataitemsales');
-                    Session::put('dataitemsales', $arrayBaru);
-                } else {
-                    array_push($dataitem, $data_array);
-                    Session::put('dataitemsales', $dataitem);
-                } 
+        // if($dataitem !== null){
+        //     foreach($dataitem as $key=>$val){
+        //         $arrayBaru[$key] = array(
+        //             'item_id'           => $val['item_id'],
+        //             'item_name'         => $val['item_name'],
+        //             'item_category_id'  => $val['item_category_id'],
+        //             'item_unit_id'      => $val['item_unit_id'],
+        //             'item_unit_price'   => $val['item_unit_price'],
+        //             'quantity'          => $val['item_id'] == $data_array['item_id'] ? $val['quantity'] + 1 : $val['quantity']
+        //         );
+        //     }
+        //     foreach($dataitem as $key=>$val){
+        //         if ($val['item_id'] == $data_array['item_id']) {
+        //             Session::forget('dataitemsales');
+        //             Session::put('dataitemsales', $arrayBaru);
+        //         } else {
+        //             array_push($dataitem, $data_array);
+        //             Session::put('dataitemsales', $dataitem);
+        //         } 
             
-            }
-        } else {
-            $dataitem = [];
+        //     }
+        // } else {
+        //     $dataitem = [];
             // foreach($dataitem as $key=>$val){
             //     $arrayBaru[$key] = array(
             //         'item_id'           => $val['item_id'],
@@ -565,9 +607,9 @@ class SalesInvoiceController extends Controller
             //         'quantity'          => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
             //     );    
             // }
-            array_push($dataitem, $data_array);
-            Session::push('dataitemsales', $data_array);
-        }
+        //     array_push($dataitem, $data_array);
+        //     Session::push('dataitemsales', $data_array);
+        // }
 
         // $dataitem = Session::get('dataitemsales');
         // foreach($dataitem as $key=>$val){
@@ -586,15 +628,25 @@ class SalesInvoiceController extends Controller
         // Session::forget('dataitemsales');
         // array_push($dataitem, $arrayBaru);
         // Session::put('dataitemsales', $dataitem);
-        $data_item = '';
-        $data_item .= "
-            <tr>
-                <td>$data[item_name]</td>
-                <td>$data[item_code]</td>
-            </tr>
-        ";
-        return $data_item;
+        // $data_item = '';
+        // $data_item .= "
+        //     <tr>
+        //         <td>$data[item_name]</td>
+        //         <td>$data[item_code]</td>
+        //     </tr>
+        // ";
+        // return $data_item;
     
 
+    }
+
+    public function changeQtySalesInvoice($item_id, $qty) {
+        $data_itemses = Session::get('data_itemses');
+        $data_itemses[$item_id]['quantity'] = $qty;
+        Session::forget('data_itemses');
+        Session::put('data_itemses', $data_itemses);
+
+
+        return $data_itemses;
     }
 }

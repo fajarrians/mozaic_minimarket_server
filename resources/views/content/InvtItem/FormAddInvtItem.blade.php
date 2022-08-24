@@ -3,6 +3,26 @@
 @section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
+    $(document).ready(function(){
+        // item_unit_id_1 = {!! json_encode($items['item_unit_id_1']) !!};
+        item_unit_id_2 = {!! json_encode($items['item_unit_id_2']) !!};
+        item_unit_id_3 = {!! json_encode($items['item_unit_id_3']) !!};
+        item_unit_id_4 = {!! json_encode($items['item_unit_id_4']) !!};
+
+        // if (item_unit_id_1 == null) {
+        //     $('#item_unit_id_1').select2('val',0);
+        // }
+        if (item_unit_id_2 == null) {
+            $('#item_unit_id_2').select2('val','0');
+        }
+        if (item_unit_id_3 == null) {
+            $('#item_unit_id_3').select2('val','0');
+        }
+        if (item_unit_id_4 == null) {
+            $('#item_unit_id_4').select2('val','0');
+        }
+    });
+
     function function_elements_add(name, value){
         console.log("name " + name);
         console.log("value " + value);
@@ -88,6 +108,9 @@
                 <li class="nav-item">
                   <a class="nav-link" href="#kemasan" role="tab" data-toggle="tab">Kemasan</a>
                 </li>
+                {{-- <li class="nav-item">
+                    <a class="nav-link" href="#barcode" role="tab" data-toggle="tab">Barcode</a>
+                  </li> --}}
               </ul>
               <div class="tab-content">
                 <div role="tabpanel" class="tab-pane fade show active" id="barang">
@@ -116,12 +139,12 @@
                                 <input class="form-control input-bb" name="item_name" id="item_name" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_name'] }}"/>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <div class="form-group">
                                 <a class="text-dark">Barcode Barang</a>
                                 <input class="form-control input-bb" name="item_barcode" id="item_barcode" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_barcode'] }}"/>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="col-md-8 mt-3">
                             <div class="form-group">
                                 <a class="text-dark">Keterangan</a>
@@ -131,34 +154,169 @@
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="kemasan">
-                    <h5 class="mt-3"><b>Kemasan 1</b></h5>
-                    <div class="row form-group mt-2">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <a class="text-dark">Satuan Barang 1<a class='red'> *</a></a>
-                                {!! Form::select('item_unit_id', $itemunits, $items['item_unit_id'],['class' => 'form-control selection-search-clear select-form','name'=>'item_unit_id','id'=>'item_unit_id','onchange' => 'function_elements_add(this.name, this.value)']) !!}  
+                    <div>
+                        <h6 class="mt-3"><b>Kemasan 1</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Satuan Barang 1<a class='red'> *</a></a>
+                                    {!! Form::select('item_unit_id', $itemunits, $items['item_unit_id_1'],['class' => 'form-control selection-search-clear select-form','name'=>'item_unit_id_1','id'=>'item_unit_id_1','onchange' => 'function_elements_add(this.name, this.value)']) !!}  
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Kuantitas Standar 1<a class='red'> *</a></a>
+                                    <input class="form-control input-bb" name="item_quantity_1" id="item_quantity_1" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_quantity_1'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Jual 1<a class='red'> *</a></a>
+                                    <input class="form-control input-bb" name="item_price_1" id="item_price_1" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_price_1'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Beli 1<a class='red'> *</a></a>
+                                    <input class="form-control input-bb" name="item_cost_1" id="item_cost_1" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_cost_1'] }}"/>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <a class="text-dark">Kuantitas Standar 1<a class='red'> *</a></a>
-                                <input class="form-control input-bb" name="item_quantity" id="item_quantity" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_quantity'] }}"/>
+                    </div>
+                    <div class="mt-5">
+                        <h6 class="mt-3"><b>Kemasan 2</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Satuan Barang 2</a>
+                                    {!! Form::select('item_unit_id', $itemunits, $items['item_unit_id_2'],['class' => 'form-control selection-search-clear select-form','name'=>'item_unit_id_2','id'=>'item_unit_id_2','onchange' => 'function_elements_add(this.name, this.value)']) !!}  
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Kuantitas Standar 2</a>
+                                    <input class="form-control input-bb" name="item_quantity_2" id="item_quantity_2" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_quantity_2'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Jual 2</a>
+                                    <input class="form-control input-bb" name="item_price_2" id="item_price_2" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_price_2'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Beli 2</a>
+                                    <input class="form-control input-bb" name="item_cost_2" id="item_cost_2" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_cost_2'] }}"/>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <a class="text-dark">Harga Jual 1<a class='red'> *</a></a>
-                                <input class="form-control input-bb" name="item_price" id="item_price" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_price'] }}"/>
+                    </div>
+                    <div class="mt-5">
+                        <h6 class="mt-3"><b>Kemasan 3</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Satuan Barang 3</a>
+                                    {!! Form::select('item_unit_id', $itemunits, $items['item_unit_id_3'],['class' => 'form-control selection-search-clear select-form','name'=>'item_unit_id_3','id'=>'item_unit_id_3','onchange' => 'function_elements_add(this.name, this.value)']) !!}  
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Kuantitas Standar 3</a>
+                                    <input class="form-control input-bb" name="item_quantity_3" id="item_quantity_3" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_quantity_3'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Jual 3</a>
+                                    <input class="form-control input-bb" name="item_price_3" id="item_price_3" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_price_3'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Beli 3</a>
+                                    <input class="form-control input-bb" name="item_cost_3" id="item_cost_3" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_cost_3'] }}"/>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <a class="text-dark">Harga Beli 1<a class='red'> *</a></a>
-                                <input class="form-control input-bb" name="item_cost" id="item_cost" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_cost'] }}"/>
+                    </div>
+                    <div class="mt-5">
+                        <h6 class="mt-3"><b>Kemasan 4</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Satuan Barang 4</a>
+                                    {!! Form::select('item_unit_id', $itemunits, $items['item_unit_id_4'],['class' => 'form-control selection-search-clear select-form','name'=>'item_unit_id_4','id'=>'item_unit_id_4','onchange' => 'function_elements_add(this.name, this.value)']) !!}  
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Kuantitas Standar 4</a>
+                                    <input class="form-control input-bb" name="item_quantity_4" id="item_quantity_4" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_quantity_4'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Jual 4</a>
+                                    <input class="form-control input-bb" name="item_price_4" id="item_price_4" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_price_4'] }}"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Harga Beli 4</a>
+                                    <input class="form-control input-bb" name="item_cost_4" id="item_cost_4" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_cost_4'] }}"/>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                {{-- <div role="tabpanel" class="tab-pane fade" id="barcode">
+                    <div>
+                        <h6 class="mt-3"><b>Kemasan 1</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Barcode 1<a class='red'> *</a></a>
+                                    <input class="form-control input-bb" name="item_barcode_1" id="item_barcode_1" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_barcode_1'] }}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5">
+                        <h6 class="mt-3"><b>Kemasan 2</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Barcode 2</a>
+                                    <input class="form-control input-bb" name="item_barcode_2" id="item_barcode_2" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_barcode_2'] }}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5">
+                        <h6 class="mt-3"><b>Kemasan 3</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Barcode 3</a>
+                                    <input class="form-control input-bb" name="item_barcode_3" id="item_barcode_3" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_barcode_3'] }}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5">
+                        <h6 class="mt-3"><b>Kemasan 4</b></h6>
+                        <div class="row form-group mt-2">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <a class="text-dark">Barcode 4</a>
+                                    <input class="form-control input-bb" name="item_barcode_4" id="item_barcode_4" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $items['item_barcode_4'] }}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> --}}
               </div>
             {{-- <div class="row form-group">
                 <div class="col-md-6">

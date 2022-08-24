@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\InvtWarehouse;
 use App\Models\PurchaseInvoice;
 use Elibyy\TCPDF\Facades\TCPDF;
@@ -114,7 +115,12 @@ class PurchaseInvoicebyItemReportController extends Controller
 
         $total_item = 0;
         foreach ($data as $key => $val) {
-            $total_item += $val['quantity'];
+            $data_packge[$key] = InvtItemPackge::where('data_state',0)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('item_id', $val['item_id'])
+            ->where('item_unit_id', $val['item_unit_id'])
+            ->first();
+            $total_item += $val['quantity'] * $data_packge[$key]['item_default_quantity'];
         }
 
         return $total_item;

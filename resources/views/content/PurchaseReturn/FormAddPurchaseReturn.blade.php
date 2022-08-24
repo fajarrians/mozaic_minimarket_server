@@ -113,6 +113,21 @@
                 }
             });
 		});
+
+        $("#item_unit_id").change(function(){
+			var unit_id 	= $("#item_unit_id").val();
+			var item_id 	= $("#item_id").val();
+            $.ajax({
+                url: "{{ url('select-item-cost') }}"+'/'+unit_id+'/'+item_id,
+                type: "GET",
+                dataType: "html",
+                success:function(data)
+                {
+                    $('#purchase_return_cost').val(data);
+
+                }
+            });
+		});
 	});
 </script>
 @stop

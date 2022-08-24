@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\InvtItemStock;
 use App\Models\InvtItemUnit;
 use App\Models\InvtWarehouse;
@@ -41,6 +42,8 @@ class InvtItemController extends Controller
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('item_category_name', 'item_category_id');
+        // $warehouse = InvtWarehouse::where('data_state',0)->where('company_id',Auth::user()->company_id)->get();
+        // dd($warehouse);
         return view('content.InvtItem.FormAddInvtItem', compact('category','itemunits','items'));
     }
 
@@ -50,13 +53,29 @@ class InvtItemController extends Controller
         if(!$items || $items == ''){
             $items['item_code']         = '';
             $items['item_category_id']  = '';
-            $items['item_unit_id']      = '';
             $items['item_name']         = '';
-            $items['item_barcode']      = '';
+            // $items['item_barcode']      = '';
             $items['item_remark']       = '';
-            $items['item_quantity']     = '';
-            $items['item_price']        = '';
-            $items['item_cost']         = '';
+            $items['item_unit_id_1']      = '';
+            $items['item_quantity_1']     = '';
+            $items['item_price_1']        = '';
+            $items['item_cost_1']         = '';
+            $items['item_unit_id_2']      = '';
+            $items['item_quantity_2']     = '';
+            $items['item_price_2']        = '';
+            $items['item_cost_2']         = '';
+            $items['item_unit_id_3']      = '';
+            $items['item_quantity_3']     = '';
+            $items['item_price_3']        = '';
+            $items['item_cost_3']         = '';
+            $items['item_unit_id_4']      = '';
+            $items['item_quantity_4']     = '';
+            $items['item_price_4']        = '';
+            $items['item_cost_4']         = '';
+            // $items['item_barcode_1']      = '';
+            // $items['item_barcode_2']      = '';
+            // $items['item_barcode_3']      = '';
+            // $items['item_barcode_4']      = '';
         }
         $items[$request->name] = $request->value;
         Session::put('items', $items);
@@ -68,40 +87,52 @@ class InvtItemController extends Controller
             'item_category_id'  => 'required',
             'item_code'         => 'required',
             'item_name'         => 'required',
-            'item_barcode'      => '',
+            // 'item_barcode'      => '',
             'item_remark'       => '',
-            'item_unit_id'      => 'required',
-            'item_quantity'     => 'required',
-            'item_price'        => 'required',
-            'item_cost'         => 'required'
+            'item_unit_id_1'    => 'required',
+            'item_quantity_1'   => 'required',
+            'item_price_1'      => 'required',
+            'item_cost_1'       => 'required'
         ]);
 
         $data = InvtItem::create([
             'item_category_id'      => $fields['item_category_id'],
             'item_code'             => $fields['item_code'],
             'item_name'             => $fields['item_name'],
-            'item_barcode'          => $fields['item_barcode'],
+            // 'item_barcode'          => $fields['item_barcode'],
             'item_remark'           => $fields['item_remark'],
-            'item_unit_id'          => $fields['item_unit_id'],
-            'item_default_quantity' => $fields['item_quantity'],
-            'item_unit_price'       => $fields['item_price'],
-            'item_unit_cost'        => $fields['item_cost'],
+            'item_unit_id'          => $fields['item_unit_id_1'],
+            'item_default_quantity' => $fields['item_quantity_1'],
+            'item_unit_price'       => $fields['item_price_1'],
+            'item_unit_cost'        => $fields['item_cost_1'],
             'company_id'            => Auth::user()->company_id,
             'updated_id'            => Auth::id(),
             'created_id'            => Auth::id(),
         ]);
 
-        $data->save();
-        
         $item = InvtItem::orderBy('created_at', 'DESC')->where('company_id',Auth::user()->company_id)->where('data_state',0)->first();
-
+        
+        for ($i=1; $i <= 4; $i++) { 
+            $data_packge[$i] = InvtItemPackge::create([
+                'item_id'               => $item['item_id'],
+                'item_unit_id'          => $request['item_unit_id_'.$i],
+                'item_category_id'      => $request['item_category_id'],
+                'item_default_quantity' => $request['item_quantity_'.$i],
+                'item_unit_price'       => $request['item_price_'.$i],
+                'item_unit_cost'        => $request['item_cost_'.$i],
+                'order'                 => $i,
+                'company_id'            => Auth::user()->company_id,
+                'updated_id'            => Auth::id(),
+                'created_id'            => Auth::id(),
+            ]);
+        }
         $warehouse = InvtWarehouse::where('data_state',0)->where('company_id',Auth::user()->company_id)->get();
         foreach ($warehouse as $key => $val) {
-            $stock = InvtItemStock::create([
+            $stock[$key] = InvtItemStock::create([
                 'company_id'        => $item['company_id'],
                 'warehouse_id'      => $val['warehouse_id'],
                 'item_id'           => $item['item_id'],
-                'item_unit_id'      => $item['item_unit_id'],
+                'item_unit_id'      => $request['item_unit_id_1'],
                 'item_category_id'  => $item['item_category_id'],
                 'last_balance'      => 0,
                 'updated_id'        => Auth::id(),
@@ -109,7 +140,9 @@ class InvtItemController extends Controller
             ]);
             
         }
-        if($stock->save()){
+        // $data_packge->save();
+        // dd($data_packge);
+        if($data->save()){
             $msg    = "Tambah Barang Berhasil";
             return redirect('/item/add-item')->with('msg', $msg);
         } else {
@@ -133,23 +166,27 @@ class InvtItemController extends Controller
             0 => 'Aktif',
             1 => 'Non Aktif'
         );
-        return view('content.InvtItem.FormEditInvtItem', compact('items', 'itemunits', 'category','status'));
+        $item_packge = InvtItemPackge::where('item_id', $item_id)
+        ->get();
+        // dd($item_packge);
+        return view('content.InvtItem.FormEditInvtItem', compact('items', 'itemunits', 'category','status','item_packge'));
     }
 
     public function processEditItem(Request $request)
     {
+        // dd($request->all());
         $fields = $request->validate([
             'item_id'           => '',
             'item_category_id'  => 'required',
             'item_status'       => 'required',
             'item_code'         => 'required',
             'item_name'         => 'required',
-            'item_barcode'      => '',
+            // 'item_barcode'      => '',
             'item_remark'       => '',
-            'item_unit_id'      => 'required',
-            'item_quantity'     => 'required',
-            'item_price'        => 'required',
-            'item_cost'         => 'required'
+            'item_unit_id_1'    => 'required',
+            'item_quantity_1'   => 'required',
+            'item_price_1'      => 'required',
+            'item_cost_1'       => 'required'
         ]);
 
         $table                          = InvtItem::findOrFail($fields['item_id']);
@@ -157,15 +194,41 @@ class InvtItemController extends Controller
         $table->item_status             = $fields['item_status'];
         $table->item_code               = $fields['item_code'];
         $table->item_name               = $fields['item_name'];
-        $table->item_barcode            = $fields['item_barcode'];
+        // $table->item_barcode            = $fields['item_barcode'];
         $table->item_remark             = $fields['item_remark'];
-        $table->item_unit_id            = $fields['item_unit_id'];
-        $table->item_default_quantity   = $fields['item_quantity'];
-        $table->item_unit_price         = $fields['item_price'];
-        $table->item_unit_cost          = $fields['item_cost'];
+        $table->item_unit_id            = $fields['item_unit_id_1'];
+        $table->item_default_quantity   = $fields['item_quantity_1'];
+        $table->item_unit_price         = $fields['item_price_1'];
+        $table->item_unit_cost          = $fields['item_cost_1'];
         $table->updated_id              = Auth::id();
 
-        if($table->save()){
+
+        for ($i=1; $i <= 4; $i++) {
+            $first_data_packge[$i] = InvtItemPackge::where('item_packge_id',$request['item_packge_id_'.$i])
+            ->first();
+            $data_packge[$i] = InvtItemPackge::findOrFail($request['item_packge_id_'.$i])
+            ->update([
+                'item_unit_id'          => $request['item_unit_id_'.$i],
+                'item_category_id'      => $request['item_category_id'],
+                'item_default_quantity' => $request['item_quantity_'.$i],
+                'item_unit_price'       => $request['item_price_'.$i],
+                'item_unit_cost'        => $request['item_cost_'.$i],
+                'updated_id'            => Auth::id(),
+            ]);
+            
+        }
+        $first_data_stock = InvtItemStock::where('item_id', $fields['item_id'])
+        ->where('item_unit_id', $request['item_unit_id_1'])
+        ->where('item_category_id', $request['item_category_id'])
+        ->first();
+        $data_stock = InvtItemStock::findOrFail($first_data_stock['item_stock_id'])
+        ->update([
+            'item_unit_id'          => $request['item_unit_id_1'],
+            'item_category_id'      => $request['item_category_id'],
+        ]);
+        
+        // dd($table);
+        if($table->save() && $data_stock == true){
             $msg = "Ubah Barang Berhasil";
             return redirect('/item')->with('msg', $msg);
         } else {
@@ -176,12 +239,19 @@ class InvtItemController extends Controller
 
     public function deleteItem($item_id)
     {
-        $item = InvtItem::where('item_id', $item_id)
-        ->first();
-        InvtItemStock::where('item_id',$item['item_id'])
-        ->where('item_unit_id', $item['item_unit_id'])
-        ->where('item_category_id', $item['item_category_id'])
-        ->update(['data_state' => 1]);
+        $item_packge = InvtItemPackge::where('item_id', $item_id)
+        ->get();
+        foreach ($item_packge as $key => $val) {
+            InvtItemStock::where('item_id',$val['item_id'])
+            ->where('item_unit_id', $val['item_unit_id'])
+            ->where('item_category_id', $val['item_category_id'])
+            ->update(['data_state' => 1,'updated_id' => Auth::id()]);
+            
+            InvtItemPackge::where('item_id',$val['item_id'])
+            ->where('item_unit_id', $val['item_unit_id'])
+            ->where('item_category_id', $val['item_category_id'])
+            ->update(['data_state' => 1,'updated_id' => Auth::id()]);
+        }
 
         $table             = InvtItem::findOrFail($item_id);
         $table->data_state = 1;

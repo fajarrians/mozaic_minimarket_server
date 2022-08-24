@@ -43,9 +43,10 @@
                 <thead>
                     <tr>
                         <th width="2%" style='text-align:center'>No</th>
-                        <th width="20%" style='text-align:center'>Nama Kategori Barang</th>
+                        <th width="20%" style='text-align:center'>Kategori Barang</th>
                         <th width="20%" style='text-align:center'>Kode Barang</th>
                         <th width="20%" style='text-align:center'>Nama Barang</th>
+                        <th width="20%" style='text-align:center'>Barcode Barang</th>
                         <th width="10%" style='text-align:center'>Aksi</th>
                     </tr>
                 </thead>
@@ -57,6 +58,9 @@
                         <td>{{ $row['item_category_name'] }}</td>
                         <td>{{ $row['item_code'] }}</td>
                         <td>{{ $row['item_name'] }}</td>
+                        <td class="text-center">
+                            <a type="button" class="btn btn-outline-dark btn-sm" href="{{ url('/item-barcode/'. $row['item_id']) }}"><i class="fa fa-barcode"></i> Barcode</a>
+                        </td>
                         <td class="text-center">
                             <a type="button" class="btn btn-outline-warning btn-sm" href="{{ url('/item/edit-item/'.$row['item_id']) }}">Edit</a>
                             <a type="button" class="btn btn-outline-danger btn-sm" href="{{ url('/item/delete-item/'.$row['item_id']) }}">Hapus</a>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\SalesInvoice;
 use Elibyy\TCPDF\Facades\TCPDF;
 use Illuminate\Http\Request;
@@ -27,12 +28,14 @@ class SalesInvoiceByYearReportController extends Controller
         } else {
             $year = Session::get('year');
         }
-        $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
-        ->whereYear('sales_invoice.sales_invoice_date',$year)
-        ->where('sales_invoice.company_id', Auth::user()->company_id)
-        ->where('sales_invoice.data_state',0)
+        // $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        // ->whereYear('sales_invoice.sales_invoice_date',$year)
+        // ->where('sales_invoice.company_id', Auth::user()->company_id)
+        // ->where('sales_invoice.data_state',0)
+        // ->get();
+        $data = InvtItem::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
         ->get();
-
         $year_now 	=	date('Y');
         for($i=($year_now-2); $i<($year_now+2); $i++){
             $yearlist[$i] = $i;
@@ -62,6 +65,57 @@ class SalesInvoiceByYearReportController extends Controller
         return $data['item_category_name'];
     }
 
+    public function getTotalItem($item_id)
+    {
+         if(!$year = Session::get('year')){
+            $year = date('Y');
+        } else {
+            $year = Session::get('year');
+        }
+
+        $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        ->whereYear('sales_invoice.sales_invoice_date',$year)
+        ->where('sales_invoice.company_id', Auth::user()->company_id)
+        ->where('sales_invoice_item.item_id', $item_id)
+        ->where('sales_invoice.data_state',0)
+        ->get();
+
+        $total_item = 0;
+        foreach ($data as $key => $val) {
+            $data_packge[$key] = InvtItemPackge::where('data_state',0)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('item_id', $val['item_id'])
+            ->where('item_unit_id', $val['item_unit_id'])
+            ->first();
+            $total_item += $val['quantity'] * $data_packge[$key]['item_default_quantity'];
+        }
+
+        return $total_item;
+    }
+
+    public function getTotalAmount($item_id)
+    {
+         if(!$year = Session::get('year')){
+            $year = date('Y');
+        } else {
+            $year = Session::get('year');
+        }
+
+        $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        ->whereYear('sales_invoice.sales_invoice_date',$year)
+        ->where('sales_invoice.company_id', Auth::user()->company_id)
+        ->where('sales_invoice_item.item_id', $item_id)
+        ->where('sales_invoice.data_state',0)
+        ->get();
+
+        $total_amount = 0;
+        foreach ($data as $key => $val) {
+            $total_amount += $val['subtotal_amount_after_discount'];
+        }
+
+        return $total_amount;
+    }
+
     public function printSalesInvoicebyYearReport()
     {
         if(!$year = Session::get('year')){
@@ -69,10 +123,13 @@ class SalesInvoiceByYearReportController extends Controller
         } else {
             $year = Session::get('year');
         }
-        $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
-        ->whereYear('sales_invoice.sales_invoice_date',$year)
-        ->where('sales_invoice.company_id', Auth::user()->company_id)
-        ->where('sales_invoice.data_state',0)
+        // $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        // ->whereYear('sales_invoice.sales_invoice_date',$year)
+        // ->where('sales_invoice.company_id', Auth::user()->company_id)
+        // ->where('sales_invoice.data_state',0)
+        // ->get();
+        $data = InvtItem::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
         ->get();
 
         $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -129,8 +186,8 @@ class SalesInvoiceByYearReportController extends Controller
                     <td style=\"text-align:center\">$no.</td>
                     <td style=\"text-align:left\">".$this->getCategoryName($val['item_category_id'])."</td>
                     <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
-                    <td style=\"text-align:right\">".$val['quantity']."</td>
-                    <td style=\"text-align:right\">".number_format($val['subtotal_amount_after_discount'],2,'.',',')."</td>
+                    <td style=\"text-align:right\">".$this->getTotalItem($val['item_id'])."</td>
+                    <td style=\"text-align:right\">".number_format($this->getTotalAmount($val['item_id']),2,'.',',')."</td>
                 </tr>
                 
             ";
@@ -153,10 +210,13 @@ class SalesInvoiceByYearReportController extends Controller
         } else {
             $year = Session::get('year');
         }
-        $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
-        ->whereYear('sales_invoice.sales_invoice_date',$year)
-        ->where('sales_invoice.company_id', Auth::user()->company_id)
-        ->where('sales_invoice.data_state',0)
+        // $data = SalesInvoice::join('sales_invoice_item','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        // ->whereYear('sales_invoice.sales_invoice_date',$year)
+        // ->where('sales_invoice.company_id', Auth::user()->company_id)
+        // ->where('sales_invoice.data_state',0)
+        // ->get();
+        $data = InvtItem::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
         ->get();
 
         $spreadsheet = new Spreadsheet();
@@ -219,8 +279,8 @@ class SalesInvoiceByYearReportController extends Controller
                         $sheet->setCellValue('B'.$j, $no);
                         $sheet->setCellValue('C'.$j, $this->getCategoryName($val['item_category_id']));
                         $sheet->setCellValue('D'.$j, $this->getItemName($val['item_id']));
-                        $sheet->setCellValue('E'.$j, $val['quantity']);
-                        $sheet->setCellValue('F'.$j, number_format($val['subtotal_amount_after_discount'],2,'.',','));
+                        $sheet->setCellValue('E'.$j, $this->getTotalItem($val['item_id']));
+                        $sheet->setCellValue('F'.$j, number_format($this->getTotalAmount($val['item_id']),2,'.',','));
 
                 }
                 $j++;

@@ -14,7 +14,7 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ url('home') }}">Beranda</a></li>
         <li class="breadcrumb-item"><a href="{{ url('purchase-invoice') }}">Daftar Pembelian</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Tambah Pembelian</li>
+        <li class="breadcrumb-item active" aria-current="page">Detail Pembelian</li>
     </ol>
   </nav>
 
@@ -23,7 +23,7 @@
 @section('content')
 
 <h3 class="page-title">
-    Form Tambah Pembelian
+    Detail Pembelian
 </h3>
 <br/>
 @if(session('msg'))
@@ -42,7 +42,7 @@
     <div class="card border border-dark">
     <div class="card-header border-dark bg-dark">
         <h5 class="mb-0 float-left">
-            Form Tambah
+            Daftar
         </h5>
         <div class="float-right">
             <button onclick="location.href='{{ url('purchase-invoice') }}'" name="Find" class="btn btn-sm btn-info" title="Back"><i class="fa fa-angle-left"></i>  Kembali</button>

@@ -57,8 +57,8 @@
                             <td class="text-center">{{ $no++ }}.</td>
                             <td>{{ $SIBYRC->getCategoryName($val['item_category_id']) }}</td>
                             <td>{{ $SIBYRC->getItemName($val['item_id']) }}</td>
-                            <td style="text-align: right">{{ $val['quantity'] }}</td>
-                            <td style="text-align: right">{{ number_format($val['subtotal_amount_after_discount'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ $SIBYRC->getTotalItem($val['item_id']) }}</td>
+                            <td style="text-align: right">{{ number_format($SIBYRC->getTotalAmount($val['item_id']),2,'.',',') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

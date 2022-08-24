@@ -367,7 +367,7 @@ am5.ready(function() {
                             <?php }
                                     if($menu['id_menu']==11){
                             ?>
-                                <li class="list-group-item main-menu-item" onClick="location.href='{{route('stock-adjustment-report')}}'"> <i class="fa fa-angle-right"></i> Laporan Stok Barang</li>
+                                <li class="list-group-item main-menu-item" onClick="location.href='{{route('stock-adjustment-report')}}'"> <i class="fa fa-angle-right"></i> Stok Barang</li>
                             <?php   }
                             }   
                             ?> 

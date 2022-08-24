@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\InvtItemStock;
 use App\Models\InvtItemUnit;
 use App\Models\InvtStockAdjustment;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Ramsey\Uuid\Type\Decimal;
 
 class InvtStockAdjustmentReportController extends Controller
 {
@@ -95,6 +97,60 @@ class InvtStockAdjustmentReportController extends Controller
         return view('content.InvtStockAdjustmentReport.ListInvtStockAdjustmentReport',compact('category','warehouse','category_id','warehouse_id','data'));
     }
 
+    public function changeStockAdjustmentReport(Request $request)
+    {
+        // dd($request->all());
+        $item_stock_id = $request->item_stock_id;
+        $request->validate([
+            'change_stock_'.$item_stock_id => 'required',
+            'item_unit_id_'.$item_stock_id => 'required',
+        ]);
+
+        $first_data_stock = InvtItemStock::where('item_stock_id', $item_stock_id)
+        ->first();
+        
+        $first_data_packge = InvtItemPackge::where('item_id', $first_data_stock['item_id'])
+        ->where('item_unit_id', $first_data_stock['item_unit_id'])
+        ->where('item_category_id', $first_data_stock['item_category_id'])
+        ->first();
+
+        $end_data_packge = InvtItemPackge::where('item_id', $first_data_stock['item_id'])
+        ->where('item_unit_id', $request['item_unit_id_'.$item_stock_id])
+        ->where('item_category_id', $first_data_stock['item_category_id'])
+        ->first();
+
+        if ($first_data_packge['item_default_quantity'] > $end_data_packge['item_default_quantity']) {
+            $change_data_stock = InvtItemStock::where('item_id', $first_data_stock['item_id'])
+            ->where('item_unit_id', $request['item_unit_id_'.$item_stock_id])
+            ->where('item_category_id', $first_data_stock['item_category_id'])
+            ->update(['last_balance' => $first_data_stock['last_balance'] + ($request['change_stock_'.$item_stock_id] * $end_data_packge['item_default_quantity'])]);
+    
+            $end_data_stock = InvtItemStock::where('item_stock_id', $item_stock_id)
+            ->update(['last_balance' => $first_data_stock['last_balance'] - $request['change_stock_'.$item_stock_id]]);
+        } else {
+            // if (($end_data_packge['last_balance'] + ($request['change_stock_'.$item_stock_id] / $end_data_packge['item_default_quantity'])) !=  Decimal) {
+
+            // }
+            $change_data_stock = InvtItemStock::where('item_id', $first_data_stock['item_id'])
+            ->where('item_unit_id', $request['item_unit_id_'.$item_stock_id])
+            ->where('item_category_id', $first_data_stock['item_category_id'])
+            ->update(['last_balance' => $end_data_packge['last_balance'] + ($request['change_stock_'.$item_stock_id] / $end_data_packge['item_default_quantity'])]);
+    
+            $end_data_stock = InvtItemStock::where('item_stock_id', $item_stock_id)
+            ->update(['last_balance' => $first_data_stock['last_balance'] - $request['change_stock_'.$item_stock_id]]);
+        }
+
+        // dd($data_packge);
+
+        if($end_data_stock == true && $change_data_stock == true){
+            $msg = "Pecah Stok Berhasil";
+            return redirect('/stock-adjustment-report')->with('msg', $msg);
+        } else {
+            $msg = "Pecah Stok Gagal";
+            return redirect('/stock-adjustment-report')->with('msg', $msg);
+        }
+    }
+
     public function filterStockAdjustmentReport(Request $request)
     {
         $category_id = $request->category_id;
@@ -118,6 +174,16 @@ class InvtStockAdjustmentReportController extends Controller
     {
         $data = InvtItem::where('item_id', $item_id)->first();
         return $data['item_name'];
+    }
+
+    public function getSelectItemUnit($item_id,$item_unit_id)
+    {
+        $data = InvtItemPackge::join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_packge.item_unit_id')
+        ->where('invt_item_packge.item_id', $item_id)
+        ->where('invt_item_packge.item_unit_id','!=', $item_unit_id)
+        ->get()
+        ->pluck('item_unit_name','item_unit_id');
+        return $data;
     }
 
     public function getWarehouseName($warehouse_id)

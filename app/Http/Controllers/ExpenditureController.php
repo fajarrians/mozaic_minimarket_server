@@ -227,8 +227,8 @@ class ExpenditureController extends Controller
         );
         JournalVoucherItem::create($journal_credit);
 
-        $table = Expenditure::findOrFail($expenditure_id);
-        $table->data_state = 1;
+        $table              = Expenditure::findOrFail($expenditure_id);
+        $table->data_state  = 1;
         
         if($table->save()){
             $msg = "Hapus Pengeluaran Berhasil";

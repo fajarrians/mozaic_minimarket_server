@@ -33,16 +33,16 @@ class SalesCustomerController extends Controller
     public function processAddSalesCustomer(Request $request)
     {
         $request->validate([
-            'customer_name' => 'required',
-            'customer_gender' => 'required'
+            'customer_name'     => 'required',
+            'customer_gender'   => 'required'
         ]);
 
         $data = SalesCustomer::create([
-            'customer_name' => $request->customer_name,
-            'customer_gender' => $request->customer_gender,
-            'company_id' => Auth::user()->company_id,
-            'created_id' => Auth::id(),
-            'updated_id' => Auth::id(),
+            'customer_name'     => $request->customer_name,
+            'customer_gender'   => $request->customer_gender,
+            'company_id'        => Auth::user()->company_id,
+            'created_id'        => Auth::id(),
+            'updated_id'        => Auth::id(),
         ]);
 
         if($data->save()){
@@ -66,10 +66,10 @@ class SalesCustomerController extends Controller
 
     public function processEditSalesCustomer(Request $request)
     {
-        $table = SalesCustomer::findOrFail($request->customer_id);
-        $table->customer_name = $request->customer_name;
+        $table                  = SalesCustomer::findOrFail($request->customer_id);
+        $table->customer_name   = $request->customer_name;
         $table->customer_gender = $request->customer_gender;
-        $table->updated_id = Auth::id();
+        $table->updated_id      = Auth::id();
 
         if($table->save()){
             $msg = 'Ubah Pelanggan Berhasil';
@@ -82,9 +82,9 @@ class SalesCustomerController extends Controller
 
     public function deleteSalesCustomer($customer_id)
     {
-        $table = SalesCustomer::findOrFail($customer_id);
-        $table->data_state = 1;
-        $table->updated_id = Auth::id();
+        $table              = SalesCustomer::findOrFail($customer_id);
+        $table->data_state  = 1;
+        $table->updated_id  = Auth::id();
 
         if($table->save()){
             $msg = 'Hapus Pelanggan Berhasil';

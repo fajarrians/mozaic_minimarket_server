@@ -5,6 +5,7 @@
 @section('title', 'MOZAIC Minimarket')
 @section('js')
 <script>
+    // window.print();
     function reset_add(){
 		$.ajax({
 				type: "GET",

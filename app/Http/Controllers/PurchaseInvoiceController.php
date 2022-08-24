@@ -7,6 +7,7 @@ use App\Models\AcctAccount;
 use App\Models\AcctAccountSetting;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\InvtItemStock;
 use App\Models\InvtItemUnit;
 use App\Models\InvtWarehouse;
@@ -233,12 +234,16 @@ class PurchaseInvoiceController extends Controller
                 $stock_item = InvtItemStock::where('item_id',$dataarray['item_id'])
                 ->where('warehouse_id', $dataStock['warehouse_id'])
                 ->where('item_category_id',$dataarray['item_category_id'])
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+                $item_packge = InvtItemPackge::where('item_id',$dataarray['item_id'])
+                ->where('item_category_id',$dataarray['item_category_id'])
                 ->where('item_unit_id', $dataarray['item_unit_id'])
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
                 if(isset($stock_item)){
                     $table = InvtItemStock::findOrFail($stock_item['item_stock_id']);
-                    $table->last_balance = $dataStock['last_balance'] + $stock_item['last_balance'];
+                    $table->last_balance = ($dataStock['last_balance'] * $item_packge['item_default_quantity']) + $stock_item['last_balance'];
                     $table->updated_id = Auth::id();
                     $table->save();
                 } else {

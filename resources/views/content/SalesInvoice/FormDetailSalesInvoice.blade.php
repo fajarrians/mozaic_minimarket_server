@@ -29,7 +29,7 @@
 <div class="card border border-dark">
     <div class="card-header border-dark bg-dark">
         <h5 class="mb-0 float-left">
-            Form Tambah
+            Daftar
         </h5>
         <div class="float-right">
             <button onclick="location.href='{{ url('sales-invoice') }}'" name="Find" class="btn btn-sm btn-info" title="Back"><i class="fa fa-angle-left"></i>  Kembali</button>
@@ -72,9 +72,9 @@
                             <th style='text-align:center'>Quantity</th>
                             <th style='text-align:center'>Satuan</th>
                             <th style='text-align:center'>Harga</th>
-                            <th style='text-align:center'>Subtotal</th>
+                            {{-- <th style='text-align:center'>Subtotal</th>
                             <th style='text-align:center'>Diskon</th>
-                            <th style='text-align:center'>Subtotal Setelah Diskon</th>
+                            <th style='text-align:center'>Subtotal Setelah Diskon</th> --}}
                         </tr>
                     </thead>
                     <tbody>
@@ -89,38 +89,38 @@
                                     <td style="text-align: right">{{ $salesinvoiceitem['quantity'] }}</td>
                                     <td>{{ $SalesInvoice->getItemUnitName($salesinvoiceitem['item_unit_id']) }}</td>
                                     <td style="text-align: right">{{ number_format($salesinvoiceitem['item_unit_price'],2,'.',',') }}</td>
-                                    <td style="text-align: right">{{ number_format($salesinvoiceitem['subtotal_amount'],2,'.',',') }}</td>
+                                    {{-- <td style="text-align: right">{{ number_format($salesinvoiceitem['subtotal_amount'],2,'.',',') }}</td>
                                     <td style="text-align: right">{{ $salesinvoiceitem['discount_percentage'] }}</td>
-                                    <td style="text-align: right">{{ number_format($salesinvoiceitem['subtotal_amount_after_discount'],2,'.',',') }}</td>
+                                    <td style="text-align: right">{{ number_format($salesinvoiceitem['subtotal_amount_after_discount'],2,'.',',') }}</td> --}}
                                 </tr>
                             @endforeach
                             <tr>
-                                <td colspan="8">Total Barang</td>
+                                <td colspan="5">Total Barang</td>
                                 <td style="text-align: right ">{{ $salesinvoice['subtotal_item'] }}</td>
                             </tr>
                             <tr>
-                                <td colspan="8">Subtotal</td>
+                                <td colspan="5">Subtotal</td>
                                 <td style="text-align: right ">{{ number_format($salesinvoice['subtotal_amount'],2,'.',',') }}</td>
                             </tr>
                             <tr>
-                                <td colspan="7">Diskon</td>
+                                <td colspan="4">Diskon</td>
                                 <td style="text-align: right ">{{ $salesinvoice['discount_percentage_total'] }}</td>
                                 <td style="text-align: right ">{{ number_format($salesinvoice['discount_amount_total'],2,'.',',') }}</td>
                             </tr>
                             <tr>
-                                <td colspan="8">Total</td>
+                                <td colspan="5">Total</td>
                                 <td style="text-align: right ">{{ number_format($salesinvoice['total_amount'],2,'.',',') }}</td>
                             </tr>
                             <tr>
-                                <td colspan="8">Bayar</td>
+                                <td colspan="5">Bayar</td>
                                 <td style="text-align: right ">{{ number_format($salesinvoice['paid_amount'],2,'.',',') }}</td>
                             </tr>
                             <tr>
-                                <td colspan="8">Kembalian</td>
+                                <td colspan="5">Kembalian</td>
                                 <td style="text-align: right ">{{ number_format($salesinvoice['change_amount'],2,'.',',') }}</td>
                             </tr>
                             <tr>
-                                <td colspan="8">Tanggal Pembayaran</td>
+                                <td colspan="5">Tanggal Pembayaran</td>
                                 <td style="text-align: right " >{{ date('d-m-Y', strtotime($salesinvoice['sales_invoice_date'])) }}</td>
                             </tr>
                     </tbody>

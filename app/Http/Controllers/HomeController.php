@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\PurchaseInvoice;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
@@ -197,10 +198,11 @@ class HomeController extends Controller
 
     public function selectItemUnit($id)
     {
-        $unit = InvtItem::join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item.item_unit_id')
+        $unit = InvtItemPackge::join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_packge.item_unit_id')
         ->where('invt_item_unit.data_state',0)
-        ->where('invt_item.item_id', $id)
-        ->where('invt_item.company_id', Auth::user()->company_id)
+        ->where('invt_item_packge.data_state',0)
+        ->where('invt_item_packge.item_id', $id)
+        ->where('invt_item_packge.company_id', Auth::user()->company_id)
         ->get();
         
         $data = '';
@@ -210,5 +212,18 @@ class HomeController extends Controller
         }
         return $data;
 
+    }
+
+    public function selectItemCost($unit_id, $item_id)
+    {
+        $unit = InvtItemPackge::join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_packge.item_unit_id')
+        ->where('invt_item_unit.data_state',0)
+        ->where('invt_item_packge.data_state',0)
+        ->where('invt_item_packge.item_unit_id', $unit_id)
+        ->where('invt_item_packge.item_id', $item_id)
+        ->where('invt_item_packge.company_id', Auth::user()->company_id)
+        ->first();
+
+        return $unit['item_unit_cost'];
     }
 }

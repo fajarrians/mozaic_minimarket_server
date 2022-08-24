@@ -14,6 +14,7 @@ use App\Http\Controllers\ExpenditureController;
 use App\Http\Controllers\GeneralLedgerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvtItemBarcodeController;
 use App\Http\Controllers\SystemUserController;
 use App\Http\Controllers\SystemUserGroupController;
 use App\Http\Controllers\InvtItemCategoryController;
@@ -57,9 +58,11 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/select-item-category',[HomeController::class, 'selectItemCategory']);
 Route::get('/select-item/{id}',[HomeController::class, 'selectItem']);
 Route::get('/select-item-unit/{id}',[HomeController::class, 'selectItemUnit']);
+Route::get('/select-item-cost/{unit_id}/{item_id}',[HomeController::class, 'selectItemCost']);
 Route::get('/amount/sales-invoice/{day}', [HomeController::class, 'getAmountSalesInvoice']);
 Route::get('/amount/purchase-invoice/{day}', [HomeController::class, 'getAmountPurchaseInvoice']);
 Route::get('/select-sales/{item}',[SalesInvoiceController::class, 'selectSalesInvoice']);
+Route::get('/select-sales/{item_name}/{unit_id}',[SalesInvoiceController::class, 'selectItemNameSalesInvoice']);
 Route::get('/sales-invoice/change-qty/{item}/{qty}',[SalesInvoiceController::class, 'changeQtySalesInvoice']);
 
 Route::get('/item-unit',[InvtItemUnitController::class, 'index'])->name('item-unit');
@@ -117,6 +120,7 @@ Route::get('/sales-invoice',[SalesInvoiceController::class, 'index'])->name('sal
 Route::get('/sales-invoice/add', [SalesInvoiceController::class,'addSalesInvoice'])->name('add-sales-invoice');
 Route::post('/sales-invoice/add-elements', [SalesInvoiceController::class,'addElementsSalesInvoice'])->name('add-elements-sales-invoice');
 Route::post('/sales-invoice/process-add', [SalesInvoiceController::class, 'processAddSalesInvoice'])->name('process-add-sales-invoice');
+Route::post('/sales-invoice/add-elements', [SalesInvoiceController::class, 'addElementsSalesInvoice'])->name('add-elements-sales-invoice');
 Route::get('/sales-invoice/reset-add',[SalesInvoiceController::class, 'resetSalesInvoice'])->name('add-reset-sales-invoice');
 Route::post('/sales-invoice/add-array',[SalesInvoiceController::class,'addArraySalesInvoice'])->name('add-array-sales-invoice');
 Route::get('/sales-invoice/delete-array/{record_id}',[SalesInvoiceController::class,'deleteArraySalesInvoice'])->name('delete-array-sales-invoice');
@@ -124,6 +128,7 @@ Route::get('/sales-invoice/detail/{sales_invoice_id}',[SalesInvoiceController::c
 Route::get('/sales-invoice/delete/{sales_invoice_id}',[SalesInvoiceController::class, 'deleteSalesInvoice'])->name('delete-sales-invoice');
 Route::get('/sales-invoice/filter-reset',[SalesInvoiceController::class, 'filterResetSalesInvoice'])->name('filter-reset-sales-invoice');
 Route::post('/sales-invoice/filter',[SalesInvoiceController::class, 'filterSalesInvoice'])->name('filter-sales-invoice');
+Route::get('/sales-invoice/print',[SalesInvoiceController::class, 'printSalesInvoice'])->name('print-sales-invoice');
 
 Route::get('/purchase-invoice', [PurchaseInvoiceController::class, 'index'])->name('purchase-invoice');
 Route::get('/purchase-invoice/add', [PurchaseInvoiceController::class, 'addPurchaseInvoice'])->name('add-purchase-invoice');
@@ -168,6 +173,7 @@ Route::post('/stock-adjustment-report/filter',[InvtStockAdjustmentReportControll
 Route::get('/stock-adjustment-report/reset',[InvtStockAdjustmentReportController::class, 'resetStockAdjustmentReport'])->name('stock-adjustment-report-reset');
 Route::get('/stock-adjustment-report/print',[InvtStockAdjustmentReportController::class, 'printStockAdjustmentReport'])->name('stock-adjustment-report-print');
 Route::get('/stock-adjustment-report/export',[InvtStockAdjustmentReportController::class, 'exportStockAdjustmentReport'])->name('stock-adjustment-report-export');
+Route::post('/stock-adjustment-report/change-stock',[InvtStockAdjustmentReportController::class, 'changeStockAdjustmentReport'])->name('change-stock-adjustment-report');
 
 Route::get('/purchase-invoice-report', [PurchaseInvoiceReportController::class, 'index'])->name('purchase-invoice-report');
 Route::post('/purchase-invoice-report/filter',[PurchaseInvoiceReportController::class, 'filterPurchaseInvoiceReport'])->name('filter-purchase-invoice-report');
@@ -293,3 +299,7 @@ Route::post('/expenditure/process-add',[ExpenditureController::class, 'processAd
 Route::post('/expenditure/filter',[ExpenditureController::class, 'filterExpenditure'])->name('filter-expenditure');
 Route::get('/expenditure/reset-filter',[ExpenditureController::class, 'resetFilterExpenditure'])->name('reset-filter-expenditure');
 Route::get('/expenditure/delete/{expenditure_id}',[ExpenditureController::class,'deleteExpenditure'])->name('delete-expenditure');
+
+Route::get('/item-barcode/{item_id}', [InvtItemBarcodeController::class, 'index'])->name('item-barcode');
+Route::post('/item-barcode/process-add', [InvtItemBarcodeController::class, 'processAddItemBarcode'])->name('process-add-item-barcode');
+Route::get('/item-barcode/delete/{item_id}', [InvtItemBarcodeController::class, 'deleteItemBarcode'])->name('delete-item-barcode');

@@ -7,14 +7,17 @@ use App\Models\AcctAccount;
 use App\Models\AcctAccountSetting;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\InvtItemStock;
 use App\Models\InvtItemUnit;
 use App\Models\JournalVoucher;
 use App\Models\JournalVoucherItem;
+use App\Models\PreferenceCompany;
 use App\Models\PreferenceTransactionModule;
 use App\Models\SalesCustomer;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
+use Elibyy\TCPDF\Facades\TCPDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -40,6 +43,9 @@ class SalesInvoiceController extends Controller
             $end_date = Session::get('end_date');
         }
         Session::forget('arraydatases');
+        Session::forget('data_input');
+        Session::forget('data_itemses');
+        Session::forget('datases');
         $data = SalesInvoice::where('data_state',0)
         ->where('sales_invoice_date','>=',$start_date)
         ->where('sales_invoice_date','<=',$end_date)
@@ -52,6 +58,7 @@ class SalesInvoiceController extends Controller
     {
         $arraydatases   = Session::get('arraydatases');
         $date           = date('Y-m-d');
+        $datases        = Session::get('datases');
         $items          = InvtItem::where('data_state', 0)
         ->where('company_id', Auth::user()->company_id)
         ->get()
@@ -68,51 +75,13 @@ class SalesInvoiceController extends Controller
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('customer_name','customer_id');
-
-        $data_input = Session::get('data_input');
-        if ($data_input != null) {
-            $count_values = array_count_values($data_input);
-            foreach ($count_values as $key => $val) {
-                $data_items[$key] = InvtItem::where('data_state',0)
-                ->where('company_id', Auth::user()->company_id)
-                ->where('item_id', $key)
-                ->first();
-            }
-            foreach ($data_items as $key => $val) {
-                $data_itemses[$key] = array(
-                    'item_id'           => $val['item_id'],
-                    'item_name'         => $val['item_name'],
-                    'item_category_id'  => $val['item_category_id'],
-                    'item_unit_id'      => $val['item_unit_id'],
-                    'item_unit_price'   => $val['item_unit_price'],
-                    'quantity'          => $count_values[$key]
-                );
-            }
-        } else {
-            $data_itemses = null;
-        }
-        
-        Session::put('data_itemses', $data_itemses);
-
-        // foreach ($dataitem as $key => $val) {
-        //     if ($val['item_name'] == "P-XL 10RB") {
-        //         $dataku = $val['quantity'] + 1; 
-        //     } else {
-        //         $data = "no";
-        //     }
-        // }
-        // Session::flush('dataitemsales', $dataku);
-        // $arrayBaru = [];
-        // foreach($dataitem as $key=>$val){
-        //     $arrayBaru[$key] = array(
-        //         'name' => $val['item_name'],
-        //         'quantity' => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
-        //     );    
-        // }
-        // Session::forget('dataitemsales');
-        // Session::put('dataitemsales', $arrayBaru);
-        // dd($data_itemses);
-        return view('content.SalesInvoice.FormAddSalesInvoice',compact('date','categorys','items','units','arraydatases','customers','data_itemses'));
+        $data_itemses   = Session::get('data_itemses');
+        $item_packges   = InvtItem::join('invt_item_packge','invt_item_packge.item_id','=','invt_item.item_id')
+        ->where('invt_item.data_state',0)
+        ->where('invt_item.company_id', Auth::user()->company_id)
+        ->get();
+       
+        return view('content.SalesInvoice.FormAddSalesInvoice',compact('date','categorys','items','units','arraydatases','customers','data_itemses','datases','item_packges'));
     }
 
     public function addArraySalesInvoice(Request $request)
@@ -178,13 +147,13 @@ class SalesInvoiceController extends Controller
 
     public function processAddSalesInvoice(Request $request)
     {
+        // dd($request->all());
         $transaction_module_code = 'PJL';
         $transaction_module_id  = $this->getTransactionModuleID($transaction_module_code);
         $fields = $request->validate([
-            'sales_invoice_date'        => 'required',
-            'subtotal_item'            => 'required',
-            'subtotal_amount1'           => 'required',
-            'total_amount'              => 'required',
+            'sales_invoice_date'     => 'required',
+            'subtotal_amount'           => 'required',
+            'subtotal_amount_change'    => 'required',
             'paid_amount'               => 'required',
             'change_amount'             => 'required'
         ]);
@@ -198,11 +167,11 @@ class SalesInvoiceController extends Controller
         $data = array(
             'customer_id'               => $request->customer_id,
             'sales_invoice_date'        => $fields['sales_invoice_date'],
-            'subtotal_item'             => $fields['subtotal_item'],
-            'subtotal_amount'           => $fields['subtotal_amount1'],
+            'subtotal_item'             => $request->subtotal_item,
+            'subtotal_amount'           => $fields['subtotal_amount'],
             'discount_percentage_total' => $discount_percentage_total,
             'discount_amount_total'     => $discount_amount_total,
-            'total_amount'              => $fields['total_amount'],
+            'total_amount'              => $fields['subtotal_amount_change'],
             'paid_amount'               => $fields['paid_amount'],
             'change_amount'             => $fields['change_amount'],
             'company_id'                => Auth::user()->company_id,
@@ -224,7 +193,7 @@ class SalesInvoiceController extends Controller
 
         if(SalesInvoice::create($data) && JournalVoucher::create($journal)){
             $sales_invoice_id   = SalesInvoice::orderBy('created_at','DESC')->where('company_id', Auth::user()->company_id)->first();
-            $arraydatases       = Session::get('arraydatases');
+            $arraydatases       = Session::get('data_itemses');
             foreach ($arraydatases as $key => $val) {
                 $dataarray = array(
                     'sales_invoice_id'                  => $sales_invoice_id['sales_invoice_id'],
@@ -233,9 +202,9 @@ class SalesInvoiceController extends Controller
                     'item_id'                           => $val['item_id'],
                     'quantity'                          => $val['quantity'],
                     'item_unit_price'                   => $val['item_unit_price'],
-                    'subtotal_amount'                   => $val['subtotal_amount'],
-                    'discount_percentage'               => $val['discount_percentage'],
-                    'discount_amount'                   => $val['discount_amount'],
+                    'subtotal_amount'                   => $val['subtotal_amount_after_discount'],
+                    // 'discount_percentage'               => $val['discount_percentage'],
+                    // 'discount_amount'                   => $val['discount_amount'],
                     'subtotal_amount_after_discount'    => $val['subtotal_amount_after_discount'],
                     'company_id'                        => Auth::user()->company_id,
                     'created_id'                        => Auth::id(),
@@ -244,12 +213,16 @@ class SalesInvoiceController extends Controller
                 SalesInvoiceItem::create($dataarray);
                 $stock_item = InvtItemStock::where('item_id',$dataarray['item_id'])
                 ->where('item_category_id',$dataarray['item_category_id'])
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+                $item_packge = InvtItemPackge::where('item_id',$dataarray['item_id'])
+                ->where('item_category_id',$dataarray['item_category_id'])
                 ->where('item_unit_id', $dataarray['item_unit_id'])
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
                 if(isset($stock_item)){
                     $table = InvtItemStock::findOrFail($stock_item['item_stock_id']);
-                    $table->last_balance = $stock_item['last_balance'] - $dataarray['quantity'];
+                    $table->last_balance = $stock_item['last_balance'] - ($dataarray['quantity'] * $item_packge['item_default_quantity']);
                     $table->updated_id = Auth::id();
                     $table->save();
 
@@ -262,17 +235,17 @@ class SalesInvoiceController extends Controller
             $account_default_status = $this->getAccountDefaultStatus($account_id);
             $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
             if ($account_setting_status == 0){
-                $debit_amount = $fields['total_amount'];
+                $debit_amount = $fields['subtotal_amount_change'];
                 $credit_amount = 0;
             } else {
                 $debit_amount = 0;
-                $credit_amount = $fields['total_amount'];
+                $credit_amount = $fields['subtotal_amount_change'];
             }
             $journal_debit = array(
                 'company_id'                    => Auth::user()->company_id,
                 'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
                 'account_id'                    => $account_id,
-                'journal_voucher_amount'        => $fields['total_amount'],
+                'journal_voucher_amount'        => $fields['subtotal_amount_change'],
                 'account_id_default_status'     => $account_default_status,
                 'account_id_status'             => $account_setting_status,
                 'journal_voucher_debit_amount'  => $debit_amount,
@@ -288,17 +261,17 @@ class SalesInvoiceController extends Controller
             $account_default_status = $this->getAccountDefaultStatus($account_id);
             $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
             if ($account_setting_status == 0){
-                $debit_amount = $fields['total_amount'];
+                $debit_amount = $fields['subtotal_amount_change'];
                 $credit_amount = 0;
             } else {
                 $debit_amount = 0;
-                $credit_amount = $fields['total_amount'];
+                $credit_amount = $fields['subtotal_amount_change'];
             }
             $journal_credit = array(
                 'company_id'                    => Auth::user()->company_id,
                 'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
                 'account_id'                    => $account_id,
-                'journal_voucher_amount'        => $fields['total_amount'],
+                'journal_voucher_amount'        => $fields['subtotal_amount_change'],
                 'account_id_default_status'     => $account_default_status,
                 'account_id_status'             => $account_setting_status,
                 'journal_voucher_debit_amount'  => $debit_amount,
@@ -309,6 +282,10 @@ class SalesInvoiceController extends Controller
             JournalVoucherItem::create($journal_credit);
 
             $msg = 'Tambah Invoice Penjualan Berhasil';
+            Session::forget('arraydatases');
+            Session::forget('data_input');
+            Session::forget('data_itemses');
+            Session::forget('datases');
             return redirect('/sales-invoice/add')->with('msg',$msg);
         } else {
             $msg = 'Tambah Invoice Penjualan Gagal';
@@ -321,6 +298,7 @@ class SalesInvoiceController extends Controller
         Session::forget('arraydatases');
         Session::forget('data_input');
         Session::forget('data_itemses');
+        Session::forget('datases');
 
         return redirect('/sales-invoice/add');
     }
@@ -442,21 +420,25 @@ class SalesInvoiceController extends Controller
             );
             $stock_item = InvtItemStock::where('item_id',$sales_invoice_item_id['item_id'])
             ->where('item_category_id',$sales_invoice_item_id['item_category_id'])
-            ->where('item_unit_id', $sales_invoice_item_id['item_unit_id'])
             ->where('company_id', $sales_invoice['company_id'])
             ->first();
+            $item_packge = InvtItemPackge::where('item_id',$sales_invoice_item_id['item_id'])
+            ->where('item_category_id',$sales_invoice_item_id['item_category_id'])
+            ->where('item_unit_id', $sales_invoice_item_id['item_unit_id'])
+            ->where('company_id', Auth::user()->company_id)
+            ->first();
             if (!empty($stock_item)){
-                $table = InvtItemStock::findOrFail($stock_item['item_stock_id']);
-                $table->last_balance = $sales_invoice_item_id['quantity']  + $stock_item['last_balance'];
-                $table->updated_id = Auth::id();
+                $table                  = InvtItemStock::findOrFail($stock_item['item_stock_id']);
+                $table->last_balance    = ($sales_invoice_item_id['quantity'] * $item_packge['item_default_quantity'])  + $stock_item['last_balance'];
+                $table->updated_id      = Auth::id();
                 $table->save();
             }
             
         }
 
-        $table_sales_invoice = SalesInvoice::findOrFail($sales_invoice['sales_invoice_id']);
-        $table_sales_invoice->data_state = 1;
-        $table_sales_invoice->updated_id = Auth::id();
+        $table_sales_invoice                = SalesInvoice::findOrFail($sales_invoice['sales_invoice_id']);
+        $table_sales_invoice->data_state    = 1;
+        $table_sales_invoice->updated_id    = Auth::id();
 
         if($table_sales_invoice->save()){
             $msg = "Hapus Penjualan Berhasil";
@@ -470,7 +452,7 @@ class SalesInvoiceController extends Controller
     public function filterSalesInvoice(Request $request)
     {
         $start_date = $request->start_date;
-        $end_date = $request->end_date;
+        $end_date   = $request->end_date;
 
         Session::put('start_date',$start_date);
         Session::put('end_date',$end_date);
@@ -532,11 +514,14 @@ class SalesInvoiceController extends Controller
         return $data['customer_name'];
     }
 
-    public function selectSalesInvoice($item)
+    public function selectSalesInvoice($item_barcode)
     {
-        $data_item = InvtItem::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->where('item_code',$item)
+        $data_item = InvtItemPackge::join('invt_item_barcode','invt_item_barcode.item_packge_id','=','invt_item_packge.item_packge_id')
+        ->where('invt_item_packge.data_state',0)
+        ->where('invt_item_barcode.data_state',0)
+        ->where('invt_item_packge.company_id', Auth::user()->company_id)
+        ->where('invt_item_barcode.company_id', Auth::user()->company_id)
+        ->where('invt_item_barcode.item_barcode',$item_barcode)
         ->first();
         // if ()
 
@@ -544,109 +529,267 @@ class SalesInvoiceController extends Controller
         if ($data_item != null) {
 
             if($data_session !== null){
-                array_push($data_session, $data_item['item_id']);
+                array_push($data_session, $data_item['item_packge_id']);
                 Session::put('data_input', $data_session);
             } else {
                 $data_session = [];
-                array_push($data_session, $data_item['item_id']);
-                Session::push('data_input', $data_item['item_id']);
+                array_push($data_session, $data_item['item_packge_id']);
+                Session::push('data_input', $data_item['item_packge_id']);
             }
         }
+
+        $data_input = Session::get('data_input');
+        if ($data_input != null) {
+            $count_values = array_count_values($data_input);
+            foreach ($count_values as $key => $val) {
+                $data_items[$key] = InvtItemPackge::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->where('item_packge_id', $key)
+                ->first();
+            }
+            foreach ($data_items as $key => $val) {
+                $data_itemses[$key] = array(
+                    'item_id'                           => $val['item_id'],
+                    'item_name'                         => $val['item_name'],
+                    'item_category_id'                  => $val['item_category_id'],
+                    'item_unit_id'                      => $val['item_unit_id'],
+                    'item_unit_price'                   => $val['item_unit_price'],
+                    'quantity'                          => $count_values[$key],
+                    'subtotal_amount_after_discount'    => $count_values[$key] * $val['item_unit_price']
+                );
+            }
+        } else {
+            $data_itemses = null;
+        }
+        Session::put('data_itemses', $data_itemses);
         
         return $data_item;
 
-        // if ($data !== null) {
-        //     $data_array = array(
-        //         'item_id'           => $data['item_id'],
-        //         'item_name'         => $data['item_name'],
-        //         'item_category_id'  => $data['item_category_id'],
-        //         'item_unit_id'      => $data['item_unit_id'],
-        //         'item_unit_price'   => $data['item_unit_price'],
-        //         'quantity'          => 1
-        //     );
-        // }
-
-        // $dataitem = Session::get('dataitemsales');
-        // $arrayBaru = [];
-        // foreach($dataitem as $key=>$val){
-        //     $arrayBaru[$key] = array(
-        //         'name' => $val['item_name'],
-        //         'quantity' => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
-        //     );    
-        // }
-        // if($dataitem !== null){
-        //     foreach($dataitem as $key=>$val){
-        //         $arrayBaru[$key] = array(
-        //             'item_id'           => $val['item_id'],
-        //             'item_name'         => $val['item_name'],
-        //             'item_category_id'  => $val['item_category_id'],
-        //             'item_unit_id'      => $val['item_unit_id'],
-        //             'item_unit_price'   => $val['item_unit_price'],
-        //             'quantity'          => $val['item_id'] == $data_array['item_id'] ? $val['quantity'] + 1 : $val['quantity']
-        //         );
-        //     }
-        //     foreach($dataitem as $key=>$val){
-        //         if ($val['item_id'] == $data_array['item_id']) {
-        //             Session::forget('dataitemsales');
-        //             Session::put('dataitemsales', $arrayBaru);
-        //         } else {
-        //             array_push($dataitem, $data_array);
-        //             Session::put('dataitemsales', $dataitem);
-        //         } 
-            
-        //     }
-        // } else {
-        //     $dataitem = [];
-            // foreach($dataitem as $key=>$val){
-            //     $arrayBaru[$key] = array(
-            //         'item_id'           => $val['item_id'],
-            //         'item_name'         => $val['item_name'],
-            //         'item_category_id'  => $val['item_category_id'],
-            //         'item_unit_id'      => $val['item_unit_id'],
-            //         'item_unit_price'   => $val['item_unit_price'],
-            //         'quantity'          => $val['item_name'] == "P-XL 5RB" ? $val['quantity'] + 1 : $val['quantity']
-            //     );    
-            // }
-        //     array_push($dataitem, $data_array);
-        //     Session::push('dataitemsales', $data_array);
-        // }
-
-        // $dataitem = Session::get('dataitemsales');
-        // foreach($dataitem as $key=>$val){
-        //     if ($val['item_name'] == $data_array['item_name']) {
-        //         $arrayBaru[$key] = array(
-        //             'item_id'           => $val['item_id'],
-        //             'item_name'         => $val['item_name'],
-        //             'item_category_id'  => $val['item_category_id'],
-        //             'item_unit_id'      => $val['item_unit_id'],
-        //             'item_unit_price'   => $val['item_unit_price'],
-        //             'quantity'          => $val['item_name'] == $data_array['item_name'] ? $val['quantity'] + 1 : $val['quantity']
-        //         );
-        //     }
-            
-        // }
-        // Session::forget('dataitemsales');
-        // array_push($dataitem, $arrayBaru);
-        // Session::put('dataitemsales', $dataitem);
-        // $data_item = '';
-        // $data_item .= "
-        //     <tr>
-        //         <td>$data[item_name]</td>
-        //         <td>$data[item_code]</td>
-        //     </tr>
-        // ";
-        // return $data_item;
-    
-
     }
 
-    public function changeQtySalesInvoice($item_id, $qty) {
+    public function changeQtySalesInvoice($item_packge_id, $qty) 
+    {
         $data_itemses = Session::get('data_itemses');
-        $data_itemses[$item_id]['quantity'] = $qty;
+        $data_input = Session::get('data_input');
+        $count_values = array_count_values($data_input);
+        $first_count_values = $count_values[$item_packge_id];
+        $end_count_values = (int)$qty;
+        for ($i=$first_count_values; $i < $end_count_values; $i++) { 
+            if ($i < $end_count_values) {
+                $data[$i] = Session::push('data_input', (int)$item_packge_id);
+            } else {
+                // unset($data_input[$item_packge_id]);
+                $data[$i] = Session::pull('data_input', (int)$item_packge_id);
+            }
+        }
+        foreach ($data_itemses as $key => $val) {
+            $data_itemses[$key] = array(
+                'item_id'                           => $val['item_id'],
+                'item_name'                         => $val['item_name'],
+                'item_category_id'                  => $val['item_category_id'],
+                'item_unit_id'                      => $val['item_unit_id'],
+                'item_unit_price'                   => $val['item_unit_price'],
+                'quantity'                          => $key == $item_packge_id ? $qty : $val['quantity'],
+                'subtotal_amount_after_discount'    => ($key == $item_packge_id ? $qty : $val['quantity']) * $val['item_unit_price']
+            );
+        }
         Session::forget('data_itemses');
+
+        
         Session::put('data_itemses', $data_itemses);
 
 
         return $data_itemses;
+    }
+
+    public function addElementsSalesInvoice(Request $request) 
+    {
+        $datases = Session::get('datases');
+        if(!$datases || $datases == ''){
+            $datases['sales_invoice_date']   = '';
+            $datases['customer_id']          = '';
+        }
+        $datases[$request->name] = $request->value;
+        Session::put('datases', $datases);
+    }
+
+    public function selectItemNameSalesInvoice($item_id, $unit_id) 
+    {
+        $data_item = InvtItemPackge::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('item_id',$item_id)
+        ->where('item_unit_id',$unit_id)
+        ->first();
+
+        $data_session = Session::get('data_input');
+        if ($data_item != null) {
+
+            if($data_session !== null){
+                array_push($data_session, $data_item['item_packge_id']);
+                Session::put('data_input', $data_session);
+            } else {
+                $data_session = [];
+                array_push($data_session, $data_item['item_packge_id']);
+                Session::push('data_input', $data_item['item_packge_id']);
+            }
+        }
+
+        $data_input = Session::get('data_input');
+        if ($data_input != null) {
+            $count_values = array_count_values($data_input);
+            foreach ($count_values as $key => $val) {
+                $data_items[$key] = InvtItemPackge::where('data_state',0)
+                ->where('company_id', Auth::user()->company_id)
+                ->where('item_packge_id', $key)
+                ->first();
+            }
+            foreach ($data_items as $key => $val) {
+                $data_itemses[$key] = array(
+                    'item_id'                           => $val['item_id'],
+                    'item_name'                         => $val['item_name'],
+                    'item_category_id'                  => $val['item_category_id'],
+                    'item_unit_id'                      => $val['item_unit_id'],
+                    'item_unit_price'                   => $val['item_unit_price'],
+                    'quantity'                          => $count_values[$key],
+                    'subtotal_amount_after_discount'    => $count_values[$key] * $val['item_unit_price']
+                );
+            }
+        } else {
+            $data_itemses = null;
+        }
+        Session::put('data_itemses', $data_itemses);
+        
+        return $data_item;
+    }
+
+    public function printSalesInvoice()
+    {
+        $data_company = PreferenceCompany::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first();
+
+        $sales_invoice = SalesInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->orderBy('sales_invoice.created_at','DESC')
+        ->first();
+
+        $sales_invoice_item = SalesInvoiceItem::where('sales_invoice_id',$sales_invoice['sales_invoice_id'])
+        ->get();
+
+
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+
+        $pdf::SetPrintHeader(false);
+        $pdf::SetPrintFooter(false);
+
+        $pdf::SetMargins(1, 1, 1, 1); // put space of 10 on top
+
+        $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            $pdf::setLanguageArray($l);
+        }
+
+        $pdf::AddPage('P', array(48, 3276));
+
+        $pdf::SetFont('helvetica', '', 10);
+
+        $tbl = "
+        <table style=\" font-size:9px; \">
+            <tr>
+                <td style=\"text-align: center; font-size:12px; font-weight: bold\">".$data_company['company_name']."</td>
+            </tr>
+            <tr>
+                <td style=\"text-align: center; font-size:9px;\">".$data_company['company_address']."</td>
+            </tr>
+        </table>
+       
+        ";
+        $pdf::writeHTML($tbl, true, false, false, false, '');
+        
+        $kasir = Auth::user()->name;
+        if (strlen($kasir) > 10) {
+            $kasir = substr($kasir, 0, 9) . '...';
+        } else {
+            $kasir = $kasir;
+        }
+            
+        $tblStock1 = "
+        <table style=\" font-size:9px; \" >
+            <tr>
+                <td>".$sales_invoice['sales_invoice_no']."</td>
+                <td>Tgl. : ".date('d-m-Y')."</td>
+            </tr>
+            <tr>
+                <td>Kasir : ".$kasir."</td>
+                <td>Jam : ".date('H:i')."</td>
+            </tr>
+        </table>
+        <div>---------------------------------------</div>
+        ";
+
+        $tblStock2 = "
+        <table style=\" font-size:9px; \" width=\" 100% \">
+        ";
+
+        $tblStock3 = "";
+        foreach ($sales_invoice_item as $key => $val) {
+            $tblStock3 .= "
+                <tr>
+                    <td width=\" 40% \" style=\"text-align: left; \">".$this->getItemName($val['item_id'])." (".$this->getItemUnitName($val['item_unit_id']).")"."</td>
+                    <td width=\" 20% \" style=\"text-align: right; \">".$val['quantity']."</td>
+                    <td width=\" 20% \" style=\"text-align: right; \">".$val['item_unit_price']."</td>
+                    <td width=\" 20% \" style=\"text-align: right; \">".$val['subtotal_amount_after_discount']."</td>
+                </tr>
+            ";
+        }
+        
+        $tblStock4 = "
+        </table>
+        <div>---------------------------------------</div>
+        ";
+
+        $tblStock5 = "
+        <table style=\" font-size:9px; \" width=\" 100% \">
+            <tr>
+                <td width=\" 40% \" style=\"text-align: left; font-weight: bold; \">Diskon</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">:</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">".$sales_invoice['discount_percentage_total']."</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">".$sales_invoice['discount_amount_total']."</td>
+            </tr>
+            <tr>
+                <td width=\" 40% \" style=\"text-align: left; font-weight: bold; \">Total</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">:</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \"></td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">".$sales_invoice['total_amount']."</td>
+            </tr>
+            <tr>
+                <td width=\" 40% \" style=\"text-align: left; font-weight: bold; \">Tunai</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">:</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \"></td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">".$sales_invoice['paid_amount']."</td>
+            </tr>
+            <tr>
+                <td width=\" 40% \" style=\"text-align: left; font-weight: bold; \">Kembali</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">:</td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \"></td>
+                <td width=\" 20% \" style=\"text-align: right; font-weight: bold; \">".$sales_invoice['change_amount']."</td>
+            </tr>
+        </table>
+        <br>
+        <div style=\"text-align: center; font-size:10px; \">".$data_company['receipt_bottom_text']."</div>
+        <br>
+        <br>
+        <br>
+        <div>---------------------------------------</div>
+        ";
+
+        $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3.$tblStock4.$tblStock5, true, false, false, false, '');
+
+
+        $filename = 'Laporan_Pembelian.pdf';
+        $pdf::Output($filename, 'I');
     }
 }

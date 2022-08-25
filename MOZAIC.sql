@@ -61,15 +61,14 @@ CREATE TABLE `acct_account_balance` (
   `created_id` int(10) DEFAULT NULL,
   `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`account_balance_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `acct_account_balance` */
 
 insert  into `acct_account_balance`(`account_balance_id`,`company_id`,`account_id`,`last_balance`,`created_id`,`last_update`) values 
-(12,1,11,'-366000',55,'2022-08-05 16:14:57'),
-(13,1,12,'-373000',55,'2022-08-05 16:14:57'),
-(14,1,14,'-7000',55,'2022-08-03 11:54:17'),
-(15,1,15,'0',55,'2022-08-03 13:02:44');
+(21,1,11,'59100',55,'2022-08-24 17:05:53'),
+(22,1,12,'-413000',55,'2022-08-24 11:28:49'),
+(23,1,14,'-472100',55,'2022-08-24 17:05:53');
 
 /*Table structure for table `acct_account_balance_detail` */
 
@@ -91,29 +90,35 @@ CREATE TABLE `acct_account_balance_detail` (
   `data_state` int(1) DEFAULT 0,
   `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`account_balance_detail_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `acct_account_balance_detail` */
 
 insert  into `acct_account_balance_detail`(`account_balance_detail_id`,`company_id`,`account_id`,`transaction_id`,`transaction_type`,`transaction_code`,`transaction_date`,`opening_balance`,`account_in`,`account_out`,`last_balance`,`created_id`,`data_state`,`last_update`) values 
-(43,1,11,36,'2','PBL','2022-08-03','0','0','65000','-65000',55,0,'2022-08-03 11:43:29'),
-(44,1,12,36,'2','PBL','2022-08-03','0','0','65000','-65000',55,0,'2022-08-03 11:43:29'),
-(45,1,11,37,'2','PBL','2022-08-03','-65000','0','378000','-443000',55,0,'2022-08-03 11:45:40'),
-(46,1,12,37,'2','PBL','2022-08-03','-65000','0','378000','-443000',55,0,'2022-08-03 11:45:40'),
-(47,1,11,38,'3','RPBL','2022-08-03','-443000','100000','0','-343000',55,0,'2022-08-03 11:48:45'),
-(48,1,12,38,'3','RPBL','2022-08-03','-443000','100000','0','-343000',55,0,'2022-08-03 11:48:45'),
-(49,1,11,39,'4','PJL','2022-08-03','-343000','7000','0','-336000',55,0,'2022-08-03 11:51:12'),
-(50,1,14,39,'4','PJL','2022-08-03','0','0','7000','-7000',55,0,'2022-08-03 11:51:12'),
-(51,1,11,40,'4','PJL','2022-08-03','-336000','19000','0','-317000',55,0,'2022-08-03 11:53:13'),
-(52,1,14,40,'4','PJL','2022-08-03','-7000','0','19000','-26000',55,0,'2022-08-03 11:53:13'),
-(53,1,11,41,'7','HPSPJL','2022-08-03','-317000','0','19000','-336000',55,0,'2022-08-03 11:54:17'),
-(54,1,14,41,'7','HPSPJL','2022-08-03','-26000','19000','0','-7000',55,0,'2022-08-03 11:54:17'),
-(55,1,11,42,'5','PGL','2022-08-03','-336000','0','10000','-346000',55,0,'2022-08-03 13:02:15'),
-(56,1,15,42,'5','PGL','2022-08-03','0','0','10000','-10000',55,0,'2022-08-03 13:02:15'),
-(57,1,11,43,'8','HPSPGL','2022-08-03','-346000','10000','0','-336000',55,0,'2022-08-03 13:02:44'),
-(58,1,15,43,'8','HPSPGL','2022-08-03','-10000','10000','0','0',55,0,'2022-08-03 13:02:44'),
-(59,1,11,44,'2','PBL','2022-08-05','-336000','0','30000','-366000',55,0,'2022-08-05 16:14:57'),
-(60,1,12,44,'2','PBL','2022-08-05','-343000','0','30000','-373000',55,0,'2022-08-05 16:14:57');
+(79,1,11,55,'2','PBL','2022-08-22','0','0','3000','-3000',55,0,'2022-08-22 11:25:58'),
+(80,1,12,55,'2','PBL','2022-08-22','0','0','3000','-3000',55,0,'2022-08-22 11:25:58'),
+(81,1,11,56,'2','PBL','2022-08-22','-3000','0','30000','-33000',55,0,'2022-08-22 11:26:51'),
+(82,1,12,56,'2','PBL','2022-08-22','-3000','0','30000','-33000',55,0,'2022-08-22 11:26:51'),
+(83,1,11,57,'3','RPBL','2022-08-22','-33000','30000','0','-3000',55,0,'2022-08-22 11:29:33'),
+(84,1,12,57,'3','RPBL','2022-08-22','-33000','30000','0','-3000',55,0,'2022-08-22 11:29:33'),
+(85,1,11,58,'4','PJL','2022-08-23','-3000','7500','0','4500',55,0,'2022-08-23 16:29:57'),
+(86,1,14,58,'4','PJL','2022-08-23','0','0','7500','-7500',55,0,'2022-08-23 16:29:57'),
+(87,1,11,59,'4','PJL','2022-08-23','4500','3500','0','8000',55,0,'2022-08-23 17:01:07'),
+(88,1,14,59,'4','PJL','2022-08-23','-7500','0','3500','-11000',55,0,'2022-08-23 17:01:07'),
+(89,1,11,60,'4','PJL','2022-08-23','8000','3500','0','11500',55,0,'2022-08-23 17:03:22'),
+(90,1,14,60,'4','PJL','2022-08-23','-11000','0','3500','-14500',55,0,'2022-08-23 17:03:22'),
+(91,1,11,61,'4','PJL','2022-08-23','11500','400000','0','411500',55,0,'2022-08-23 17:06:06'),
+(92,1,14,61,'4','PJL','2022-08-23','-14500','0','400000','-414500',55,0,'2022-08-23 17:06:06'),
+(93,1,11,62,'4','PJL','2022-08-23','411500','20000','0','431500',55,0,'2022-08-23 17:07:14'),
+(94,1,14,62,'4','PJL','2022-08-23','-414500','0','20000','-434500',55,0,'2022-08-23 17:07:14'),
+(95,1,11,63,'4','PJL','2022-08-24','431500','33600','0','465100',55,0,'2022-08-24 09:19:06'),
+(96,1,14,63,'4','PJL','2022-08-24','-434500','0','33600','-468100',55,0,'2022-08-24 09:19:06'),
+(97,1,11,64,'2','PBL','2022-08-24','465100','0','60000','405100',55,0,'2022-08-24 11:25:28'),
+(98,1,12,64,'2','PBL','2022-08-24','-3000','0','60000','-63000',55,0,'2022-08-24 11:25:28'),
+(99,1,11,65,'2','PBL','2022-08-24','405100','0','350000','55100',55,0,'2022-08-24 11:28:49'),
+(100,1,12,65,'2','PBL','2022-08-24','-63000','0','350000','-413000',55,0,'2022-08-24 11:28:49'),
+(101,1,11,66,'4','PJL','2022-08-24','55100','4000','0','59100',55,0,'2022-08-24 17:05:53'),
+(102,1,14,66,'4','PJL','2022-08-24','-468100','0','4000','-472100',55,0,'2022-08-24 17:05:53');
 
 /*Table structure for table `acct_account_setting` */
 
@@ -165,20 +170,23 @@ CREATE TABLE `acct_journal_voucher` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`journal_voucher_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `acct_journal_voucher` */
 
 insert  into `acct_journal_voucher`(`journal_voucher_id`,`company_id`,`transaction_module_id`,`journal_voucher_status`,`transaction_module_code`,`journal_voucher_date`,`journal_voucher_description`,`journal_voucher_period`,`journal_voucher_no`,`journal_voucher_title`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
-(36,1,2,1,'PBL','2022-08-03','Pembelian','202208','0001/JV/VIII/2022','Pembelian',0,55,55,'2022-08-03 11:43:29','2022-08-03 11:43:29'),
-(37,1,2,1,'PBL','2022-08-03','Pembelian','202208','0002/JV/VIII/2022','Pembelian',0,55,55,'2022-08-03 11:45:40','2022-08-03 11:45:40'),
-(38,1,3,1,'RPBL','2022-08-03','Retur Pembelian','202208','0003/JV/VIII/2022','Retur Pembelian',0,55,55,'2022-08-03 11:48:45','2022-08-03 11:48:45'),
-(39,1,4,1,'PJL','2022-08-03','Penjualan','202208','0004/JV/VIII/2022','Penjualan',0,55,55,'2022-08-03 11:51:12','2022-08-03 11:51:12'),
-(40,1,4,1,'PJL','2022-08-03','Penjualan','202208','0005/JV/VIII/2022','Penjualan',0,55,55,'2022-08-03 11:53:13','2022-08-03 11:53:13'),
-(41,1,7,1,'HPSPJL','2022-08-03','Hapus Penjualan','202208','0006/JV/VIII/2022','Hapus Penjualan',0,55,55,'2022-08-03 11:54:17','2022-08-03 11:54:17'),
-(42,1,5,1,'PGL','2022-08-03','Pengeluaran','202208','0007/JV/VIII/2022','Pengeluaran',0,55,55,'2022-08-03 13:02:15','2022-08-03 13:02:15'),
-(43,1,8,1,'HPSPGL','2022-08-03','Hapus Pengeluaran','202208','0008/JV/VIII/2022','Hapus Pengeluaran',0,55,55,'2022-08-03 13:02:44','2022-08-03 13:02:44'),
-(44,1,2,1,'PBL','2022-08-05','Pembelian','202208','0009/JV/VIII/2022','Pembelian',0,55,55,'2022-08-05 16:14:57','2022-08-05 16:14:57');
+(55,1,2,1,'PBL','2022-08-22','Pembelian','202208','0001/JV/VIII/2022','Pembelian',0,55,55,'2022-08-22 11:25:58','2022-08-22 11:25:58'),
+(56,1,2,1,'PBL','2022-08-22','Pembelian','202208','0002/JV/VIII/2022','Pembelian',0,55,55,'2022-08-22 11:26:51','2022-08-22 11:26:51'),
+(57,1,3,1,'RPBL','2022-08-22','Retur Pembelian','202208','0003/JV/VIII/2022','Retur Pembelian',0,55,55,'2022-08-22 11:29:33','2022-08-22 11:29:33'),
+(58,1,4,1,'PJL','2022-08-23','Penjualan','202208','0004/JV/VIII/2022','Penjualan',0,55,55,'2022-08-23 16:29:57','2022-08-23 16:29:57'),
+(59,1,4,1,'PJL','2022-08-23','Penjualan','202208','0005/JV/VIII/2022','Penjualan',0,55,55,'2022-08-23 17:01:06','2022-08-23 17:01:06'),
+(60,1,4,1,'PJL','2022-08-23','Penjualan','202208','0006/JV/VIII/2022','Penjualan',0,55,55,'2022-08-23 17:03:22','2022-08-23 17:03:22'),
+(61,1,4,1,'PJL','2022-08-23','Penjualan','202208','0007/JV/VIII/2022','Penjualan',0,55,55,'2022-08-23 17:06:06','2022-08-23 17:06:06'),
+(62,1,4,1,'PJL','2022-08-23','Penjualan','202208','0008/JV/VIII/2022','Penjualan',0,55,55,'2022-08-23 17:07:14','2022-08-23 17:07:14'),
+(63,1,4,1,'PJL','2022-08-24','Penjualan','202208','0009/JV/VIII/2022','Penjualan',0,55,55,'2022-08-24 09:19:06','2022-08-24 09:19:06'),
+(64,1,2,1,'PBL','2022-08-24','Pembelian','202208','0010/JV/VIII/2022','Pembelian',0,55,55,'2022-08-24 11:25:28','2022-08-24 11:25:28'),
+(65,1,2,1,'PBL','2022-08-24','Pembelian','202208','0011/JV/VIII/2022','Pembelian',0,55,55,'2022-08-24 11:28:49','2022-08-24 11:28:49'),
+(66,1,4,1,'PJL','2022-08-24','Penjualan','202208','0012/JV/VIII/2022','Penjualan',0,55,55,'2022-08-24 17:05:53','2022-08-24 17:05:53');
 
 /*Table structure for table `acct_journal_voucher_item` */
 
@@ -202,29 +210,35 @@ CREATE TABLE `acct_journal_voucher_item` (
   PRIMARY KEY (`journal_voucher_item_id`),
   KEY `Fk_journal_voucher` (`journal_voucher_id`),
   CONSTRAINT `Fk_journal_voucher` FOREIGN KEY (`journal_voucher_id`) REFERENCES `acct_journal_voucher` (`journal_voucher_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `acct_journal_voucher_item` */
 
 insert  into `acct_journal_voucher_item`(`journal_voucher_item_id`,`company_id`,`journal_voucher_id`,`account_id`,`journal_voucher_amount`,`account_id_status`,`account_id_default_status`,`journal_voucher_debit_amount`,`journal_voucher_credit_amount`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
-(55,1,36,11,'65000',1,0,'0','65000',0,55,55,'2022-08-03 11:43:29','2022-08-03 11:43:29'),
-(56,1,36,12,'65000',0,1,'65000','0',0,55,55,'2022-08-03 11:43:29','2022-08-03 11:43:29'),
-(57,1,37,11,'378000',1,0,'0','378000',0,55,55,'2022-08-03 11:45:40','2022-08-03 11:45:40'),
-(58,1,37,12,'378000',0,1,'378000','0',0,55,55,'2022-08-03 11:45:40','2022-08-03 11:45:40'),
-(59,1,38,11,'100000',0,0,'100000','0',0,55,55,'2022-08-03 11:48:45','2022-08-03 11:48:45'),
-(60,1,38,12,'100000',1,1,'0','100000',0,55,55,'2022-08-03 11:48:45','2022-08-03 11:48:45'),
-(61,1,39,11,'7000',0,0,'7000','0',0,55,55,'2022-08-03 11:51:12','2022-08-03 11:51:12'),
-(62,1,39,14,'7000',1,0,'0','7000',0,55,55,'2022-08-03 11:51:12','2022-08-03 11:51:12'),
-(63,1,40,11,'19000',0,0,'19000','0',0,55,55,'2022-08-03 11:53:13','2022-08-03 11:53:13'),
-(64,1,40,14,'19000',1,0,'0','19000',0,55,55,'2022-08-03 11:53:13','2022-08-03 11:53:13'),
-(65,1,41,11,'19000',1,0,'0','19000',0,55,55,'2022-08-03 11:54:17','2022-08-03 11:54:17'),
-(66,1,41,14,'19000',0,0,'19000','0',0,55,55,'2022-08-03 11:54:17','2022-08-03 11:54:17'),
-(67,1,42,11,'10000',1,0,'0','10000',0,55,55,'2022-08-03 13:02:15','2022-08-03 13:02:15'),
-(68,1,42,15,'10000',0,1,'10000','0',0,55,55,'2022-08-03 13:02:15','2022-08-03 13:02:15'),
-(69,1,43,11,'10000',0,0,'10000','0',0,55,55,'2022-08-03 13:02:44','2022-08-03 13:02:44'),
-(70,1,43,15,'10000',1,1,'0','10000',0,55,55,'2022-08-03 13:02:44','2022-08-03 13:02:44'),
-(71,1,44,11,'30000',1,0,'0','30000',0,55,55,'2022-08-05 16:14:57','2022-08-05 16:14:57'),
-(72,1,44,12,'30000',0,1,'30000','0',0,55,55,'2022-08-05 16:14:57','2022-08-05 16:14:57');
+(91,1,55,11,'3000',1,0,'0','3000',0,55,55,'2022-08-22 11:25:58','2022-08-22 11:25:58'),
+(92,1,55,12,'3000',0,1,'3000','0',0,55,55,'2022-08-22 11:25:58','2022-08-22 11:25:58'),
+(93,1,56,11,'30000',1,0,'0','30000',0,55,55,'2022-08-22 11:26:51','2022-08-22 11:26:51'),
+(94,1,56,12,'30000',0,1,'30000','0',0,55,55,'2022-08-22 11:26:51','2022-08-22 11:26:51'),
+(95,1,57,11,'30000',0,0,'30000','0',0,55,55,'2022-08-22 11:29:33','2022-08-22 11:29:33'),
+(96,1,57,12,'30000',1,1,'0','30000',0,55,55,'2022-08-22 11:29:33','2022-08-22 11:29:33'),
+(97,1,58,11,'7500',0,0,'7500','0',0,55,55,'2022-08-23 16:29:57','2022-08-23 16:29:57'),
+(98,1,58,14,'7500',1,0,'0','7500',0,55,55,'2022-08-23 16:29:57','2022-08-23 16:29:57'),
+(99,1,59,11,'3500',0,0,'3500','0',0,55,55,'2022-08-23 17:01:07','2022-08-23 17:01:07'),
+(100,1,59,14,'3500',1,0,'0','3500',0,55,55,'2022-08-23 17:01:07','2022-08-23 17:01:07'),
+(101,1,60,11,'3500',0,0,'3500','0',0,55,55,'2022-08-23 17:03:22','2022-08-23 17:03:22'),
+(102,1,60,14,'3500',1,0,'0','3500',0,55,55,'2022-08-23 17:03:22','2022-08-23 17:03:22'),
+(103,1,61,11,'400000',0,0,'400000','0',0,55,55,'2022-08-23 17:06:06','2022-08-23 17:06:06'),
+(104,1,61,14,'400000',1,0,'0','400000',0,55,55,'2022-08-23 17:06:06','2022-08-23 17:06:06'),
+(105,1,62,11,'20000',0,0,'20000','0',0,55,55,'2022-08-23 17:07:14','2022-08-23 17:07:14'),
+(106,1,62,14,'20000',1,0,'0','20000',0,55,55,'2022-08-23 17:07:14','2022-08-23 17:07:14'),
+(107,1,63,11,'33600',0,0,'33600','0',0,55,55,'2022-08-24 09:19:06','2022-08-24 09:19:06'),
+(108,1,63,14,'33600',1,0,'0','33600',0,55,55,'2022-08-24 09:19:06','2022-08-24 09:19:06'),
+(109,1,64,11,'60000',1,0,'0','60000',0,55,55,'2022-08-24 11:25:28','2022-08-24 11:25:28'),
+(110,1,64,12,'60000',0,1,'60000','0',0,55,55,'2022-08-24 11:25:28','2022-08-24 11:25:28'),
+(111,1,65,11,'350000',1,0,'0','350000',0,55,55,'2022-08-24 11:28:49','2022-08-24 11:28:49'),
+(112,1,65,12,'350000',0,1,'350000','0',0,55,55,'2022-08-24 11:28:49','2022-08-24 11:28:49'),
+(113,1,66,11,'4000',0,0,'4000','0',0,55,55,'2022-08-24 17:05:53','2022-08-24 17:05:53'),
+(114,1,66,14,'4000',1,0,'0','4000',0,55,55,'2022-08-24 17:05:53','2022-08-24 17:05:53');
 
 /*Table structure for table `capital_money` */
 
@@ -292,9 +306,6 @@ CREATE TABLE `expenditure` (
 
 /*Data for the table `expenditure` */
 
-insert  into `expenditure`(`expenditure_id`,`company_id`,`expenditure_date`,`expenditure_remark`,`expenditure_amount`,`data_state`,`created_id`,`created_at`,`updated_at`) values 
-(7,1,'2022-08-03',NULL,10000,1,55,'2022-08-03 13:02:15','2022-08-03 13:02:44');
-
 /*Table structure for table `failed_jobs` */
 
 DROP TABLE IF EXISTS `failed_jobs`;
@@ -340,22 +351,38 @@ CREATE TABLE `invt_item` (
   KEY `FK_item_unit_id` (`item_unit_id`),
   CONSTRAINT `FK_category_id` FOREIGN KEY (`item_category_id`) REFERENCES `invt_item_category` (`item_category_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_item_unit_id` FOREIGN KEY (`item_unit_id`) REFERENCES `invt_item_unit` (`item_unit_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `invt_item` */
 
 insert  into `invt_item`(`item_id`,`company_id`,`item_category_id`,`item_unit_id`,`item_name`,`item_code`,`item_barcode`,`item_status`,`item_default_quantity`,`item_unit_price`,`item_unit_cost`,`item_remark`,`data_state`,`updated_at`,`created_at`,`updated_id`,`created_id`) values 
-(15,1,10,26,'P-XL 5RB','P-XL 5RB',NULL,0,'1','7000','6500',NULL,0,'2022-08-03 11:28:55','2022-08-03 11:28:55',55,55),
-(16,1,10,26,'P-XL 10RB','P-XL 10RB',NULL,0,'1','12000','11000',NULL,0,'2022-08-03 11:29:29','2022-08-03 11:29:29',55,55),
-(17,1,13,26,'P-TSEL 5RB','P-TSEL 5RB',NULL,0,'1','7000','6500',NULL,0,'2022-08-03 11:30:22','2022-08-03 11:30:22',55,55),
-(18,1,13,26,'P-TSEL 10RB','P-TSEL 10RB',NULL,0,'1','12000','11000',NULL,0,'2022-08-03 11:30:46','2022-08-03 11:30:46',55,55),
-(19,1,11,27,'M-DUCKBIL','M-DUCKBIL',NULL,0,'1','25000','20000',NULL,0,'2022-08-03 11:31:38','2022-08-03 11:31:38',55,55),
-(20,1,12,27,'V-XL 1GB','V-XL 1GB',NULL,0,'1','30000','25000',NULL,1,'2022-08-03 11:33:16','2022-08-03 11:32:58',55,55),
-(21,1,14,26,'V-XL 1GB','V-XL 1GB',NULL,0,'1','30000','25000',NULL,1,'2022-08-03 11:34:40','2022-08-03 11:34:23',55,55),
-(22,1,12,26,'V-XL 1GB','V-XL 1GB',NULL,0,'1','30000','25000',NULL,0,'2022-08-03 11:35:17','2022-08-03 11:35:17',55,55),
-(23,1,12,26,'V-XL 2GB','V-XL 2GB',NULL,0,'1','55000','50000',NULL,0,'2022-08-03 11:35:40','2022-08-03 11:35:40',55,55),
-(24,1,14,26,'V-TSEL 2GB','V-TSEL 2GB',NULL,0,'1','60000','58000',NULL,0,'2022-08-03 11:36:16','2022-08-03 11:36:16',55,55),
-(25,1,11,27,'M-KOREA','M-KOREA',NULL,0,'1','50000','45000',NULL,0,'2022-08-03 11:37:20','2022-08-03 11:37:20',55,55);
+(33,1,18,32,'AQUA 600ML','AQUA 600ML',NULL,0,'1','3500','3000',NULL,0,'2022-08-22 10:24:46','2022-08-22 10:24:46',55,55),
+(34,1,18,32,'LE MINERAL 500ML','LE MINERAL 500ML',NULL,0,'1','4000','3500',NULL,0,'2022-08-22 10:58:27','2022-08-22 10:58:27',55,55);
+
+/*Table structure for table `invt_item_barcode` */
+
+DROP TABLE IF EXISTS `invt_item_barcode`;
+
+CREATE TABLE `invt_item_barcode` (
+  `item_barcode_id` int(10) NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) DEFAULT NULL,
+  `item_id` int(10) DEFAULT NULL,
+  `item_unit_id` int(10) DEFAULT NULL,
+  `item_packge_id` int(10) DEFAULT NULL,
+  `item_barcode` varchar(250) DEFAULT NULL,
+  `created_id` int(10) DEFAULT NULL,
+  `updated_id` int(10) DEFAULT NULL,
+  `data_state` int(1) DEFAULT 0,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`item_barcode_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `invt_item_barcode` */
+
+insert  into `invt_item_barcode`(`item_barcode_id`,`company_id`,`item_id`,`item_unit_id`,`item_packge_id`,`item_barcode`,`created_id`,`updated_id`,`data_state`,`created_at`,`updated_at`) values 
+(10,1,33,32,18,'8886008101053',55,55,0,'2022-08-24 09:12:35','2022-08-24 09:12:35'),
+(11,1,33,33,19,'868738049891092',55,55,0,'2022-08-24 09:13:43','2022-08-24 09:13:43');
 
 /*Table structure for table `invt_item_category` */
 
@@ -373,16 +400,48 @@ CREATE TABLE `invt_item_category` (
   `updated_id` int(10) DEFAULT NULL,
   `created_id` int(10) DEFAULT NULL,
   PRIMARY KEY (`item_category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `invt_item_category` */
 
 insert  into `invt_item_category`(`item_category_id`,`company_id`,`item_category_code`,`item_category_name`,`item_category_remark`,`data_state`,`updated_at`,`created_at`,`updated_id`,`created_id`) values 
-(10,1,'PLS XL','PLS XL',NULL,0,'2022-08-03 11:18:38','2022-08-03 11:09:43',55,55),
-(11,1,'MASKER','MASKER',NULL,0,'2022-08-03 11:13:53','2022-08-03 11:13:53',55,55),
-(12,1,'VCR XL','VCR XL',NULL,0,'2022-08-03 11:19:33','2022-08-03 11:14:09',55,55),
-(13,1,'PLS TSEL','PLS TSEL',NULL,0,'2022-08-03 11:20:03','2022-08-03 11:20:03',55,55),
-(14,1,'VCR TSEL','VCR TSEL',NULL,0,'2022-08-03 11:20:24','2022-08-03 11:20:24',55,55);
+(18,1,'AIR MINERAL','AIR MINERAL',NULL,0,'2022-08-22 09:39:53','2022-08-22 09:39:53',55,55),
+(20,1,'ROTI','ROTI',NULL,0,'2022-08-22 10:09:45','2022-08-22 09:41:02',55,55),
+(21,1,'GULA','GULA',NULL,0,'2022-08-22 10:11:44','2022-08-22 10:11:44',55,55);
+
+/*Table structure for table `invt_item_packge` */
+
+DROP TABLE IF EXISTS `invt_item_packge`;
+
+CREATE TABLE `invt_item_packge` (
+  `item_packge_id` int(10) NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) DEFAULT NULL,
+  `item_id` int(10) DEFAULT NULL,
+  `item_unit_id` int(10) DEFAULT NULL,
+  `item_category_id` int(10) DEFAULT NULL,
+  `item_default_quantity` varchar(250) DEFAULT NULL,
+  `item_unit_price` varchar(250) DEFAULT NULL,
+  `item_unit_cost` varchar(250) DEFAULT NULL,
+  `order` int(10) DEFAULT NULL,
+  `data_state` int(1) DEFAULT 0,
+  `created_id` int(10) DEFAULT NULL,
+  `updated_id` int(10) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`item_packge_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `invt_item_packge` */
+
+insert  into `invt_item_packge`(`item_packge_id`,`company_id`,`item_id`,`item_unit_id`,`item_category_id`,`item_default_quantity`,`item_unit_price`,`item_unit_cost`,`order`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
+(18,1,33,32,18,'1','3500','3000',1,0,55,55,'2022-08-22 10:24:46','2022-08-22 10:24:46'),
+(19,1,33,33,18,'10','35000','30000',2,0,55,55,'2022-08-22 10:24:46','2022-08-22 10:24:46'),
+(20,1,33,NULL,18,NULL,NULL,NULL,3,0,55,55,'2022-08-22 10:24:46','2022-08-22 10:55:50'),
+(21,1,33,NULL,18,NULL,NULL,NULL,4,0,55,55,'2022-08-22 10:24:46','2022-08-22 10:24:46'),
+(22,1,34,32,18,'1','4000','3500',1,0,55,55,'2022-08-22 10:58:27','2022-08-22 10:58:27'),
+(23,1,34,33,18,'10','40000','35000',2,0,55,55,'2022-08-22 10:58:27','2022-08-22 10:58:27'),
+(24,1,34,34,18,'100','400000','350000',3,0,55,55,'2022-08-22 10:58:27','2022-08-22 11:00:15'),
+(25,1,34,NULL,18,NULL,NULL,NULL,4,0,55,55,'2022-08-22 10:58:27','2022-08-22 10:58:27');
 
 /*Table structure for table `invt_item_stock` */
 
@@ -411,22 +470,13 @@ CREATE TABLE `invt_item_stock` (
   CONSTRAINT `FK_item_id_stock` FOREIGN KEY (`item_id`) REFERENCES `invt_item` (`item_id`),
   CONSTRAINT `FK_item_unit_id_stock` FOREIGN KEY (`item_unit_id`) REFERENCES `invt_item_unit` (`item_unit_id`),
   CONSTRAINT `Fk_warehouse_id_stock` FOREIGN KEY (`warehouse_id`) REFERENCES `invt_warehouse` (`warehouse_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `invt_item_stock` */
 
 insert  into `invt_item_stock`(`item_stock_id`,`company_id`,`warehouse_id`,`item_id`,`item_unit_id`,`item_category_id`,`last_balance`,`last_update`,`data_state`,`updated_at`,`updated_id`,`created_at`,`created_id`) values 
-(16,1,6,15,26,10,'12','2022-08-05 16:14:57',0,'2022-08-05 16:14:57',55,'2022-08-03 11:28:55',55),
-(17,1,6,16,26,10,'0','2022-08-03 11:54:17',0,'2022-08-03 11:54:17',55,'2022-08-03 11:29:29',55),
-(18,1,6,17,26,13,'12','2022-08-03 11:45:40',0,'2022-08-03 11:45:40',55,'2022-08-03 11:30:22',55),
-(19,1,6,18,26,13,'0',NULL,0,'2022-08-03 11:30:46',55,'2022-08-03 11:30:46',55),
-(20,1,6,19,27,11,'0',NULL,0,'2022-08-03 11:31:38',55,'2022-08-03 11:31:38',55),
-(21,1,6,20,27,12,'0','2022-08-03 11:33:16',1,'2022-08-03 11:33:16',55,'2022-08-03 11:32:58',55),
-(22,1,6,21,26,14,'0','2022-08-03 11:34:40',1,'2022-08-03 11:34:40',55,'2022-08-03 11:34:23',55),
-(23,1,6,22,26,12,'0',NULL,0,'2022-08-03 11:35:17',55,'2022-08-03 11:35:17',55),
-(24,1,6,23,26,12,'0',NULL,0,'2022-08-03 11:35:40',55,'2022-08-03 11:35:40',55),
-(25,1,6,24,26,14,'4','2022-08-03 11:48:45',0,'2022-08-03 11:48:45',55,'2022-08-03 11:36:16',55),
-(26,1,6,25,27,11,'0',NULL,0,'2022-08-03 11:37:20',55,'2022-08-03 11:37:20',55);
+(38,1,6,33,32,18,'6','2022-08-24 11:25:28',0,'2022-08-24 11:25:28',55,'2022-08-22 10:24:46',55),
+(39,1,6,34,32,18,'-12','2022-08-24 17:05:53',0,'2022-08-24 17:05:53',55,'2022-08-22 10:58:27',55);
 
 /*Table structure for table `invt_item_unit` */
 
@@ -444,13 +494,16 @@ CREATE TABLE `invt_item_unit` (
   `updated_id` int(10) DEFAULT NULL,
   `created_id` int(10) DEFAULT NULL,
   PRIMARY KEY (`item_unit_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `invt_item_unit` */
 
 insert  into `invt_item_unit`(`item_unit_id`,`company_id`,`item_unit_code`,`item_unit_name`,`item_unit_remark`,`data_state`,`updated_at`,`created_at`,`updated_id`,`created_id`) values 
-(26,1,'UNIT','UNIT',NULL,0,'2022-08-03 11:10:29','2022-08-03 11:10:29',55,55),
-(27,1,'PACK','PACK',NULL,0,'2022-08-03 11:13:31','2022-08-03 11:13:31',55,55);
+(32,1,'PCS','PCS',NULL,0,'2022-08-22 09:38:14','2022-08-22 09:38:14',55,55),
+(33,1,'PACK','PACK',NULL,0,'2022-08-22 09:38:26','2022-08-22 09:38:26',55,55),
+(34,1,'BOX','BOX',NULL,0,'2022-08-22 09:38:40','2022-08-22 09:38:40',55,55),
+(35,1,'KG','KG',NULL,0,'2022-08-22 09:38:49','2022-08-22 09:38:49',55,55),
+(36,1,'KARUNG','KARUNG',NULL,0,'2022-08-22 09:39:02','2022-08-22 09:39:02',55,55);
 
 /*Table structure for table `invt_stock_adjustment` */
 
@@ -612,7 +665,7 @@ CREATE TABLE `preference_company` (
 /*Data for the table `preference_company` */
 
 insert  into `preference_company`(`company_id`,`company_name`,`company_address`,`company_phone_number`,`company_mobile_number`,`company_email`,`company_website`,`company_logo`,`printer_address`,`receipt_bottom_text`,`data_state`,`created_at`,`updated_at`) values 
-(1,'TOKO JAYA','Jl.Lawu, Jawa tengah, Indonesia','081122223333','0125321','tokojaya@gmail.com','tokojaya.com',NULL,'66:12:0D:33:A8:D3',':::::Terima Kasih:::::',0,'2022-07-04 16:39:34','2022-07-19 11:12:24'),
+(1,'TOKO JAYA','Jl. Raya Solo-Tawangmangu, Dusun I, Jaten, Kec. Jaten, Kabupaten Karanganyar, Jawa Tengah 57731','081122223333','0125321','tokojaya@gmail.com','tokojaya.com',NULL,'66:12:0D:33:A8:D3',':::::Terima Kasih:::::',0,'2022-07-04 16:39:34','2022-07-19 11:12:24'),
 (2,'TOKO MAJU MAKMUR','Jl.Solo, Jawa Tengah, Indonesia','082190908989','0123910',NULL,'tokomajumakmur.com',NULL,NULL,':::::Terima Kasih:::::',0,'2022-07-05 09:09:27','2022-07-05 09:09:30');
 
 /*Table structure for table `preference_transaction_module` */
@@ -670,14 +723,15 @@ CREATE TABLE `purchase_invoice` (
   PRIMARY KEY (`purchase_invoice_id`),
   KEY `FK_warehouse_id_purchase_invoice` (`warehouse_id`),
   CONSTRAINT `FK_warehouse_id_purchase_invoice` FOREIGN KEY (`warehouse_id`) REFERENCES `invt_warehouse` (`warehouse_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `purchase_invoice` */
 
 insert  into `purchase_invoice`(`purchase_invoice_id`,`company_id`,`purchase_invoice_no`,`warehouse_id`,`subtotal_item`,`purchase_invoice_remark`,`purchase_invoice_date`,`purchase_invoice_supplier`,`subtotal_amount_total`,`discount_percentage_total`,`discount_amount_total`,`total_amount`,`paid_amount`,`owing_amount`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
-(60,1,'0001/PI/VIII/2022',6,'10',NULL,'2022-08-03','RIAN','65000','0','0','65000','65000','0',0,55,55,'2022-08-03 11:43:29','2022-08-03 11:43:29'),
-(61,1,'0002/PI/VIII/2022',6,'18',NULL,'2022-08-03','RIAN','378000','0','0','378000','378000','0',0,55,55,'2022-08-03 11:45:40','2022-08-03 11:45:40'),
-(62,1,'0003/PI/VIII/2022',6,'3',NULL,'2022-08-05','FAJAR','30000','0','0','30000','30000','0',0,55,55,'2022-08-05 16:14:57','2022-08-05 16:14:57');
+(64,1,'0001/PI/VIII/2022',6,'1',NULL,'2022-08-22','AHMAD','3000','0','0','3000','3000','0',0,55,55,'2022-08-22 11:25:58','2022-08-22 11:25:58'),
+(65,1,'0002/PI/VIII/2022',6,'1',NULL,'2022-08-22','AHMAD','30000','0','0','30000','30000','0',0,55,55,'2022-08-22 11:26:51','2022-08-22 11:26:51'),
+(66,1,'0003/PI/VIII/2022',6,'2',NULL,'2022-08-24','AHMAD','60000','0','0','60000','60000','0',0,55,55,'2022-08-24 11:25:28','2022-08-24 11:25:28'),
+(67,1,'0004/PI/VIII/2022',6,'1',NULL,'2022-08-24','Ahmad','350000','0','0','350000','350000','0',0,55,55,'2022-08-24 11:28:49','2022-08-24 11:28:49');
 
 /*Table structure for table `purchase_invoice_item` */
 
@@ -708,15 +762,15 @@ CREATE TABLE `purchase_invoice_item` (
   CONSTRAINT `Fk_item_purchase_invoice` FOREIGN KEY (`item_id`) REFERENCES `invt_item` (`item_id`),
   CONSTRAINT `Fk_item_unit_purchase_invoice` FOREIGN KEY (`item_unit_id`) REFERENCES `invt_item_unit` (`item_unit_id`),
   CONSTRAINT `Fk_purchase_invoice_id` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoice` (`purchase_invoice_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `purchase_invoice_item` */
 
 insert  into `purchase_invoice_item`(`purchase_invoice_item_id`,`company_id`,`purchase_invoice_id`,`item_category_id`,`item_unit_id`,`item_id`,`quantity`,`item_unit_cost`,`subtotal_amount`,`item_expired_date`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
-(64,1,60,10,26,15,'10','6500','65000','2022-11-19',0,55,55,'2022-08-03 11:43:29','2022-08-03 11:43:29'),
-(65,1,61,13,26,17,'12','6500','78000','2022-08-03',0,55,55,'2022-08-03 11:45:40','2022-08-03 11:45:40'),
-(66,1,61,14,26,24,'6','50000','300000','2022-08-03',0,55,55,'2022-08-03 11:45:40','2022-08-03 11:45:40'),
-(67,1,62,10,26,15,'3','10000','30000','2022-08-05',0,55,55,'2022-08-05 16:14:57','2022-08-05 16:14:57');
+(69,1,64,18,32,33,'1','3000','3000','2022-08-22',0,55,55,'2022-08-22 11:25:58','2022-08-22 11:25:58'),
+(70,1,65,18,33,33,'1','30000','30000','2022-08-22',0,55,55,'2022-08-22 11:26:51','2022-08-22 11:26:51'),
+(71,1,66,18,33,33,'2','30000','60000','2022-08-24',0,55,55,'2022-08-24 11:25:28','2022-08-24 11:25:28'),
+(72,1,67,18,34,34,'1','350000','350000','2022-08-24',0,55,55,'2022-08-24 11:28:49','2022-08-24 11:28:49');
 
 /*Table structure for table `purchase_return` */
 
@@ -740,12 +794,12 @@ CREATE TABLE `purchase_return` (
   PRIMARY KEY (`purchase_return_id`),
   KEY `Fk_warehouse_id` (`warehouse_id`),
   CONSTRAINT `Fk_warehouse_id` FOREIGN KEY (`warehouse_id`) REFERENCES `invt_warehouse` (`warehouse_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `purchase_return` */
 
 insert  into `purchase_return`(`purchase_return_id`,`company_id`,`purchase_return_no`,`warehouse_id`,`purchase_return_date`,`purchase_return_supplier`,`purchase_return_quantity`,`purchase_return_subtotal`,`purchase_return_remark`,`data_state`,`updated_at`,`created_at`,`updated_id`,`created_id`) values 
-(21,1,'0001/PR/VIII/2022',6,'2022-08-03','RIAN','2','100000',NULL,0,'2022-08-03 11:48:45','2022-08-03 11:48:45',55,55);
+(22,1,'0001/PR/VIII/2022',6,'2022-08-22','AHMAD','1','30000',NULL,0,'2022-08-22 11:29:33','2022-08-22 11:29:33',55,55);
 
 /*Table structure for table `purchase_return_item` */
 
@@ -769,12 +823,12 @@ CREATE TABLE `purchase_return_item` (
   PRIMARY KEY (`purchase_item_id`),
   KEY `FK_Purchase_return_id` (`purchase_return_id`),
   CONSTRAINT `FK_Purchase_return_id` FOREIGN KEY (`purchase_return_id`) REFERENCES `purchase_return` (`purchase_return_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `purchase_return_item` */
 
 insert  into `purchase_return_item`(`purchase_item_id`,`company_id`,`purchase_return_id`,`item_category_id`,`item_id`,`item_unit_id`,`purchase_item_cost`,`purchase_item_quantity`,`purchase_item_subtotal`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
-(18,1,21,14,24,26,'50000','2','100000',0,55,55,'2022-08-03 11:48:45','2022-08-03 11:48:45');
+(19,1,22,18,33,33,'30000','1','30000',0,55,55,'2022-08-22 11:29:33','2022-08-22 11:29:33');
 
 /*Table structure for table `sales_customer` */
 
@@ -791,9 +845,12 @@ CREATE TABLE `sales_customer` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`customer_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `sales_customer` */
+
+insert  into `sales_customer`(`customer_id`,`company_id`,`customer_name`,`customer_gender`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
+(1,1,'AHMAD',0,0,55,55,'2022-08-13 10:18:16','2022-08-13 10:18:16');
 
 /*Table structure for table `sales_invoice` */
 
@@ -820,13 +877,18 @@ CREATE TABLE `sales_invoice` (
   `created_id` int(10) DEFAULT NULL,
   `updated_id` int(10) DEFAULT NULL,
   PRIMARY KEY (`sales_invoice_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `sales_invoice` */
 
 insert  into `sales_invoice`(`sales_invoice_id`,`company_id`,`customer_id`,`sales_invoice_no`,`sales_invoice_date`,`subtotal_item`,`subtotal_amount`,`discount_percentage_total`,`discount_amount_total`,`total_amount`,`paid_amount`,`change_amount`,`table_no`,`payment_method`,`data_state`,`created_at`,`updated_at`,`created_id`,`updated_id`) values 
-(39,1,NULL,'0001/SI/VIII/2022','2022-08-03','1','7000','0','0','7000','7000','0',NULL,NULL,0,'2022-08-03 11:51:12','2022-08-03 11:51:12',55,55),
-(40,1,NULL,'0002/SI/VIII/2022','2022-08-03','2','19000','0','0','19000','19000','0',NULL,NULL,1,'2022-08-03 11:53:13','2022-08-03 11:54:17',55,55);
+(50,1,NULL,'0001/SI/VIII/2022','2022-08-23','2','7500','0','0','7500','7500','0',NULL,NULL,0,'2022-08-23 16:29:56','2022-08-23 16:29:56',55,55),
+(51,1,NULL,'0002/SI/VIII/2022','2022-08-23','1','3500','0','0','3500','3500','0',NULL,NULL,0,'2022-08-23 17:01:06','2022-08-23 17:01:06',55,55),
+(52,1,NULL,'0003/SI/VIII/2022','2022-08-23','1','3500','0','0','3500','3500','0',NULL,NULL,0,'2022-08-23 17:03:22','2022-08-23 17:03:22',55,55),
+(53,1,NULL,'0004/SI/VIII/2022','2022-08-23','1','400000','0','0','400000','400000','0',NULL,NULL,0,'2022-08-23 17:06:06','2022-08-23 17:06:06',55,55),
+(54,1,NULL,'0005/SI/VIII/2022','2022-08-23','1','40000','50','20000','20000','40000','20000',NULL,NULL,0,'2022-08-23 17:07:14','2022-08-23 17:07:14',55,55),
+(55,1,1,'0006/SI/VIII/2022','2022-08-24','3','42000','20','8400','33600','33600','0',NULL,NULL,0,'2022-08-24 09:19:06','2022-08-24 09:19:06',55,55),
+(56,1,NULL,'0007/SI/VIII/2022','2022-08-24','1','4000','0','0','4000','4000','0',NULL,NULL,0,'2022-08-24 17:05:53','2022-08-24 17:05:53',55,55);
 
 /*Table structure for table `sales_invoice_item` */
 
@@ -860,14 +922,20 @@ CREATE TABLE `sales_invoice_item` (
   CONSTRAINT `FK_sales_invoice_id` FOREIGN KEY (`sales_invoice_id`) REFERENCES `sales_invoice` (`sales_invoice_id`),
   CONSTRAINT `FK_sales_invoice_item` FOREIGN KEY (`item_id`) REFERENCES `invt_item` (`item_id`),
   CONSTRAINT `FK_sales_invoice_unit` FOREIGN KEY (`item_unit_id`) REFERENCES `invt_item_unit` (`item_unit_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `sales_invoice_item` */
 
 insert  into `sales_invoice_item`(`sales_invoice_item_id`,`company_id`,`sales_invoice_id`,`item_category_id`,`item_unit_id`,`item_id`,`quantity`,`item_unit_price`,`subtotal_amount`,`discount_percentage`,`discount_amount`,`subtotal_amount_after_discount`,`item_remark`,`data_state`,`created_id`,`updated_id`,`created_at`,`updated_at`) values 
-(56,1,39,10,26,15,'1','7000','7000','0','0','7000',NULL,0,55,55,'2022-08-03 11:51:12','2022-08-03 11:51:12'),
-(57,1,40,10,26,15,'1','7000','7000','0','0','7000',NULL,0,55,55,'2022-08-03 11:53:13','2022-08-03 11:53:13'),
-(58,1,40,10,26,16,'1','12000','12000','0','0','12000',NULL,0,55,55,'2022-08-03 11:53:13','2022-08-03 11:53:13');
+(70,1,50,18,32,33,'1','3500','3500',NULL,NULL,'3500',NULL,0,55,55,'2022-08-23 16:29:57','2022-08-23 16:29:57'),
+(71,1,50,18,32,34,'1','4000','4000',NULL,NULL,'4000',NULL,0,55,55,'2022-08-23 16:29:57','2022-08-23 16:29:57'),
+(72,1,51,18,32,33,'1','3500','3500',NULL,NULL,'3500',NULL,0,55,55,'2022-08-23 17:01:06','2022-08-23 17:01:06'),
+(73,1,52,18,32,33,'1','3500','3500',NULL,NULL,'3500',NULL,0,55,55,'2022-08-23 17:03:22','2022-08-23 17:03:22'),
+(74,1,53,18,34,34,'1','400000','400000',NULL,NULL,'400000',NULL,0,55,55,'2022-08-23 17:06:06','2022-08-23 17:06:06'),
+(75,1,54,18,33,34,'1','40000','40000',NULL,NULL,'40000',NULL,0,55,55,'2022-08-23 17:07:14','2022-08-23 17:07:14'),
+(76,1,55,18,32,33,'2','3500','7000',NULL,NULL,'7000',NULL,0,55,55,'2022-08-24 09:19:06','2022-08-24 09:19:06'),
+(77,1,55,18,33,33,'1','35000','35000',NULL,NULL,'35000',NULL,0,55,55,'2022-08-24 09:19:06','2022-08-24 09:19:06'),
+(78,1,56,18,32,34,'1','4000','4000',NULL,NULL,'4000',NULL,0,55,55,'2022-08-24 17:05:53','2022-08-24 17:05:53');
 
 /*Table structure for table `sessions` */
 
@@ -921,7 +989,7 @@ CREATE TABLE `system_login_log` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`login_log_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `system_login_log` */
 
@@ -947,7 +1015,23 @@ insert  into `system_login_log`(`login_log_id`,`user_id`,`company_id`,`log_time`
 (19,55,1,'2022-08-05 09:08:39',0,'2022-08-05 09:08:39','2022-08-05 09:08:39'),
 (20,55,1,'2022-08-06 09:10:40',0,'2022-08-06 09:10:40','2022-08-06 09:10:40'),
 (21,55,1,'2022-08-08 09:06:49',0,'2022-08-08 09:06:49','2022-08-08 09:06:49'),
-(22,55,1,'2022-08-09 09:05:54',0,'2022-08-09 09:05:55','2022-08-09 09:05:55');
+(22,55,1,'2022-08-09 09:05:54',0,'2022-08-09 09:05:55','2022-08-09 09:05:55'),
+(23,55,1,'2022-08-09 10:43:19',0,'2022-08-09 10:43:19','2022-08-09 10:43:19'),
+(24,55,1,'2022-08-10 09:27:43',0,'2022-08-10 09:27:43','2022-08-10 09:27:43'),
+(25,55,1,'2022-08-11 09:06:47',0,'2022-08-11 09:06:48','2022-08-11 09:06:48'),
+(26,55,1,'2022-08-12 09:06:19',0,'2022-08-12 09:06:20','2022-08-12 09:06:20'),
+(27,55,1,'2022-08-13 09:08:53',0,'2022-08-13 09:08:53','2022-08-13 09:08:53'),
+(28,55,1,'2022-08-15 09:11:28',0,'2022-08-15 09:11:29','2022-08-15 09:11:29'),
+(29,55,1,'2022-08-16 09:07:51',0,'2022-08-16 09:07:51','2022-08-16 09:07:51'),
+(30,55,1,'2022-08-16 17:01:13',1,'2022-08-16 17:01:13','2022-08-16 17:01:13'),
+(31,55,1,'2022-08-18 09:07:57',0,'2022-08-18 09:07:57','2022-08-18 09:07:57'),
+(32,55,1,'2022-08-19 09:15:24',0,'2022-08-19 09:15:24','2022-08-19 09:15:24'),
+(33,55,1,'2022-08-20 09:18:19',0,'2022-08-20 09:18:19','2022-08-20 09:18:19'),
+(34,55,1,'2022-08-20 09:19:19',0,'2022-08-20 09:19:19','2022-08-20 09:19:19'),
+(35,55,1,'2022-08-22 09:12:07',0,'2022-08-22 09:12:08','2022-08-22 09:12:08'),
+(36,55,1,'2022-08-23 09:15:55',0,'2022-08-23 09:15:56','2022-08-23 09:15:56'),
+(37,55,1,'2022-08-24 09:10:34',0,'2022-08-24 09:10:34','2022-08-24 09:10:34'),
+(38,55,1,'2022-08-25 09:10:56',0,'2022-08-25 09:10:56','2022-08-25 09:10:56');
 
 /*Table structure for table `system_menu` */
 

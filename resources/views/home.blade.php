@@ -341,7 +341,7 @@ am5.ready(function() {
 @section('content')
     
 <br>
-
+{{ phpinfo() }}
 <div class="row">
     <div class="col-md-12">
         <div class="card border border-dark">

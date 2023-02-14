@@ -31,7 +31,8 @@ class AcctDisbursementReportController extends Controller
             $end_date = Session::get('end_date');
         }
 
-        $data = Expenditure::where('data_state', 0)
+        $data = Expenditure::select('expenditure_remark','expenditure_date','expenditure_amount')
+        ->where('data_state', 0)
         ->where('company_id', Auth::user()->company_id)
         ->where('expenditure_date','>=',$start_date)
         ->where('expenditure_date','<=',$end_date)
@@ -72,7 +73,8 @@ class AcctDisbursementReportController extends Controller
             $end_date = Session::get('end_date');
         }
 
-        $data = Expenditure::where('data_state', 0)
+        $data = Expenditure::select('expenditure_remark','expenditure_date','expenditure_amount')
+        ->where('data_state', 0)
         ->where('company_id', Auth::user()->company_id)
         ->where('expenditure_date','>=',$start_date)
         ->where('expenditure_date','<=',$end_date)
@@ -114,15 +116,16 @@ class AcctDisbursementReportController extends Controller
         $tblStock1 = "
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
-                <td width=\"3%\" ><div style=\"text-align: center;\">No</div></td>
-                <td width=\"20%\" ><div style=\"text-align: center;\">Keterangan</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Tanggal</div></td>
-                <td width=\"13%\" ><div style=\"text-align: center;\">Nominal</div></td>
+                <td width=\"7%\" ><div style=\"text-align: center; font-weight: bold\">No</div></td>
+                <td width=\"31%\" ><div style=\"text-align: center; font-weight: bold\">Keterangan</div></td>
+                <td width=\"31%\" ><div style=\"text-align: center; font-weight: bold\">Tanggal</div></td>
+                <td width=\"31%\" ><div style=\"text-align: center; font-weight: bold\">Nominal</div></td>
             </tr>
         
              ";
 
         $no = 1;
+        $expenditureamount = 0;
         $tblStock2 =" ";
         foreach ($data as $key => $val) {
             $tblStock2 .="
@@ -134,10 +137,19 @@ class AcctDisbursementReportController extends Controller
                 </tr>
                 
             ";
+            $expenditureamount += $val['expenditure_amount'];
             $no++;
         }
         $tblStock3 = " 
-
+        <tr>
+            <td colspan=\"3\"><div style=\"text-align: center;  font-weight: bold\">TOTAL</div></td>
+            <td style=\"text-align: right\"><div style=\"font-weight: bold\">". number_format($expenditureamount,2,'.',',') ."</div></td>
+        </tr>
+        </table>
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
+            </tr>
         </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3, true, false, false, false, '');
@@ -159,7 +171,8 @@ class AcctDisbursementReportController extends Controller
             $end_date = Session::get('end_date');
         }
 
-        $data = Expenditure::where('data_state', 0)
+        $data = Expenditure::select('expenditure_remark','expenditure_date','expenditure_amount')
+        ->where('data_state', 0)
         ->where('company_id', Auth::user()->company_id)
         ->where('expenditure_date','>=',$start_date)
         ->where('expenditure_date','<=',$end_date)
@@ -180,13 +193,14 @@ class AcctDisbursementReportController extends Controller
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
             $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(5);
-            $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(40);
             $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(20);
     
             $spreadsheet->getActiveSheet()->mergeCells("B1:E1");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
+            $spreadsheet->getActiveSheet()->getStyle('B3:E3')->getFont()->setBold(true);
 
             $spreadsheet->getActiveSheet()->getStyle('B3:E3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
             $spreadsheet->getActiveSheet()->getStyle('B3:E3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
@@ -199,33 +213,43 @@ class AcctDisbursementReportController extends Controller
             
             $j=4;
             $no=0;
-            
+            $total_expenditure_amount = 0;
+
             foreach($data as $key=>$val){
+                $sheet = $spreadsheet->getActiveSheet(0);
+                $spreadsheet->getActiveSheet()->setTitle("Laporan Pengeluaran Kas");
+                $spreadsheet->getActiveSheet()->getStyle('B'.$j.':E'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
-                if(is_numeric($key)){
-                    
-                    $sheet = $spreadsheet->getActiveSheet(0);
-                    $spreadsheet->getActiveSheet()->setTitle("Laporan Pengeluaran Kas");
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':E'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-
-                    $spreadsheet->getActiveSheet()->getStyle('H'.$j.':E'.$j)->getNumberFormat()->setFormatCode('0.00');
-            
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                    $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-
-
-
-                    $no++;
-                    $sheet->setCellValue('B'.$j, $no);
-                    $sheet->setCellValue('C'.$j, $val['expenditure_remark']);
-                    $sheet->setCellValue('D'.$j, date('d-m-Y', strtotime($val['expenditure_date'])));
-                    $sheet->setCellValue('E'.$j, number_format($val['expenditure_amount'],2,'.',','));
-                }
-                $j++;
+                $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getNumberFormat()->setFormatCode('0.00');
         
+                $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+
+                $no++;
+                $sheet->setCellValue('B'.$j, $no);
+                $sheet->setCellValue('C'.$j, $val['expenditure_remark']);
+                $sheet->setCellValue('D'.$j, date('d-m-Y', strtotime($val['expenditure_date'])));
+                $sheet->setCellValue('E'.$j, $val['expenditure_amount']);
+
+                $j++;
+                $total_expenditure_amount += $val['expenditure_amount'];
             }
+
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':D'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':E'.$j)->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':E'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getNumberFormat()->setFormatCode('0.00');
+
+            $sheet->setCellValue('B'.$j, 'TOTAL');
+            $sheet->setCellValue('E'.$j, $total_expenditure_amount);
+            $j++;
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':E'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->setCellValue('B'.$j, Auth::user()->name.", ".date('d-m-Y H:i'));
             
             $filename='Laporan_Pengeluaran_Kas_'.$start_date.'_s.d._'.$end_date.'.xls';
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

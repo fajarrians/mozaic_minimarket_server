@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\AcctAccount;
 use App\Models\AcctAccountSetting;
+use App\Models\CoreSupplier;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
 use App\Models\InvtItemPackge;
@@ -15,6 +16,7 @@ use App\Models\JournalVoucher;
 use App\Models\JournalVoucherItem;
 use App\Models\PreferenceTransactionModule;
 use App\Models\PurchaseReturn;
+use App\Models\PurchaseInvoice;
 use App\Models\PurchaseReturnItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -86,7 +88,11 @@ class PurchaseReturnController extends Controller
         ->pluck('item_name','item_id');
         $datases   = Session::get('datases');
         $arraydatases = Session::get('arraydatases');
-        return view('content.PurchaseReturn.FormAddPurchaseReturn', compact('items', 'units', 'categorys', 'warehouses','datases','arraydatases'));
+        $suppliers = CoreSupplier::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get()
+        ->pluck('supplier_name','supplier_id');
+        return view('content.PurchaseReturn.FormAddPurchaseReturn', compact('items', 'units', 'categorys', 'warehouses','datases','arraydatases','suppliers'));
     }
 
     public function addResetPurchaseReturn()
@@ -100,7 +106,7 @@ class PurchaseReturnController extends Controller
     {
         $datases = Session::get('datases');
         if(!$datases || $datases == ''){
-            $datases['purchase_return_supplier']    = '';
+            $datases['supplier_id']                 = '';
             $datases['warehouse_id']                = '';
             $datases['purchase_return_date']        = '';
             $datases['purchase_return_remark']      = '';
@@ -114,40 +120,51 @@ class PurchaseReturnController extends Controller
         $transaction_module_code = 'RPBL';
         $transaction_module_id  = $this->getTransactionModuleID($transaction_module_code);
         $fields = $request->validate([
-            'purchase_return_supplier' => 'required',
+            'supplier_id'              => 'required',
+            'purchase_invoice_no'      => 'required',
             'warehouse_id'             => 'required',
             'purchase_return_date'     => 'required',
             'purchase_return_remark'   => '',
             'total_quantity'           => 'required',
-            'subtotal'                 => 'required'
+            'subtotal'                 => 'required',
+            'total_amount'             => 'required',
         ]);
 
         $datases = array(
-            'purchase_return_supplier'  => $fields['purchase_return_supplier'],
+            'supplier_id'               => $fields['supplier_id'],
             'warehouse_id'              => $fields['warehouse_id'],
+            'purchase_invoice_id'       => $request['purchase_invoice_no'],
             'purchase_return_date'      => $fields['purchase_return_date'],
             'purchase_return_remark'    => $fields['purchase_return_remark'],
             'purchase_return_quantity'  => $fields['total_quantity'],
-            'purchase_return_subtotal'  => $fields['subtotal'],
+            'subtotal_amount_total'     => $fields['subtotal'],
+            'discount_percentage_total' => $request['discount_percentage_total'],
+            'discount_amount_total'     => $request['discount_amount_total'],
+            'tax_ppn_percentage'        => $request['tax_ppn_percentage'],
+            'tax_ppn_amount'            => $request['tax_ppn_amount'],
+            'shortover_amount'          => $request['shortover_amount'],
+            'purchase_return_subtotal'  => $fields['total_amount'],
             'company_id'                => Auth::user()->company_id,
             'updated_id'                => Auth::id(),
             'created_id'                => Auth::id()
         );
-        $journal = array(
-            'company_id'                    => Auth::user()->company_id,
-            'transaction_module_id'         => $transaction_module_id,
-            'transaction_module_code'       => $transaction_module_code,
-            'journal_voucher_status'        => 1,
-            'journal_voucher_date'          => $fields['purchase_return_date'],
-            'journal_voucher_description'   => $this->getTransactionModuleName($transaction_module_code),
-            'journal_voucher_period'        => date('Ym'),
-            'journal_voucher_title'         => $this->getTransactionModuleName($transaction_module_code),
-            'updated_id'                    => Auth::id(),
-            'created_id'                    => Auth::id()
-        );
-
-        if(PurchaseReturn::create($datases) && JournalVoucher::create($journal)){
+        
+        if(PurchaseReturn::create($datases)){
             $purchase_return_id = PurchaseReturn::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+            $journal = array(
+                'company_id'                    => Auth::user()->company_id,
+                'transaction_module_id'         => $transaction_module_id,
+                'transaction_module_code'       => $transaction_module_code,
+                'transaction_journal_no'        => $purchase_return_id['purchase_return_no'],
+                'journal_voucher_status'        => 1,
+                'journal_voucher_date'          => $fields['purchase_return_date'],
+                'journal_voucher_description'   => $this->getTransactionModuleName($transaction_module_code),
+                'journal_voucher_period'        => date('Ym'),
+                'journal_voucher_title'         => $this->getTransactionModuleName($transaction_module_code),
+                'updated_id'                    => Auth::id(),
+                'created_id'                    => Auth::id()
+            );
+            JournalVoucher::create($journal);
             $arraydatases       = Session::get('arraydatases');
             foreach ($arraydatases AS $key => $val){
                 $dataarray = array (
@@ -188,17 +205,17 @@ class PurchaseReturnController extends Controller
             $account_default_status = $this->getAccountDefaultStatus($account_id);
             $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
             if ($account_setting_status == 0){
-                $debit_amount = $fields['subtotal'];
+                $debit_amount = $fields['total_amount'];
                 $credit_amount = 0;
             } else {
                 $debit_amount = 0;
-                $credit_amount = $fields['subtotal'];
+                $credit_amount = $fields['total_amount'];
             }
             $journal_debit = array(
                 'company_id'                    => Auth::user()->company_id,
                 'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
                 'account_id'                    => $account_id,
-                'journal_voucher_amount'        => $fields['subtotal'],
+                'journal_voucher_amount'        => $fields['total_amount'],
                 'account_id_default_status'     => $account_default_status,
                 'account_id_status'             => $account_setting_status,
                 'journal_voucher_debit_amount'  => $debit_amount,
@@ -214,17 +231,17 @@ class PurchaseReturnController extends Controller
             $account_default_status = $this->getAccountDefaultStatus($account_id);
             $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
             if ($account_setting_status == 0){
-                $debit_amount = $fields['subtotal'];
+                $debit_amount = $fields['total_amount'];
                 $credit_amount = 0;
             } else {
                 $debit_amount = 0;
-                $credit_amount = $fields['subtotal'];
+                $credit_amount = $fields['total_amount'];
             }
             $journal_credit = array(
                 'company_id'                    => Auth::user()->company_id,
                 'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
                 'account_id'                    => $account_id,
-                'journal_voucher_amount'        => $fields['subtotal'],
+                'journal_voucher_amount'        => $fields['total_amount'],
                 'account_id_default_status'     => $account_default_status,
                 'account_id_status'             => $account_setting_status,
                 'journal_voucher_debit_amount'  => $debit_amount,
@@ -233,6 +250,15 @@ class PurchaseReturnController extends Controller
                 'created_id'                    => Auth::id()
             );
             JournalVoucherItem::create($journal_credit);
+
+            PurchaseInvoice::where('purchase_invoice_id', $request->purchase_invoice_no)
+            ->update([
+                'return_amount' => $fields['total_amount'],
+                'updated_id'    => Auth::id()
+            ]);
+
+            Session::forget('datases');
+            Session::forget('arraydatases');    
             
             $msg = 'Tambah Retur Pembelian Berhasil';
             return redirect('/purchase-return/add')->with('msg',$msg);
@@ -245,18 +271,19 @@ class PurchaseReturnController extends Controller
     public function addArrayPurchaseReturn(Request $request)
     {
         $request->validate([
-            'item_category_id'          => 'required',
-            'item_id'                   => 'required',
-            'item_unit_id'              => 'required',
+            'item_packge_id'            => 'required',
             'purchase_return_cost'      => 'required',
             'purchase_return_quantity'  => 'required',
             'purchase_return_subtotal'  => 'required'
         ]);
 
+        $data_package = InvtItemPackge::where('item_packge_id', $request->item_packge_id)
+        ->first();
+
         $arraydatases = array(
-            'item_category_id'          => $request->item_category_id,
-            'item_id'                   => $request->item_id,
-            'item_unit_id'              => $request->item_unit_id,
+            'item_category_id'          => $data_package->item_category_id,
+            'item_id'                   => $data_package->item_id,
+            'item_unit_id'              => $data_package->item_unit_id,
             'purchase_return_cost'      => $request->purchase_return_cost,
             'purchase_return_quantity'  => $request->purchase_return_quantity,
             'purchase_return_subtotal'  => $request->purchase_return_subtotal,
@@ -276,7 +303,14 @@ class PurchaseReturnController extends Controller
 
     public function getItemName($item_id){
         $item = InvtItem::where('item_id', $item_id)->first();
+
         return $item['item_name'];
+    }
+
+    public function getItemUnitName($item_unit_id){
+        $item = InvtItemUnit::where('item_unit_id', $item_unit_id)->first();
+
+        return $item['item_unit_name'];
     }
 
     public function deleteArrayPurchaseReturn($record_id)
@@ -323,8 +357,15 @@ class PurchaseReturnController extends Controller
         ->where('data_state',0)
         ->first();
         $purchasereturnitem = PurchaseReturnItem::where('purchase_return_id', $purchase_return_id)->get();
-
-        return view('content.PurchaseReturn.FormDetailPurchaseReturn',compact('purchasereturn','categorys','warehouses','units','items', 'purchasereturnitem'));
+        $suppliers = CoreSupplier::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get()
+        ->pluck('supplier_name','supplier_id');
+        $purchase_invoice = PurchaseInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get()
+        ->pluck('purchase_invoice_no','purchase_invoice_id');
+        return view('content.PurchaseReturn.FormDetailPurchaseReturn',compact('purchasereturn','categorys','warehouses','units','items', 'purchasereturnitem','suppliers','purchase_invoice'));
     }
 
     public function filterResetPurchaseReturn()
@@ -371,5 +412,61 @@ class PurchaseReturnController extends Controller
         $data = AcctAccount::where('account_id',$account_id)->first();
 
         return $data['account_default_status'];
+    }
+
+    public function getSupplierName($supplier_id)
+    {
+        $data = CoreSupplier::where('supplier_id', $supplier_id)
+        ->first();
+
+        return $data['supplier_name'];
+    }
+
+    public function supplierinvoice($supplier_id)
+    {
+        $purchase_invoice = PurchaseInvoice::select('purchase_invoice_id','purchase_invoice_no')
+        ->where('purchase_payment_method',1)
+        ->where('data_state',0)
+        ->where('supplier_id', $supplier_id)
+        ->get();
+
+        $data = '';
+        foreach ($purchase_invoice as $mp){
+            $data .= "<option value='$mp[purchase_invoice_id]'>$mp[purchase_invoice_no]</option>\n";	
+        }
+        return $data;
+    }
+
+    public function supplierItem($supplier_id)
+    {
+        $purchase_invoice = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
+        ->select('purchase_invoice_item.item_id','purchase_invoice_item.item_unit_id')
+        ->where('purchase_invoice.data_state',0)
+        ->where('purchase_invoice.supplier_id', $supplier_id)
+        ->get();
+
+        $item_purchase = array();
+        foreach ($purchase_invoice as $key => $val) {
+            $data_package = InvtItemPackge::where('item_id',$val['item_id'])
+            ->where('item_unit_id',$val['item_unit_id'])
+            ->select('item_id','item_unit_id','item_packge_id')
+            ->first();
+            $data_package = array(
+                'item_packge_id' => $data_package['item_packge_id'],
+                'item_id' => $data_package['item_id'],
+                'item_unit_id' => $data_package['item_unit_id'],
+            );
+            array_push($item_purchase, $data_package);
+        }
+
+        $data_item = array_unique($item_purchase, SORT_REGULAR);
+
+        $data = '';
+        $data .= "<option value=''>--Choose One--</option>";
+        foreach ($data_item as $mp) {
+            $data .= "<option value='$mp[item_packge_id]'>".$this->getItemName($mp['item_id'])." - ".$this->getItemUnitName($mp['item_unit_id'])."</option>\n";	
+        }
+
+        return $data;
     }
 }

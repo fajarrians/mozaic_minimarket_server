@@ -57,7 +57,7 @@
 
                     {{-- <div class = "col-md-6">
                         <div class="form-group form-md-line-input">
-                            <section class="control-label">Nama Pemasok
+                            <section class="control-label">Nama Supplier
                                 <span class="required text-danger">
                                     *
                                 </span>
@@ -129,7 +129,7 @@
                         <td>{{ date('d-m-Y', strtotime($row['stock_adjustment_date'])) }}</td>
                         <td>{{ $ISAC->getWarehouseName($row['warehouse_id']) }}</td>
                         <td>{{ $ISAC->getItemName($row['item_id']) }}</td>
-                        <td>{{ $row['last_balance_adjustment'] }}</td>
+                        <td style="text-align: right">{{ $row['last_balance_adjustment'] }}</td>
                         <td style="text-align: center">
                             <a type="button" class="btn btn-outline-warning btn-sm" href="{{ url('/stock-adjustment/detail/'.$row['stock_adjustment_id']) }}">Detail</a>
                         </td>

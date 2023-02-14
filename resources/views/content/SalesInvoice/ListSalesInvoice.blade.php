@@ -106,9 +106,9 @@
     <h5 class="mb-0 float-left">
         Daftar
     </h5>
-    <div class="form-actions float-right">
+    {{-- <div class="form-actions float-right">
         <button onclick="location.href='{{ url('/sales-invoice/add') }}'" name="Find" class="btn btn-sm btn-info" title="Add Data"><i class="fa fa-plus"></i> Tambah Penjualan</button>
-    </div>
+    </div> --}}
   </div>
 
     <div class="card-body">
@@ -119,7 +119,7 @@
                         <th width="2%" style='text-align:center'>No</th>
                         <th width="15%" style='text-align:center'>Tanggal Invoice</th>
                         <th width="15%" style='text-align:center'>Nomor Invoice</th>
-                        <th width="15%" style='text-align:center'>Pelanggan</th>
+                        <th width="15%" style='text-align:center'>Anggota</th>
                         <th width="15%" style='text-align:center'>Subtotal</th>
                         <th width="10%" style='text-align:center'>Aksi</th>
                     </tr>

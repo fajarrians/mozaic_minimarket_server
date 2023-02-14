@@ -12,6 +12,8 @@ use App\Models\InvtWarehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Yajra\DataTables\Facades\DataTables;
 
 class InvtItemController extends Controller
 {
@@ -51,11 +53,11 @@ class InvtItemController extends Controller
     {
         $items = Session::get('items');
         if(!$items || $items == ''){
-            $items['item_code']         = '';
-            $items['item_category_id']  = '';
-            $items['item_name']         = '';
+            $items['item_code']           = '';
+            $items['item_category_id']    = '';
+            $items['item_name']           = '';
             // $items['item_barcode']      = '';
-            $items['item_remark']       = '';
+            $items['item_remark']         = '';
             $items['item_unit_id_1']      = '';
             $items['item_quantity_1']     = '';
             $items['item_price_1']        = '';
@@ -144,10 +146,10 @@ class InvtItemController extends Controller
         // dd($data_packge);
         if($data->save()){
             $msg    = "Tambah Barang Berhasil";
-            return redirect('/item/add-item')->with('msg', $msg);
+            return redirect()->back()->with('msg', $msg);
         } else {
             $msg    = "Tambah Barang Gagal";
-            return redirect('/item/add-item')->with('msg', $msg);
+            return redirect()->back()->with('msg', $msg);
         }
     }
 
@@ -161,12 +163,15 @@ class InvtItemController extends Controller
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('item_category_name','item_category_id');
-        $items  = InvtItem::where('item_id', $item_id)->first();
+        $items  = InvtItem::select('item_category_id','item_code','item_id','item_name','item_remark')
+        ->where('item_id', $item_id)
+        ->first();
         $status = array(
             0 => 'Aktif',
             1 => 'Non Aktif'
         );
-        $item_packge = InvtItemPackge::where('item_id', $item_id)
+        $item_packge = InvtItemPackge::select('order','item_unit_id','item_default_quantity','item_packge_id','item_unit_cost','item_unit_price')
+        ->where('item_id', $item_id)
         ->get();
         // dd($item_packge);
         return view('content.InvtItem.FormEditInvtItem', compact('items', 'itemunits', 'category','status','item_packge'));
@@ -174,14 +179,11 @@ class InvtItemController extends Controller
 
     public function processEditItem(Request $request)
     {
-        // dd($request->all());
         $fields = $request->validate([
             'item_id'           => '',
             'item_category_id'  => 'required',
-            'item_status'       => 'required',
             'item_code'         => 'required',
             'item_name'         => 'required',
-            // 'item_barcode'      => '',
             'item_remark'       => '',
             'item_unit_id_1'    => 'required',
             'item_quantity_1'   => 'required',
@@ -191,10 +193,8 @@ class InvtItemController extends Controller
 
         $table                          = InvtItem::findOrFail($fields['item_id']);
         $table->item_category_id        = $fields['item_category_id'];
-        $table->item_status             = $fields['item_status'];
         $table->item_code               = $fields['item_code'];
         $table->item_name               = $fields['item_name'];
-        // $table->item_barcode            = $fields['item_barcode'];
         $table->item_remark             = $fields['item_remark'];
         $table->item_unit_id            = $fields['item_unit_id_1'];
         $table->item_default_quantity   = $fields['item_quantity_1'];
@@ -206,7 +206,7 @@ class InvtItemController extends Controller
         for ($i=1; $i <= 4; $i++) {
             $first_data_packge[$i] = InvtItemPackge::where('item_packge_id',$request['item_packge_id_'.$i])
             ->first();
-            $data_packge[$i] = InvtItemPackge::findOrFail($request['item_packge_id_'.$i])
+            $data_packge[$i] = InvtItemPackge::findOrFail($first_data_packge[$i]['item_packge_id'])
             ->update([
                 'item_unit_id'          => $request['item_unit_id_'.$i],
                 'item_category_id'      => $request['item_category_id'],
@@ -221,14 +221,14 @@ class InvtItemController extends Controller
         ->where('item_unit_id', $request['item_unit_id_1'])
         ->where('item_category_id', $request['item_category_id'])
         ->first();
-        $data_stock = InvtItemStock::findOrFail($first_data_stock['item_stock_id'])
+        InvtItemStock::where('item_stock_id',$first_data_stock['item_stock_id'])
         ->update([
             'item_unit_id'          => $request['item_unit_id_1'],
             'item_category_id'      => $request['item_category_id'],
+            'updated_id'            => Auth::id(),
         ]);
         
-        // dd($table);
-        if($table->save() && $data_stock == true){
+        if($table->save()){
             $msg = "Ubah Barang Berhasil";
             return redirect('/item')->with('msg', $msg);
         } else {
@@ -271,5 +271,81 @@ class InvtItemController extends Controller
     {
         Session::forget('items');
         return redirect('/item/add-item');
+    }
+
+    public function dataTableItem(Request $request)
+    {
+        $draw 				= 		$request->get('draw');
+        $start 				= 		$request->get("start");
+        $rowPerPage 		= 		$request->get("length");
+        $orderArray 	    = 		$request->get('order');
+        $columnNameArray 	= 		$request->get('columns');
+        $searchArray 		= 		$request->get('search');
+        $columnIndex 		= 		$orderArray[0]['column'];
+        $columnName 		= 		$columnNameArray[$columnIndex]['data'];
+        $columnSortOrder 	= 		$orderArray[0]['dir'];
+        $searchValue 		= 		$searchArray['value'];
+
+
+        $users = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
+        ->where('invt_item.data_state','=',0)
+        ->where('invt_item.company_id', Auth::user()->company_id);
+        $total = $users->count();
+
+        $totalFilter = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
+        ->where('invt_item.data_state','=',0)
+        ->where('invt_item.company_id', Auth::user()->company_id);
+        if (!empty($searchValue)) {
+            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
+            $totalFilter = $totalFilter->orWhere('item_code','like','%'.$searchValue.'%');
+        }
+        $totalFilter = $totalFilter->count();
+
+
+        $arrData = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
+        ->where('invt_item.data_state','=',0)
+        ->where('invt_item.company_id', Auth::user()->company_id);
+        $arrData = $arrData->skip($start)->take($rowPerPage);
+        $arrData = $arrData->orderBy($columnName,$columnSortOrder);
+
+        if (!empty($searchValue)) {
+            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
+            $arrData = $arrData->orWhere('item_code','like','%'.$searchValue.'%');
+        }
+
+        $arrData = $arrData->get();
+
+         $no = $start;
+        $data = array();
+        foreach ($arrData as $key => $val) {
+            $no++;
+            $row = array();
+            $row['no'] = "<div class='text-center'>".$no.".</div>";
+            $row['item_category_name'] = $val['item_category_name'];
+            $row['item_code'] = $val['item_code'];
+            $row['item_name'] = $val['item_name'];
+            $row['barcode'] = "<div class='text-center'><a type='button' class='btn btn-outline-dark btn-sm' href='".url('/item-barcode/'. $val['item_id'])."'><i class='fa fa-barcode'></i> Barcode</a></div>";
+            $row['action'] = "<div class='text-center'><a type='button' class='btn btn-outline-warning btn-sm' href='".url('/item/edit-item/'.$val['item_id'])."'>Edit</a>
+            <a type='button' class='btn btn-outline-danger btn-sm' href='".url('/item/delete-item/'.$val['item_id'])."'>Hapus</a></div>";
+
+            $data[] = $row;
+        }
+        $response = array(
+            "draw" => intval($draw),
+            "recordsTotal" => $total,
+            "recordsFiltered" => $totalFilter,
+            "data" => $data,
+        );
+
+        return json_encode($response);
+    }
+
+    public function countMarginAddItem(Request $request)
+    {
+        $item_category = InvtItemCategory::where('item_category_id', $request->item_category_id)
+        ->first();
+        $data = (($request->item_unit_cost * $item_category['margin_percentage']) / 100) + $request->item_unit_cost;
+
+        return $data;
     }
 }

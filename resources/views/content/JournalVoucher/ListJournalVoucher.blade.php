@@ -57,7 +57,7 @@
 
                     {{-- <div class = "col-md-6">
                         <div class="form-group form-md-line-input">
-                            <section class="control-label">Nama Pemasok
+                            <section class="control-label">Nama Supplier
                                 <span class="required text-danger">
                                     *
                                 </span>

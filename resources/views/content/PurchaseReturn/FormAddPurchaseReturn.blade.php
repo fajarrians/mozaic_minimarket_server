@@ -37,14 +37,32 @@
 
             $("#purchase_return_subtotal").val(subtotal);
             $("#purchase_return_subtotal_view").val(toRp(subtotal));
+        });
 
+        var supplier_id = $('#supplier_id').val();
+        $.ajax({
+            url: "{{ url('purchase-return/supplier-invoice') }}"+'/'+supplier_id,
+            type: "GET",
+            dataType: "html",
+            success:function(data)
+            {
+                $('#purchase_invoice_no').html(data);
+            }
+        });
+        
+        $.ajax({
+            url: "{{ url('purchase-return/supplier-item') }}"+'/'+supplier_id,
+            type: "GET",
+            dataType: "html",
+            success:function(data)
+            {
+                $('#item_packge_id').html(data);
+            }
         });
     });
 
     function processAddArrayPurchaseReturn(){
-        var item_category_id		    = document.getElementById("item_category_id").value;
-        var item_id		                = document.getElementById("item_id").value;
-        var item_unit_id		        = document.getElementById("item_unit_id").value;
+        var item_packge_id		        = document.getElementById("item_packge_id").value;
         var purchase_return_cost		= document.getElementById("purchase_return_cost").value;
         var purchase_return_quantity    = document.getElementById("purchase_return_quantity").value;
         var purchase_return_subtotal    = document.getElementById("purchase_return_subtotal").value;
@@ -53,9 +71,7 @@
             type: "POST",
             url : "{{route('add-array-purchase-return')}}",
             data: {
-                'item_category_id'          : item_category_id,
-                'item_id'    		        : item_id, 
-                'item_unit_id'              : item_unit_id,
+                'item_packge_id'    		: item_packge_id, 
                 'purchase_return_cost'      : purchase_return_cost,
                 'purchase_return_quantity'  : purchase_return_quantity,
                 'purchase_return_subtotal'  : purchase_return_subtotal,
@@ -79,56 +95,142 @@
 	}
 
     $(document).ready(function(){
-        $("#item_category_id").select2("val", "0");
-        $("#item_unit_id").select2("val", "0");
-        $("#item_id").select2("val", "0");
+        $("#item_packge_id").change(function(){
+            $("#purchase_return_subtotal").val('');
+            $("#purchase_return_subtotal_view").val('');
+            $("#purchase_return_quantity").val('');
+            if (this.value != '') {
+                $.ajax({
+                    url: "{{ url('select-item-cost') }}"+'/'+this.value,
+                    type: "GET",
+                    dataType: "json",
+                    success:function(data)
+                    {
+                        $('#purchase_return_cost').val(data); 
+                        $('#purchase_return_cost_view').val(toRp(data));
+                    }
+                });
+            } else {
+                $('#purchase_return_cost').val(''); 
+                $('#purchase_return_cost_view').val(''); 
+                $("#purchase_return_subtotal").val('');
+                $("#purchase_return_subtotal_view").val('');
+                $("#purchase_return_quantity").val('');
+            }
+        });
 
-        $("#item_category_id").change(function(){
-            $("#item_unit_id").select2("val", "0");
-            $("#item_id").select2("val", "0");
-			var id 	= $("#item_category_id").val();
-            $.ajax({
-                url: "{{ url('select-item') }}"+'/'+id,
-                type: "GET",
-                dataType: "html",
-                success:function(data)
-                {
-                    $('#item_id').html(data);
+        $("#purchase_return_cost_view").change(function(){
+            var quantity = $("#purchase_return_quantity").val();
+            var cost     = $("#purchase_return_cost_view").val();
+            var subtotal = quantity * cost;
 
-                }
-            });
-		});
-
-        $("#item_id").change(function(){
-            $("#item_unit_id").select2("val", "0");
-			var id 	= $("#item_id").val();
-            $.ajax({
-                url: "{{ url('select-item-unit') }}"+'/'+id,
-                type: "GET",
-                dataType: "html",
-                success:function(data)
-                {
-                    $('#item_unit_id').html(data);
-
-                }
-            });
-		});
-
-        $("#item_unit_id").change(function(){
-			var unit_id 	= $("#item_unit_id").val();
-			var item_id 	= $("#item_id").val();
-            $.ajax({
-                url: "{{ url('select-item-cost') }}"+'/'+unit_id+'/'+item_id,
-                type: "GET",
-                dataType: "html",
-                success:function(data)
-                {
-                    $('#purchase_return_cost').val(data);
-
-                }
-            });
-		});
+            $("#purchase_return_subtotal").val(subtotal);
+            $("#purchase_return_subtotal_view").val(toRp(subtotal));
+            $("#purchase_return_cost_view").val(toRp(cost));
+            $("#purchase_return_cost").val(cost);
+        });
 	});
+    
+    $('#supplier_id').change(function(){
+        if (this.value != '') {
+            $.ajax({
+                url: "{{ url('purchase-return/supplier-invoice') }}"+'/'+this.value,
+                type: "GET",
+                dataType: "html",
+                success:function(data)
+                {
+                    $('#purchase_invoice_no').html(data);
+                }
+            });
+    
+            $.ajax({
+                url: "{{ url('purchase-return/supplier-item') }}"+'/'+this.value,
+                type: "GET",
+                dataType: "html",
+                success:function(data)
+                {
+                    $('#item_packge_id').html(data);
+                }
+            });
+        }
+    });
+
+    function final_total(name, value){
+        var total_amount = parseInt($('#subtotal').val());
+        if (name == 'discount_percentage_total') {
+            var discount_percentage_total = parseInt(value);
+            var tax_ppn_percentage = parseInt($('#tax_ppn_percentage').val()) || 0;
+            var shortover_amount = parseInt($('#shortover_amount').val()) || 0;
+            var discount_amount_total = Math.floor((total_amount * discount_percentage_total) / 100);
+            var total_amount_after_diskon = total_amount - discount_amount_total;
+            var tax_ppn_amount = Math.floor((tax_ppn_percentage * total_amount_after_diskon) / 100);
+            var final_total_amount = total_amount_after_diskon + tax_ppn_amount + shortover_amount;
+
+            $('#discount_amount_total').val(discount_amount_total);
+            $('#discount_amount_total_view').val(toRp(discount_amount_total));
+            $('#total_amount_view').text(toRp(final_total_amount));
+            $('#total_amount').val(final_total_amount);
+            $('#tax_ppn_amount').val(tax_ppn_amount);
+            $('#tax_ppn_amount_view').val(toRp(tax_ppn_amount));
+
+        } else if (name == 'tax_ppn_percentage') {
+            var tax_ppn_percentage = parseInt(value);
+            var discount_amount_total = parseInt($('#discount_amount_total').val()) || 0;
+            var shortover_amount = parseInt($('#shortover_amount').val()) || 0;
+            var total_amount_after_diskon = total_amount - discount_amount_total;
+            var tax_ppn_amount = Math.floor((total_amount_after_diskon * tax_ppn_percentage) / 100);
+            var final_total_amount = total_amount_after_diskon + tax_ppn_amount + shortover_amount;
+
+            $('#tax_ppn_amount').val(tax_ppn_amount);
+            $('#tax_ppn_amount_view').val(toRp(tax_ppn_amount));
+            $('#total_amount_view').text(toRp(final_total_amount));
+            $('#total_amount').val(final_total_amount);
+
+        } else if (name == 'shortover_amount_view') {
+            var shortover_amount_view = parseInt(value);
+            var tax_ppn_amount = parseInt($('#tax_ppn_amount').val()) || 0;
+            var discount_amount_total = parseInt($('#discount_amount_total').val()) || 0;
+            var total_amount_after_diskon = total_amount - discount_amount_total;
+            var final_total_amount = total_amount_after_diskon + tax_ppn_amount + shortover_amount_view ;
+
+            $('#shortover_amount_view').val(toRp(shortover_amount_view));
+            $('#shortover_amount').val(shortover_amount_view);
+            $('#total_amount_view').text(toRp(final_total_amount));
+            $('#total_amount').val(final_total_amount);
+
+        } else if (name == 'discount_amount_total_view') {
+            var discount_amount_total = parseInt(value);
+            var tax_ppn_percentage = parseInt($('#tax_ppn_percentage').val()) || 0;
+            var shortover_amount = parseInt($('#shortover_amount').val()) || 0;
+            var discount_percentage_total = Math.floor((discount_amount_total / total_amount) * 100);
+            var total_amount_after_diskon = total_amount - discount_amount_total;
+            var tax_ppn_amount = Math.floor((tax_ppn_percentage * total_amount_after_diskon) / 100);
+            var final_total_amount = total_amount_after_diskon + tax_ppn_amount + shortover_amount;
+
+            $('#total_amount_view').text(toRp(final_total_amount));
+            $('#total_amount').val(final_total_amount);
+            $('#tax_ppn_amount').val(tax_ppn_amount);
+            $('#tax_ppn_amount_view').val(toRp(tax_ppn_amount));
+            $('#discount_amount_total').val(discount_amount_total);
+            $('#discount_amount_total_view').val(toRp(discount_amount_total));
+            $('#discount_percentage_total').val(discount_percentage_total);
+        }
+    }
+
+    $(document).ready(function(){
+        var total_amount = parseInt($('#subtotal').val());
+        var tax_ppn_percentage = parseInt($('#tax_ppn_percentage').val());
+        var discount_amount_total = parseInt($('#discount_amount_total').val()) || 0;
+        var shortover_amount = parseInt($('#shortover_amount').val()) || 0;
+        var total_amount_after_diskon = total_amount - discount_amount_total;
+        var tax_ppn_amount = Math.floor((total_amount_after_diskon * tax_ppn_percentage) / 100);
+        var final_total_amount = total_amount_after_diskon + tax_ppn_amount + shortover_amount;
+
+        $('#tax_ppn_amount').val(tax_ppn_amount);
+        $('#tax_ppn_amount_view').val(toRp(tax_ppn_amount));
+        $('#total_amount_view').text(toRp(final_total_amount));
+        $('#total_amount').val(final_total_amount);
+    });
 </script>
 @stop
 @section('content_header')
@@ -186,13 +288,19 @@
             @csrf
             <div class="card-body">
                 <div class="row form-group">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <a class="text-dark">Nama Pemasok<a class='red'> *</a></a>
-                            <input class="form-control input-bb" name="purchase_return_supplier" id="purchase_return_supplier" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_return_supplier'] }}"/>
+                            <a class="text-dark">Nama Supplier<a class='red'> *</a></a>
+                            {!! Form::select('supplier_id', $suppliers, $datases['supplier_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'supplier_id', 'name' => 'supplier_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <a class="text-dark">No. Pembelian<a class='red'> *</a></a>
+                            <select name="purchase_invoice_no" id="purchase_invoice_no" class="form-control selection-search-clear select-form"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
                             <a class="text-dark">Nama Gudang<a class='red'> *</a></a>
                             {!! Form::select('warehouse_id',  $warehouses, $datases['warehouse_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
@@ -218,41 +326,27 @@
     
                     <div class="col-md-6">
                         <div class="form-group">
-                            <a class="text-dark">Nama Kategori Barang<a class='red'> *</a></a>
-                            {!! Form::select('item_category_id',  $categorys, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_category_id', 'name' => 'item_category_id']) !!}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
                             <a class="text-dark">Nama Barang<a class='red'> *</a></a>
-                            {{-- {!! Form::select('item_id',  $items, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_id', 'name' => 'item_id']) !!} --}}
-                            <select name="item_id" id="item_id" class="form-control selection-search-clear select-form"></select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <a class="text-dark">Kode Satuan<a class='red'> *</a></a>
-                            {{-- {!! Form::select('item_unit_id',  $units, 0, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_unit_id', 'name' => 'item_unit_id']) !!} --}}
-                            <select name="item_unit_id" id="item_unit_id" class="form-control selection-search-clear select-form"></select>
-    
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <a class="text-dark">Biaya Barang Satuan<a class='red'> *</a></a>
-                            <input class="form-control input-bb" name="purchase_return_cost" id="purchase_return_cost" type="text" autocomplete="off" value=""/>
+                            <select name="item_packge_id" id="item_packge_id" class="form-control selection-search-clear select-form"></select>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <a class="text-dark">Jumlah<a class='red'> *</a></a>
-                            <input class="form-control input-bb" name="purchase_return_quantity" id="purchase_return_quantity" type="text" autocomplete="off" value=""/>
+                            <input class="form-control input-bb text-right" name="purchase_return_quantity" id="purchase_return_quantity" type="text" autocomplete="off" value=""/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <a class="text-dark">Biaya Barang Satuan<a class='red'> *</a></a>
+                            <input style="text-align: right" class="form-control input-bb" name="purchase_return_cost_view" id="purchase_return_cost_view" type="text" autocomplete="off" value=""/>
+                            <input style="text-align: right" class="form-control input-bb" name="purchase_return_cost" id="purchase_return_cost" type="text" autocomplete="off" value="" hidden/>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <a class="text-dark">Subtotal<a class='red'> *</a></a>
-                            <input class="form-control input-bb" name="purchase_return_subtotal_view" id="purchase_return_subtotal_view" type="text" autocomplete="off" value="" disabled/>
+                            <input style="text-align: right" class="form-control input-bb" name="purchase_return_subtotal_view" id="purchase_return_subtotal_view" type="text" autocomplete="off" value="" disabled/>
                             <input class="form-control input-bb" name="purchase_return_subtotal" id="purchase_return_subtotal" type="text" autocomplete="off" value="" hidden/>
                         </div>
                     </div>
@@ -280,16 +374,16 @@
                     <table class="table table-bordered table-advance table-hover">
                         <thead class="thead-light">
                             <tr>
-                                <th style='text-align:center'>Barang</th>
-                                <th style='text-align:center'>Jumlah</th>
-                                <th style='text-align:center'>Biaya Satuan</th>
-                                <th style='text-align:center'>Subtotal</th>
-                                <th style='text-align:center'>Aksi</th>
+                                <th width="30%" style='text-align:center'>Barang</th>
+                                <th width="20%" style='text-align:center'>Jumlah</th>
+                                <th width="20%" style='text-align:center'>Biaya Satuan</th>
+                                <th width="20%" style='text-align:center'>Subtotal</th>
+                                <th width="10%" style='text-align:center'>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
-                            if(!is_array($arraydatases)){
+                            if(empty($arraydatases)){
                                 echo "<tr><th colspan='7' style='text-align  : center !important;'>Data Kosong</th></tr>";
                             } else {
                                 $total_quantity = 0;
@@ -316,14 +410,58 @@
 
                                 }
                                 echo"
-                                <th style='text-align  : center' colspan='1'>Total</th>
-                                <th style='text-align  : right'>".$total_quantity."</th>
-                                <th style='text-align  : center'></th>
-                                <th style='text-align  : right'>".number_format($subtotal,2,',','.')."</th>
-                                <th style='text-align  : center'></th>
+                                <tr>
+                                    <td style='text-align  : left' colspan='1'>Sub Total</td>
+                                    <td style='text-align  : right'>".$total_quantity."</td>
+                                    <td style='text-align  : center'></td>
+                                    <td style='text-align  : right'>".number_format($subtotal,2,',','.')."</td>
+                                    <td style='text-align  : center'></td>
+                                </tr>
+                                <tr>
+                                    <td style='text-align  : left' colspan='1'>Diskon (%)</td>
+                                    <td style='text-align  : right'></td>
+                                    <td style='text-align  : center'>
+                                        <input class='form-control input-bb text-right' type='text' name='discount_percentage_total' id='discount_percentage_total' onchange='final_total(this.name, this.value)' autocomplete='off'/>
+                                    </td>
+                                    <td style='text-align  : right'>
+                                        <input class='form-control input-bb text-right' type='text' name='discount_amount_total_view' id='discount_amount_total_view' onchange='final_total(this.name, this.value)' autocomplete='off'/>
+                                        <input class='form-control input-bb' type='hidden' name='discount_amount_total' id='discount_amount_total'/>
+                                    </td>
+                                    <td style='text-align  : center'></td>
+                                </tr>
+                                <tr>
+                                    <td style='text-align  : left' colspan='1'>PPN (%)</td>
+                                    <td style='text-align  : right'></td>
+                                    <td style='text-align  : center'>
+                                        <input class='form-control input-bb text-right' type='text' name='tax_ppn_percentage' id='tax_ppn_percentage' onchange='final_total(this.name, this.value)' value='11' autocomplete='off'/>
+                                    </td>
+                                    <td style='text-align  : right'>
+                                        <input class='form-control input-bb text-right' type='text' name='tax_ppn_amount_view' id='tax_ppn_amount_view' readonly/>
+                                        <input class='form-control input-bb' type='hidden' name='tax_ppn_amount' id='tax_ppn_amount'/>
+                                    </td>
+                                    <td style='text-align  : center'></td>
+                                </tr>
+                                <tr>
+                                    <td style='text-align  : left' colspan='1'>Selisih</td>
+                                    <td style='text-align  : right'></td>
+                                    <td style='text-align  : center'></td>
+                                    <td style='text-align  : right'>
+                                        <input class='form-control input-bb text-right' type='text' name='shortover_amount_view' id='shortover_amount_view' onchange='final_total(this.name, this.value)' autocomplete='off'/>
+                                        <input class='form-control input-bb' type='hidden' name='shortover_amount' id='shortover_amount'/>
+                                    </td>
+                                    <td style='text-align  : center'></td>
+                                </tr>
+                                <tr>
+                                    <td style='text-align  : left' colspan='1'>Total</td>
+                                    <td style='text-align  : right'></td>
+                                    <td style='text-align  : center'></td>
+                                    <td style='text-align  : right' id='total_amount_view'>".number_format($subtotal,2,',','.')."</td>
+                                    <td style='text-align  : center'></td>
+                                </tr>
                                 <div>
                                     <input class='form-control input-bb' type='hidden' name='total_quantity' id='total_quantity' value='".$total_quantity."'/>
                                     <input class='form-control input-bb' type='hidden' name='subtotal' id='subtotal' value='".$subtotal."'/>
+                                    <input class='form-control input-bb' type='hidden' name='total_amount' id='total_amount' value='".$subtotal."'/>
                                 </div>
                                 ";
                             }
@@ -336,7 +474,7 @@
         <div class="card-footer text-muted">
             <div class="form-actions float-right">
                 <button type="reset" name="Reset" class="btn btn-danger" onClick="reset_add();"><i class="fa fa-times"></i> Reset Data</button>
-                <button type="submit" name="Save" class="btn btn-success" title="Save"><i class="fa fa-check"></i> Simpan</button>
+                <button type="submit" name="Save" class="btn btn-success" onclick="$(this).addClass('disabled');" title="Save"><i class="fa fa-check"></i> Simpan</button>
             </div>
         </div>
 </form>

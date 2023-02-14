@@ -75,6 +75,7 @@ class AcctLedgerReportController extends Controller
         ->first();
         
         $accountbalancedetail = AcctAccountBalanceDetail::join('acct_account', 'acct_account.account_id','=','acct_account_balance_detail.account_id')
+        ->select('acct_account_balance_detail.transaction_id','acct_account_balance_detail.last_balance','acct_account_balance_detail.account_in','acct_account_balance_detail.account_out','acct_account_balance_detail.transaction_date','acct_account_balance_detail.account_id')
         ->where('acct_account_balance_detail.account_id' ,$account_id)
         ->whereMonth('acct_account_balance_detail.transaction_date','>=',$start_month)
         ->whereMonth('acct_account_balance_detail.transaction_date','<=',$end_month)
@@ -84,6 +85,7 @@ class AcctLedgerReportController extends Controller
         ->orderBy('acct_account_balance_detail.account_balance_detail_id', 'ASC')
         ->get();
         $accountbalancedetail_old = AcctAccountBalanceDetail::join('acct_account', 'acct_account.account_id','=','acct_account_balance_detail.account_id')
+        ->select('acct_account_balance_detail.last_balance')
         ->where('acct_account_balance_detail.account_id' ,$account_id)
         ->whereMonth('acct_account_balance_detail.transaction_date',$start_month-1)
         ->whereYear('acct_account_balance_detail.transaction_date',$year)
@@ -176,7 +178,9 @@ class AcctLedgerReportController extends Controller
 
     public function getAccountStatus($account_id)
     {
-        $data = AcctAccount::where('account_id', $account_id)->first();
+        $data = AcctAccount::select('account_default_status')
+        ->where('account_id', $account_id)
+        ->first();
         $account_status = array(
             '0' => 'Debit',
             '1' => 'Kredit',
@@ -237,6 +241,7 @@ class AcctLedgerReportController extends Controller
         ->first();
         
         $accountbalancedetail = AcctAccountBalanceDetail::join('acct_account', 'acct_account.account_id','=','acct_account_balance_detail.account_id')
+        ->select('acct_account_balance_detail.transaction_id','acct_account_balance_detail.last_balance','acct_account_balance_detail.account_in','acct_account_balance_detail.account_out','acct_account_balance_detail.transaction_date','acct_account_balance_detail.account_id')
         ->where('acct_account_balance_detail.account_id' ,$account_id)
         ->whereMonth('acct_account_balance_detail.transaction_date','>=',$start_month)
         ->whereMonth('acct_account_balance_detail.transaction_date','<=',$end_month)
@@ -246,6 +251,7 @@ class AcctLedgerReportController extends Controller
         ->orderBy('acct_account_balance_detail.account_balance_detail_id', 'ASC')
         ->get();
         $accountbalancedetail_old = AcctAccountBalanceDetail::join('acct_account', 'acct_account.account_id','=','acct_account_balance_detail.account_id')
+        ->select('acct_account_balance_detail.last_balance')
         ->where('acct_account_balance_detail.account_id' ,$account_id)
         ->whereMonth('acct_account_balance_detail.transaction_date',$start_month-1)
         ->whereYear('acct_account_balance_detail.transaction_date',$year)
@@ -340,17 +346,17 @@ class AcctLedgerReportController extends Controller
         $tblStock1 = "
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
-                <td width=\"5%\" rowspan=\"2\"><div style=\"text-align: center;\">No</div></td>
-                <td width=\"12%\" rowspan=\"2\"><div style=\"text-align: center;\">Tanggal</div></td>
-                <td width=\"25%\" rowspan=\"2\"><div style=\"text-align: center;\">Uraian</div></td>
-                <td width=\"15%\" rowspan=\"2\"><div style=\"text-align: center;\">Debet </div></td>
-                <td width=\"15%\" rowspan=\"2\"><div style=\"text-align: center;\">Kredit </div></td>
-                <td width=\"30%\" colspan=\"2\"><div style=\"text-align: center;\">Saldo </div></td>
+                <td width=\"5%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">No</div></td>
+                <td width=\"12%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Tanggal</div></td>
+                <td width=\"25%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Uraian</div></td>
+                <td width=\"15%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Debet </div></td>
+                <td width=\"15%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Kredit </div></td>
+                <td width=\"30%\" colspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Saldo </div></td>
             </tr>
             
             <tr>
-                <td width=\"15%\"><div style=\"text-align: center;\">Debet </div></td>
-                <td width=\"15%\"><div style=\"text-align: center;\">Kredit </div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Debet </div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Kredit </div></td>
             </tr>
         
              ";
@@ -372,7 +378,13 @@ class AcctLedgerReportController extends Controller
                 ";
             $no++;
         }
-        $tblStock4 = " </table>";
+        $tblStock4 = " 
+        </table>
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
+            </tr>
+        </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock4, true, false, false, false, '');
 
@@ -431,6 +443,7 @@ class AcctLedgerReportController extends Controller
         ->first();
         
         $accountbalancedetail = AcctAccountBalanceDetail::join('acct_account', 'acct_account.account_id','=','acct_account_balance_detail.account_id')
+        ->select('acct_account_balance_detail.transaction_id','acct_account_balance_detail.last_balance','acct_account_balance_detail.account_in','acct_account_balance_detail.account_out','acct_account_balance_detail.transaction_date','acct_account_balance_detail.account_id')
         ->where('acct_account_balance_detail.account_id' ,$account_id)
         ->whereMonth('acct_account_balance_detail.transaction_date','>=',$start_month)
         ->whereMonth('acct_account_balance_detail.transaction_date','<=',$end_month)
@@ -440,6 +453,7 @@ class AcctLedgerReportController extends Controller
         ->orderBy('acct_account_balance_detail.account_balance_detail_id', 'ASC')
         ->get();
         $accountbalancedetail_old = AcctAccountBalanceDetail::join('acct_account', 'acct_account.account_id','=','acct_account_balance_detail.account_id')
+        ->select('acct_account_balance_detail.last_balance')
         ->where('acct_account_balance_detail.account_id' ,$account_id)
         ->whereMonth('acct_account_balance_detail.transaction_date',$start_month-1)
         ->whereYear('acct_account_balance_detail.transaction_date',$year)
@@ -560,7 +574,9 @@ class AcctLedgerReportController extends Controller
                     
                     $spreadsheet->setActiveSheetIndex(0);
                     $spreadsheet->getActiveSheet()->getStyle('B'.$j.':H'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-            
+                    
+                    $spreadsheet->getActiveSheet()->getStyle('E'.$j.':H'.$j)->getNumberFormat()->setFormatCode('0.00');
+
                     $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
                     $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
@@ -573,10 +589,10 @@ class AcctLedgerReportController extends Controller
                         $sheet->setCellValue('B'.$j, $no);
                         $sheet->setCellValue('C'.$j, $val['date']);
                         $sheet->setCellValue('D'.$j, $val['description']);
-                        $sheet->setCellValue('E'.$j, number_format($val['account_in'],2,'.',','));
-                        $sheet->setCellValue('F'.$j, number_format($val['account_out'],2,'.',','));
-                        $sheet->setCellValue('G'.$j, number_format($val['debit'],2,'.',','));
-                        $sheet->setCellValue('H'.$j, number_format($val['credit'],2,'.',','));
+                        $sheet->setCellValue('E'.$j, $val['account_in']);
+                        $sheet->setCellValue('F'.$j, $val['account_out']);
+                        $sheet->setCellValue('G'.$j, $val['debit']);
+                        $sheet->setCellValue('H'.$j, $val['credit']);
                         
                         
                     
@@ -586,6 +602,9 @@ class AcctLedgerReportController extends Controller
                 $j++;
         
             }
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':H'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->setCellValue('B'.$j, Auth::user()->name.", ".date('d-m-Y H:i'));
 
             $filename='Buku_Besar.xls';
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\CoreSupplier;
 use App\Models\InvtItem;
 use App\Models\InvtItemUnit;
 use App\Models\InvtWarehouse;
@@ -34,46 +35,48 @@ class PurchaseInvoiceReportController extends Controller
         }else{
             $end_date = Session::get('end_date');
         }
-        if(!Session::get('warehouse_id')){
-            $warehouse_id     = '';
+        if(Session::get('payment_method') == ''){
+            $payment_method     = '';
         }else{
-            $warehouse_id = Session::get('warehouse_id');
+            $payment_method = Session::get('payment_method');
         }
 
-        if ($warehouse_id == '') {
-            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-            ->where('purchase_invoice.company_id', Auth::user()->company_id)
-            ->where('purchase_invoice.data_state',0)
+        if ($payment_method == '') {
+            $data = PurchaseInvoice::where('purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice_date','<=',$end_date)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('data_state',0)
             ->get();
         } else {
-            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-            ->where('purchase_invoice.warehouse_id', $warehouse_id)
-            ->where('purchase_invoice.company_id', Auth::user()->company_id)
-            ->where('purchase_invoice.data_state',0)
+            $data = PurchaseInvoice::where('purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice_date','<=',$end_date)
+            ->where('purchase_payment_method', $payment_method)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('data_state',0)
             ->get();
         }
-        
        
         $warehouse = InvtWarehouse::where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('warehouse_name','warehouse_id');
-        return view('content.PurchaseInvoiceReport.ListPurchaseInvoiceReport', compact('data','warehouse','start_date','end_date','warehouse_id'));
+
+        $purchase_payment_method = array(
+            0 => 'Tunai',
+            1 => 'Hutang Supplier'
+        );
+        return view('content.PurchaseInvoiceReport.ListPurchaseInvoiceReport', compact('data','warehouse','start_date','end_date','payment_method','purchase_payment_method'));
     }
 
     public function filterPurchaseInvoiceReport(Request $request)
     {
         $start_date = $request->start_date;
         $end_date   = $request->end_date;
-        $warehouse_id = $request->warehouse_id;
+        $payment_method = $request->payment_method;
         
         Session::put('start_date', $start_date);
         Session::put('end_date', $end_date);
-        Session::put('warehouse_id', $warehouse_id);
+        Session::put('payment_method', $payment_method);
 
         return redirect('/purchase-invoice-report');
     }
@@ -82,7 +85,7 @@ class PurchaseInvoiceReportController extends Controller
     {
         Session::forget('start_date');
         Session::forget('end_date');
-        Session::forget('warehouse_id');
+        Session::forget('payment_method');
         return redirect('/purchase-invoice-report');
     }
 
@@ -107,6 +110,24 @@ class PurchaseInvoiceReportController extends Controller
         return $data['item_unit_name'];
     }
 
+    public function getSupplierName($supplier_id)
+    {
+        $data = CoreSupplier::where('supplier_id', $supplier_id)
+        ->first();
+
+        return $data['supplier_name'];
+    }
+
+    public function getPaymentMethod($key)
+    {
+        $purchase_payment_method = array(
+            0 => 'Tunai',
+            1 => 'Hutang Supplier'
+        );
+
+        return $purchase_payment_method[$key];
+    }
+
     public function printPurchaseInvoiceReport()
     {
         if(!Session::get('start_date')){
@@ -120,26 +141,24 @@ class PurchaseInvoiceReportController extends Controller
         }else{
             $end_date = Session::get('end_date');
         }
-        if(!Session::get('warehouse_id')){
-            $warehouse_id     = '';
+        if(Session::get('payment_method') == ''){
+            $payment_method     = '';
         }else{
-            $warehouse_id = Session::get('warehouse_id');
+            $payment_method = Session::get('payment_method');
         }
 
-        if ($warehouse_id == '') {
-            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-            ->where('purchase_invoice.company_id', Auth::user()->company_id)
-            ->where('purchase_invoice.data_state',0)
+        if ($payment_method == '') {
+            $data = PurchaseInvoice::where('purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice_date','<=',$end_date)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('data_state',0)
             ->get();
         } else {
-            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-            ->where('purchase_invoice.warehouse_id', $warehouse_id)
-            ->where('purchase_invoice.company_id', Auth::user()->company_id)
-            ->where('purchase_invoice.data_state',0)
+            $data = PurchaseInvoice::where('purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice_date','<=',$end_date)
+            ->where('purchase_payment_method', $payment_method)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('data_state',0)
             ->get();
         }
 
@@ -175,47 +194,141 @@ class PurchaseInvoiceReportController extends Controller
         ";
         $pdf::writeHTML($tbl, true, false, false, false, '');
         
-        $no = 1;
-        $tblStock1 = "
-        <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
+        $tbl1 = "
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
             <tr>
-                <td width=\"3%\" ><div style=\"text-align: center;\">No</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Nama Pemasok</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Nama Gudang</div></td>
-                <td width=\"13%\" ><div style=\"text-align: center;\">Nama Barang</div></td>
-                <td width=\"10%\" ><div style=\"text-align: center;\">Tanggal Pembelian</div></td>
-                <td width=\"10%\" ><div style=\"text-align: center;\">Quantity</div></td>
-                <td width=\"10%\" ><div style=\"text-align: center;\">Satuan</div></td>
-                <td width=\"10%\" ><div style=\"text-align: center;\">Harga/Satuan</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Jumlah Total</div></td>
+                <td></td>
             </tr>
-        
-             ";
-
-        $no = 1;
-        $tblStock2 =" ";
-        foreach ($data as $key => $val) {
-            $tblStock2 .="
-                <tr>			
-                    <td style=\"text-align:left\">$no.</td>
-                    <td style=\"text-align:left\">".$val['purchase_invoice_supplier']."</td>
-                    <td style=\"text-align:left\">".$this->getWarehouseName($val['warehouse_id'])."</td>
-                    <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
-                    <td style=\"text-align:left\">".date('d-m-Y', strtotime($val['purchase_invoice_date']))."</td>
-                    <td style=\"text-align:left\">".$val['quantity']."</td>
-                    <td style=\"text-align:left\">".$this->getUnitName($val['item_unit_id'])."</td>
-                    <td style=\"text-align:right\">".number_format($val['item_unit_cost'],2,'.',',')."</td>
-                    <td style=\"text-align:right\">".number_format($val['total_amount'],2,'.',',')."</td>
+        </table>
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\">
+            <div style=\"border-collapse:collapse;\">
+                <tr style=\"line-height: 0%;\">
+                    <td width=\"5%\"><div style=\"text-align: center; font-weight: bold;\">No</div></td>
+                    <td width=\"10%\"><div style=\"text-align: center; font-weight: bold;\">Tanggal</div></td>
+                    <td width=\"12%\"><div style=\"text-align: center; font-weight: bold;\">Nomor</div></td>
+                    <td width=\"32%\"><div style=\"text-align: center; font-weight: bold;\">Supplier</div></td>
+                    <td width=\"11%\"><div style=\"text-align: center; font-weight: bold;\">Harga Satuan</div></td>
+                    <td width=\"18%\"><div style=\"text-align: center; font-weight: bold;\">Diskon Barang</div></td>
+                    <td width=\"12%\"><div style=\"text-align: center; font-weight: bold;\">Jumlah</div></td>
                 </tr>
-                
+            </div>
+        </table>
+        ";
+
+        $no = 1;    
+        $total_amount = 0;
+
+        $tbl2 = "
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"1\" border=\"0\">
+        ";
+        foreach ($data as $key => $val) {
+            $tbl2 .= "
+                <tr>
+                    <td style=\"border-top:1px solid black;\" rowspan=\"2\" width=\"5%\"><div style=\"text-align: center;\">".$no.".</div></td>
+                    <td style=\"border-top:1px solid black;\" rowspan=\"2\" width=\"10%\">".date('d-m-Y', strtotime($val['purchase_invoice_date']))."</td>
+                    <td style=\"border-bottom:1px solid black; border-top:1px solid black;\" rowspan=\"2\" width=\"12%\">".$val['purchase_invoice_no']."</td>
+                    <td style=\"border-top:1px solid black;\" width=\"73%\">".$this->getSupplierName($val['supplier_id'])."</td>
+                </tr>
+                <tr>
+                    <td style=\"border-bottom:1px solid black;\">Cara Bayar : ".$this->getPaymentMethod($val['purchase_payment_method'])."</td>
+                </tr>
             ";
+            $dataItem = PurchaseInvoiceItem::where('purchase_invoice_id', $val['purchase_invoice_id'])
+            ->get();
+            $no1 = 1;
+
+            foreach ($dataItem as $key1 => $val1) {
+                $tbl2 .= "
+                    <tr>
+                        <td width=\"5%\"></td>
+                        <td width=\"10%\"></td>
+                        <td width=\"32%\">".$no1.") ".$this->getItemName($val1['item_id'])."</td>
+                        <td width=\"5%\" d style=\"text-align: right;\">".$val1['quantity']."</td>
+                        <td width=\"7%\">".$this->getUnitName($val1['item_unit_id'])."</td>
+                        <td style=\"text-align: right;\" width=\"11%\">".number_format($val1['item_unit_cost'],2,'.',',')."</td>
+                        <td style=\"text-align: right;\" width=\"7%\">".$val1['discount_percentage']." %</td>
+                        <td style=\"text-align: right;\" width=\"11%\">".number_format($val1['discount_amount'],2,'.',',')."</td>
+                        <td style=\"text-align: right;\" width=\"12%\">".number_format($val1['subtotal_amount_after_discount'],2,'.',',')."</td>
+                    </tr>
+                ";
+                $no1++;
+            }
+
+            $tbl2 .= "
+                <tr>
+                    <td width=\"5%\"></td>
+                    <td width=\"10%\"></td>
+                    <td style=\"border-top:1px solid black;\" width=\"12%\"></td>
+                    <td style=\"border-top:1px solid black;\" width=\"32%\"></td>
+                    <td style=\"border-top:1px solid black;\" width=\"11%\"></td>
+                    <td style=\"border-top:1px solid black;\" width=\"11%\">Sub Total</td>
+                    <td style=\"text-align: center; border-top:1px solid black;\" width=\"1%\">:</td>
+                    <td style=\"text-align:right; border-top:1px solid black;\" width=\"18%\">".number_format($val['subtotal_amount_total'],2,'.',',')."</td>
+                </tr>
+            ";
+
+            if ($val['discount_amount_total'] != 0) {
+                $tbl2 .= "
+                <tr>
+                    <td width=\"5%\"></td>
+                    <td width=\"10%\"></td>
+                    <td width=\"12%\"></td>
+                    <td width=\"32%\"></td>
+                    <td width=\"11%\"></td>
+                    <td width=\"11%\">Diskon</td>
+                    <td style=\"text-align: center;\" width=\"1%\">:</td>
+                    <td style=\"text-align:right;\" width=\"18%\">".number_format($val['discount_amount_total'],2,'.',',')."</td>
+                </tr>
+                ";
+            }
+
+            if ($val['tax_ppn_amount'] != 0) {
+                $tbl2 .= "
+                <tr>
+                    <td width=\"5%\"></td>
+                    <td width=\"10%\"></td>
+                    <td width=\"12%\"></td>
+                    <td width=\"32%\"></td>
+                    <td width=\"11%\"></td>
+                    <td width=\"11%\">PPN</td>
+                    <td style=\"text-align: center;\" width=\"1%\">:</td>
+                    <td style=\"text-align:right;\" width=\"18%\">".number_format($val['tax_ppn_amount'],2,'.',',')."</td>
+                </tr>
+                ";
+            }
+
+            $tbl2 .= "
+            <tr>
+                <td width=\"5%\"></td>
+                <td width=\"10%\"></td>
+                <td width=\"12%\"></td>
+                <td width=\"32%\"></td>
+                <td width=\"11%\"></td>
+                <td style=\"border-top:1px solid black;\" width=\"11%\">Total</td>
+                <td style=\"text-align: center; border-top:1px solid black;\" width=\"1%\">:</td>
+                <td style=\"text-align:right; border-top:1px solid black;\" width=\"18%\">".number_format($val['total_amount'],2,'.',',')."</td>
+            </tr>
+            <tr>
+                <td></td>   
+            </tr>
+            ";
+
             $no++;
+            $total_amount += $val['total_amount'];
         }
-        $tblStock3 = " 
+        $tbl3 ="
+        </table>
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"\" border=\"0\">
+        <hr>
+            <tr>
+                <td width=\"50%\" style=\"font-weight: bold;\">Total Jumlah (Rp)</td>
+                <td width=\"50%\" style=\"text-align:right; font-weight: bold;\">".number_format($total_amount,2,'.',',')."</td>
+            </tr>
+        <hr>
+        </table>
+        ";
 
-        </table>";
-
-        $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3, true, false, false, false, '');
+        $pdf::writeHTML($tbl1.$tbl2.$tbl3, true, false, false, false, '');
 
 
         $filename = 'Laporan_Pembelian_'.$start_date.'s.d.'.$end_date.'.pdf';
@@ -235,26 +348,24 @@ class PurchaseInvoiceReportController extends Controller
         }else{
             $end_date = Session::get('end_date');
         }
-        if(!Session::get('warehouse_id')){
-            $warehouse_id     = '';
+        if(Session::get('payment_method') == ''){
+            $payment_method     = '';
         }else{
-            $warehouse_id = Session::get('warehouse_id');
+            $payment_method = Session::get('payment_method');
         }
 
-        if ($warehouse_id == '') {
-            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-            ->where('purchase_invoice.company_id', Auth::user()->company_id)
-            ->where('purchase_invoice.data_state',0)
+        if ($payment_method == '') {
+            $data = PurchaseInvoice::where('purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice_date','<=',$end_date)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('data_state',0)
             ->get();
         } else {
-            $data = PurchaseInvoice::join('purchase_invoice_item','purchase_invoice_item.purchase_invoice_id','=','purchase_invoice.purchase_invoice_id')
-            ->where('purchase_invoice.purchase_invoice_date','>=',$start_date)
-            ->where('purchase_invoice.purchase_invoice_date','<=',$end_date)
-            ->where('purchase_invoice.warehouse_id', $warehouse_id)
-            ->where('purchase_invoice.company_id', Auth::user()->company_id)
-            ->where('purchase_invoice.data_state',0)
+            $data = PurchaseInvoice::where('purchase_invoice_date','>=',$start_date)
+            ->where('purchase_invoice_date','<=',$end_date)
+            ->where('purchase_payment_method', $payment_method)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('data_state',0)
             ->get();
         }
         
@@ -275,71 +386,117 @@ class PurchaseInvoiceReportController extends Controller
             $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(5);
             $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(20);
-            $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(30);
             $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('H')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('I')->setWidth(20);
-            $spreadsheet->getActiveSheet()->getColumnDimension('J')->setWidth(20);
     
-            $spreadsheet->getActiveSheet()->mergeCells("B1:J1");
+            $spreadsheet->getActiveSheet()->mergeCells("B1:I1");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->mergeCells("B3:B4");
+            $spreadsheet->getActiveSheet()->mergeCells("C3:C4");
+            $spreadsheet->getActiveSheet()->mergeCells("D3:D4");
+            $spreadsheet->getActiveSheet()->mergeCells("E3:E4");
+            $spreadsheet->getActiveSheet()->mergeCells("F3:F4");
+            $spreadsheet->getActiveSheet()->mergeCells("G3:G4");
+            $spreadsheet->getActiveSheet()->mergeCells("H3:H4");
+            $spreadsheet->getActiveSheet()->mergeCells("I3:I4");
 
-            $spreadsheet->getActiveSheet()->getStyle('B3:J3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-            $spreadsheet->getActiveSheet()->getStyle('B3:J3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+            $spreadsheet->getActiveSheet()->getStyle('B4:I4')->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             $sheet->setCellValue('B1',"Laporan Pembelian Dari Periode ".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
             $sheet->setCellValue('B3',"No");
-            $sheet->setCellValue('C3',"Nama Pemasok");
-            $sheet->setCellValue('D3',"Nama Gudang");
-            $sheet->setCellValue('E3',"Nama Barang");
-            $sheet->setCellValue('F3',"Tanggal Pembelian");
-            $sheet->setCellValue('G3',"Quantity");
-            $sheet->setCellValue('H3',"Satuan");
-            $sheet->setCellValue('I3',"Harga Per Satuan");
-            $sheet->setCellValue('J3',"Subtotal"); 
-            
-            $j=4;
-            $no=0;
-            
-            foreach($data as $key=>$val){
+            $sheet->setCellValue('C3',"Tanggal");
+            $sheet->setCellValue('D3',"Nomor");
+            $sheet->setCellValue('E3',"Supplier");
+            $sheet->setCellValue('F3',"Jumlah Barang");
+            $sheet->setCellValue('G3',"Harga Satuan");
+            $sheet->setCellValue('H3',"Diskon Barang");
+            $sheet->setCellValue('I3',"Jumlah");
 
-                if(is_numeric($key)){
-                    
-                    $sheet = $spreadsheet->getActiveSheet(0);
-                    $spreadsheet->getActiveSheet()->setTitle("Jurnal Umum");
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':J'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $j = 5;
+            $no = 1;
+            $total_amount = 0;
 
-                    $spreadsheet->getActiveSheet()->getStyle('H'.$j.':J'.$j)->getNumberFormat()->setFormatCode('0.00');
-            
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                    $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                    $spreadsheet->getActiveSheet()->getStyle('J'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            foreach ($data as $key => $val) {
+                $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
 
+                $sheet->setCellValue('B'.$j, $no.".");
+                $sheet->setCellValue('C'.$j, date('d-m-Y', strtotime($val['purchase_invoice_date'])));
+                $sheet->setCellValue('D'.$j, $val['purchase_invoice_no']);
+                $sheet->setCellValue('E'.$j, $this->getSupplierName($val['supplier_id']));
+                $j++;
+                $spreadsheet->getActiveSheet()->getStyle('D'.$j.':I'.$j)->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+                $sheet->setCellValue('E'.$j, "Cara Bayar : ".$this->getPaymentMethod($val['purchase_payment_method']));
 
+                $dataItem = PurchaseInvoiceItem::where('purchase_invoice_id', $val['purchase_invoice_id'])
+                ->get();
 
-                    $no++;
-                    $sheet->setCellValue('B'.$j, $no);
-                    $sheet->setCellValue('C'.$j, $val['purchase_invoice_supplier']);
-                    $sheet->setCellValue('D'.$j, $this->getWarehouseName($val['warehouse_id']));
-                    $sheet->setCellValue('E'.$j, $this->getItemName($val['item_id']));
-                    $sheet->setCellValue('F'.$j, date('d-m-Y', strtotime($val['purchase_invoice_date'])));
-                    $sheet->setCellValue('G'.$j, $val['quantity']);
-                    $sheet->setCellValue('H'.$j, $this->getUnitName($val['item_unit_id']));
-                    $sheet->setCellValue('I'.$j, number_format($val['item_unit_cost'],2,'.',','));
-                    $sheet->setCellValue('J'.$j, number_format($val['subtotal_amount'],2,'.',','));
+                $no1 = 1;
+                foreach ($dataItem as $key1 => $val1) {
+                    $j++;
+                    $spreadsheet->getActiveSheet()->getStyle('G'.$j.':I'.$j)->getNumberFormat()->setFormatCode('0.00');
+                    $spreadsheet->getActiveSheet()->mergeCells("D".$j.":E".$j);
+                    $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+
+                    $sheet->setCellValue('D'.$j, $no1.") ".$this->getItemName($val1['item_id']));
+                    $sheet->setCellValue('F'.$j, $val1['quantity']." ".$this->getUnitName($val1['item_unit_id']));
+                    $sheet->setCellValue('G'.$j, $val1['item_unit_cost']);
+                    $sheet->setCellValue('H'.$j, $val1['discount_amount']);
+                    $sheet->setCellValue('I'.$j, $val1['subtotal_amount_after_discount']);
+                    $no1++;
+                }
+
+                $j++;
+                $spreadsheet->getActiveSheet()->getStyle('D'.$j.':I'.$j)->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+                $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getNumberFormat()->setFormatCode('0.00');
+
+                $sheet->setCellValue('H'.$j, "Sub Total");
+                $sheet->setCellValue('I'.$j, $val['subtotal_amount_total']);
+                if ($val['discount_amount_total'] != 0) {
+                    $j++;
+                    $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getNumberFormat()->setFormatCode('0.00');
+
+                    $sheet->setCellValue('H'.$j, "Diskon");
+                    $sheet->setCellValue('I'.$j, $val['discount_amount_total']);
+                }
+                if ($val['tax_ppn_amount'] != 0) {
+                    $j++;
+                    $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getNumberFormat()->setFormatCode('0.00');
+
+                    $sheet->setCellValue('H'.$j, "PPN");
+                    $sheet->setCellValue('I'.$j, $val['tax_ppn_amount']);
                 }
                 $j++;
-        
+                $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getNumberFormat()->setFormatCode('0.00');
+                $spreadsheet->getActiveSheet()->getStyle('H'.$j.':I'.$j)->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+
+                $sheet->setCellValue('H'.$j, "Total");
+                $sheet->setCellValue('I'.$j, $val['total_amount']);
+
+                $total_amount += $val['total_amount'];
+                $no++;
+                $j++;
+                $j++;
             }
-            
+
+            $j++;
+            $spreadsheet->getActiveSheet()->mergeCells("B".$j.":E".$j);
+            $spreadsheet->getActiveSheet()->mergeCells("F".$j.":I".$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getNumberFormat()->setFormatCode('0.00');
+
+            $sheet->setCellValue('B'.$j, "TotaL Jumlah (Rp)");
+            $sheet->setCellValue('F'.$j, $total_amount);
+
             $filename='Laporan_Pembelian_'.$start_date.'_s.d._'.$end_date.'.xls';
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment;filename="'.$filename.'"');

@@ -17,11 +17,15 @@
 	}
 
     $(document).ready(function(){
-        var warehouse_id    = {!! json_encode($warehouse_id) !!}
+        var payment_method    = {!! json_encode($payment_method) !!}
 
-        if (warehouse_id == "") {
-            $('#warehouse_id').select2('val', ' ');
+        if (payment_method == "") {
+            $('#payment_method').select2('val', ' ');
         }
+
+        $('#payment_method').change(function(){
+            console.log(this.value);
+        })
     });
 </script>
 @stop
@@ -78,8 +82,8 @@
                     </div>
                     <div class = "col-md-6">
                         <div class="form-group form-md-line-input">
-                            <section class="control-label">Nama Gudang</section>
-                            {!! Form::select('warehouse_id',  $warehouse, $warehouse_id, ['class' => 'selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id']) !!}
+                            <section class="control-label">Metode Pembayaran</section>
+                            {!! Form::select('',  $purchase_payment_method, $payment_method, ['class' => 'selection-search-clear select-form', 'id' => 'payment_method', 'name' => 'payment_method']) !!}
                             
                         </div>
                     </div>
@@ -113,30 +117,38 @@
             <table id="example" style="width:100%" class="table table-striped table-bordered table-hover table-full-width">
                 <thead>
                     <tr>
-                        <th style='text-align:center'>No</th>
-                        <th  style='text-align:center'>Nama Pemasok</th>
-                        <th  style='text-align:center'>Nama Gudang</th>
-                        <th  style='text-align:center'>Nama Barang</th>
-                        <th  style='text-align:center'>Tanggal Pembelian</th>
-                        <th  style='text-align:center'>Quantity</th>
-                        <th  style='text-align:center'>Satuan</th>
-                        <th  style='text-align:center'>Harga / Satuan</th>
-                        <th style='text-align:center'>Jumlah Total</th>
+                        <th style='text-align:center; width: 5%'>No</th>
+                        <th style='text-align:center; width: %'>Nama Supplier</th>
+                        <th style='text-align:center; width: %'>Metode Pembayaran</th>
+                        <th style='text-align:center; width: %'>No. Pembelian</th>
+                        <th style='text-align:center; width: %'>Tanggal</th>
+                        <th style='text-align:center; width: %'>Jumlah Barang</th>
+                        <th style='text-align:center; width: %'>Subtotal</th>
+                        <th style='text-align:center; width: %'>Diskon</th>
+                        <th style='text-align:center; width: %'>PPN</th>
+                        <th style='text-align:center; width: %'>Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $no =1; ?>
+                    <?php 
+                        $no =1; 
+                        $purchase_payment_method = array(
+                            0 => 'Tunai',
+                            1 => 'Hutang Supplier'
+                        );
+                    ?>
                     @foreach ($data as $row)
                         <tr>
                             <td class="text-center">{{ $no++ }}.</td>
-                            <td>{{ $row['purchase_invoice_supplier'] }}</td>
-                            <td>{{ $PIRC->getWarehouseName($row['warehouse_id']) }}</td>
-                            <td>{{ $PIRC->getItemName($row['item_id']) }}</td>
+                            <td>{{ $PIRC->getSupplierName($row['supplier_id']) }}</td>
+                            <td class="text-left">{{ $purchase_payment_method[$row['purchase_payment_method']] }}</td>
+                            <td>{{ $row['purchase_invoice_no'] }}</td>
                             <td>{{ date('d-m-Y', strtotime($row['purchase_invoice_date'])) }}</td>
-                            <td>{{ $row['quantity'] }}</td>
-                            <td>{{ $PIRC->getUnitName($row['item_unit_id']) }}</td>
-                            <td style="text-align: right">{{ number_format($row['item_unit_cost'],2,'.',',') }}</td>
-                            <td style="text-align: right">{{ number_format($row['subtotal_amount'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ $row['subtotal_item'] }}</td>
+                            <td style="text-align: right">{{ number_format($row['subtotal_amount_total'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ number_format($row['discount_amount_total'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ number_format($row['tax_ppn_amount'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ number_format($row['total_amount'],2,'.',',') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

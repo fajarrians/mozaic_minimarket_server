@@ -37,13 +37,19 @@
     </div>
     <div class="card-body">
         <div class="row form-group">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
-                    <a class="text-dark">Nama Pemasok<a class='red'> *</a></a>
-                    <input class="form-control input-bb" name="purchase_return_supplier" id="purchase_return_supplier" type="text" autocomplete="off" value="{{ $purchasereturn['purchase_return_supplier'] }}" readonly/>
+                    <a class="text-dark">Nama Supplier<a class='red'> *</a></a>
+                    {!! Form::select('supplier_id', $suppliers, $purchasereturn['supplier_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'supplier_id', 'name' => 'supplier_id', 'onchange' => 'function_elements_add(this.name, this.value)', 'disabled']) !!}
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <a class="text-dark">No. Pembelian<a class='red'> *</a></a>
+                    {!! Form::select('purchase_invoice_id',  $purchase_invoice, $purchasereturn['purchase_invoice_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'purchase_invoice_id', 'name' => 'purchase_invoice_id', 'onchange' => 'function_elements_add(this.name, this.value)', 'disabled']) !!}
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="form-group">
                     <a class="text-dark">Nama Gudang<a class='red'> *</a></a>
                     {!! Form::select('warehouse_id',  $warehouses, $purchasereturn['warehouse_id'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id', 'onchange' => 'function_elements_add(this.name, this.value)', 'disabled']) !!}
@@ -112,10 +118,46 @@
 
                             }
                             echo"
-                            <th style='text-align  : center' colspan='1'>Total</th>
-                            <th style='text-align  : right'>".$total_quantity."</th>
-                            <th style='text-align  : center'></th>
-                            <th style='text-align  : right'>".number_format($subtotal,2,',','.')."</th>
+                            <tr>
+                                <td style='text-align  : left' colspan='1'>Sub Total</td>
+                                <td style='text-align  : right'>".$total_quantity."</td>
+                                <td style='text-align  : center'></td>
+                                <td style='text-align  : right'>".number_format($subtotal,2,',','.')."</td>
+                            </tr>
+                            <tr>
+                                <td style='text-align  : left' colspan='1'>Diskon (%)</td>
+                                <td style='text-align  : right'></td>
+                                <td style='text-align  : center'>
+                                    <div class='text-right'>".$purchasereturn['discount_percentage_total']."</div>
+                                </td>
+                                <td style='text-align  : right'>
+                                    <div class='text-right'>".number_format($purchasereturn['discount_amount_total'],2,',','.')."</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style='text-align  : left' colspan='1'>PPN (%)</td>
+                                <td style='text-align  : right'></td>
+                                <td style='text-align  : center'>
+                                    <div class='text-right'>".$purchasereturn['tax_ppn_percentage']."</div>
+                                </td>
+                                <td style='text-align  : right'>
+                                    <div class='text-right'>".number_format($purchasereturn['tax_ppn_amount'],2,',','.')."</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style='text-align  : left' colspan='1'>Selisih</td>
+                                <td style='text-align  : right'></td>
+                                <td style='text-align  : center'></td>
+                                <td style='text-align  : right'>
+                                    <div class='text-right'>".number_format($purchasereturn['shortover_amount'],2,',','.')."</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style='text-align  : left' colspan='1'>Total</td>
+                                <td style='text-align  : right'></td>
+                                <td style='text-align  : center'></td>
+                                <td style='text-align  : right' id='total_amount_view'>".number_format($purchasereturn['purchase_return_subtotal'],2,',','.')."</td>
+                            </tr>
                             ";
                         }
                     ?>

@@ -1,0 +1,2 @@
+[07-Oct-2022 16:27:38 Asia/Jakarta] PHP Fatal error:  Allowed memory size of 314572800 bytes exhausted (tried to allocate 8388616 bytes) in /home/ciptaprocpanel/public_html/kasihibu_minimarket/vendor/tecnickcom/tcpdf/tcpdf.php on line 18899
+[21-Oct-2022 10:48:06 Asia/Jakarta] PHP Fatal error:  Allowed memory size of 314572800 bytes exhausted (tried to allocate 8388616 bytes) in /home/ciptaprocpanel/public_html/kasihibu_minimarket/vendor/tecnickcom/tcpdf/tcpdf.php on line 18899

@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\InvtItem;
+use App\Models\InvtItemBarcode;
 use App\Models\InvtItemCategory;
 use App\Models\InvtItemPackge;
+use App\Models\InvtItemStock;
+use App\Models\InvtItemUnit;
+use App\Models\InvtWarehouse;
 use App\Models\PurchaseInvoice;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
@@ -72,20 +76,25 @@ class HomeController extends Controller
             $datasalesinvoiceweekly[$i]['purchase']			= $this->getAmountPurchaseInvoiceWeekly($date);
         }
 
-        $item_data = InvtItem::where('data_state',0)
+        $item_data = InvtItem::select('item_name','item_id')
+        ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get();
         foreach ($item_data as $key => $val) {
-            $item[$key]['item_name'] =  $val['item_name'];
-            $item[$key]['quantity'] = $this->getQuantitySalesInvoice($val['item_id']);
+            $item_data[$key]['item_name'] =  $val['item_name'];
+            $item_data[$key]['quantity'] = $this->getQuantitySalesInvoice($val['item_id']);
+        }
+        if(empty($item_data)){
+            $item_data = [];
         }
 
-        return view('home',compact('menus','data','datasalesinvoiceweekly','item'));
+        return view('home',compact('menus','data','datasalesinvoiceweekly','item_data'));
     }
 
     public function getQuantitySalesInvoice($item_id)
     {
         $data = SalesInvoiceItem::join('sales_invoice','sales_invoice.sales_invoice_id','=','sales_invoice_item.sales_invoice_id')
+        ->select('sales_invoice_item.quantity')
         ->where('sales_invoice.data_state',0)
         ->where('sales_invoice.company_id', Auth::user()->company_id)
         ->where('sales_invoice_item.item_id', $item_id)
@@ -103,7 +112,8 @@ class HomeController extends Controller
 
     public function getAmountSalesInvoice($day)
     {
-        $data = SalesInvoice::where('data_state',0)
+        $data = SalesInvoice::select('total_amount')
+        ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->whereDay('sales_invoice_date', $day)
         ->whereMonth('sales_invoice_date', date('m'))
@@ -120,7 +130,8 @@ class HomeController extends Controller
 
     public function getAmountPurchaseInvoice($day)
     {
-        $data = PurchaseInvoice::where('data_state',0)
+        $data = PurchaseInvoice::select('total_amount')
+        ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->whereDay('purchase_invoice_date', $day)
         ->whereMonth('purchase_invoice_date', date('m'))
@@ -137,7 +148,8 @@ class HomeController extends Controller
 
     public function getAmountSalesInvoiceWeekly($date)
     {
-        $data = SalesInvoice::where('data_state',0)
+        $data = SalesInvoice::select('total_amount')
+        ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->where('sales_invoice_date', $date)
         ->get();
@@ -152,7 +164,8 @@ class HomeController extends Controller
 
     public function getAmountPurchaseInvoiceWeekly($date)
     {
-        $data = PurchaseInvoice::where('data_state',0)
+        $data = PurchaseInvoice::select('total_amount')
+        ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->where('purchase_invoice_date',$date)
         ->get();
@@ -165,17 +178,17 @@ class HomeController extends Controller
         
     }
 
-    public function selectItemCategory()
+    public function selectItemCategory($id)
     {
-        $category = InvtItemCategory::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->get();
+        $category = InvtItem::join('invt_item_category','invt_item_category.item_category_id','=','invt_item.item_category_id')
+        ->where('invt_item.data_state',0)
+        ->where('invt_item.item_id', $id)
+        ->where('invt_item.company_id', Auth::user()->company_id)
+        ->first();
         
         $data = '';
         $data .= "<option value=''>--Choose One--</option>";
-        foreach ($category as $mp){
-            $data .= "<option value='$mp[item_category_id]'>$mp[item_category_name]</option>\n";	
-        }
+            $data .= "<option value='$category[item_category_id]'>$category[item_category_name]</option>\n";	
         return $data;
 
     }
@@ -183,6 +196,7 @@ class HomeController extends Controller
     public function selectItem($id)
     {
         $item = InvtItem::where('data_state',0)
+        ->select('item_id','item_name')
         ->where('company_id', Auth::user()->company_id)
         ->where('item_category_id', $id)
         ->get();
@@ -199,6 +213,7 @@ class HomeController extends Controller
     public function selectItemUnit($id)
     {
         $unit = InvtItemPackge::join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_packge.item_unit_id')
+        ->select('invt_item_packge.item_unit_id','invt_item_unit.item_unit_name')
         ->where('invt_item_unit.data_state',0)
         ->where('invt_item_packge.data_state',0)
         ->where('invt_item_packge.item_id', $id)
@@ -214,16 +229,70 @@ class HomeController extends Controller
 
     }
 
-    public function selectItemCost($unit_id, $item_id)
+    public function selectItemCost($item_packge_id)
     {
-        $unit = InvtItemPackge::join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_packge.item_unit_id')
-        ->where('invt_item_unit.data_state',0)
-        ->where('invt_item_packge.data_state',0)
-        ->where('invt_item_packge.item_unit_id', $unit_id)
-        ->where('invt_item_packge.item_id', $item_id)
-        ->where('invt_item_packge.company_id', Auth::user()->company_id)
+        $unit = InvtItemPackge::select('item_unit_cost')
+        ->where('item_unit_id','!=',null)
+        ->where('item_packge_id', $item_packge_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
         ->first();
 
         return $unit['item_unit_cost'];
+    }
+
+    public function selectItemPrice($item_packge_id)
+    {
+        $data = InvtItemPackge::select('item_unit_price')
+        ->where('item_unit_id','!=',null)
+        ->where('item_packge_id', $item_packge_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first();
+
+        return $data['item_unit_price'];
+    }
+
+    public function getMarginCategory($item_packge_id)
+    {
+        $category_id = InvtItemPackge::select('item_category_id')
+        ->where('item_unit_id','!=',null)
+        ->where('item_packge_id', $item_packge_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first()
+        ->item_category_id;
+        
+        $data = InvtItemCategory::where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('item_category_id', $category_id)
+        ->first();
+
+        return $data['margin_percentage'];
+    }
+
+    public function selectItemAuto($item_id)
+    {
+        $data_package = InvtItemPackge::where('item_id', $item_id)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('item_unit_id','!=', null)
+        ->get();
+
+        if (count($data_package) == 1) {
+            $data = InvtItemPackge::where('item_id', $item_id)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('item_unit_id','!=', null)
+            ->first();
+
+            $response = array(
+                'item_category_id' => $data['item_category_id'],
+                'item_unit_id'     => $data['item_unit_id'],
+                'item_unit_cost'   => $data['item_unit_cost']
+            );
+
+            return $response;
+        } else {
+            return null;
+        }
     }
 }

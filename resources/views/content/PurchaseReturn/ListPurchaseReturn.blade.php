@@ -71,7 +71,7 @@
 
                     {{-- <div class = "col-md-6">
                         <div class="form-group form-md-line-input">
-                            <section class="control-label">Nama Pemasok
+                            <section class="control-label">Nama Supplier
                                 <span class="required text-danger">
                                     *
                                 </span>
@@ -130,7 +130,7 @@
                         <th width="2%" style='text-align:center'>No</th>
                         <th width="20%" style='text-align:center'>No Retur Pembelian</th>
                         <th width="20%" style='text-align:center'>Tanggal Retur Pembelian</th>
-                        <th width="20%" style='text-align:center'>Nama Pemasok</th>
+                        <th width="20%" style='text-align:center'>Nama Supplier</th>
                         <th width="20%" style='text-align:center'>Nama Gudang</th>
                         <th width="10%" style='text-align:center'>Aksi</th>
                     </tr>
@@ -142,7 +142,7 @@
                         <td style='text-align:center'>{{ $no++ }}.</td>
                         <td>{{ $row['purchase_return_no'] }}</td>
                         <td>{{ date('d-m-Y', strtotime($row['purchase_return_date'])) }}</td>
-                        <td>{{ $row['purchase_return_supplier'] }}</td>
+                        <td>{{ $PurchaseReturn->getSupplierName($row['supplier_id']) }}</td>
                         <td>{{ $PurchaseReturn->getWarehouseName($row['warehouse_id']) }}</td>
                         <td class="text-center">
                             <a type="button" class="btn btn-outline-warning btn-sm" href="{{ url('/purchase-return/detail/'.$row['purchase_return_id']) }}">Detail</a>

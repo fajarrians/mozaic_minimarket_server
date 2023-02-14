@@ -46,10 +46,10 @@ class SalesCustomerController extends Controller
         ]);
 
         if($data->save()){
-            $msg = 'Tambah Pelanggan Berhasil';
+            $msg = 'Tambah Anggota Berhasil';
             return redirect('/sales-customer/add')->with('msg',$msg);
         } else {
-            $msg = 'Tambah Pelanggan Gagal';
+            $msg = 'Tambah Anggota Gagal';
             return redirect('/sales-customer/add')->with('msg',$msg);
         }
     }
@@ -69,13 +69,14 @@ class SalesCustomerController extends Controller
         $table                  = SalesCustomer::findOrFail($request->customer_id);
         $table->customer_name   = $request->customer_name;
         $table->customer_gender = $request->customer_gender;
+        $table->customer_status = $request->customer_status;
         $table->updated_id      = Auth::id();
 
         if($table->save()){
-            $msg = 'Ubah Pelanggan Berhasil';
+            $msg = 'Ubah Anggota Berhasil';
             return redirect('/sales-customer')->with('msg',$msg);
         } else {
-            $msg = 'Ubah Pelanggan Gagal';
+            $msg = 'Ubah Anggota Gagal';
             return redirect('/sales-customer')->with('msg',$msg);
         }
     }
@@ -87,10 +88,10 @@ class SalesCustomerController extends Controller
         $table->updated_id  = Auth::id();
 
         if($table->save()){
-            $msg = 'Hapus Pelanggan Berhasil';
+            $msg = 'Hapus Anggota Berhasil';
             return redirect('/sales-customer')->with('msg',$msg);
         } else {
-            $msg = 'Hapus Pelanggan Gagal';
+            $msg = 'Hapus Anggota Gagal';
             return redirect('/sales-customer')->with('msg',$msg);
         }
     }

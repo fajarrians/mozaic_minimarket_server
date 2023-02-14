@@ -15,13 +15,7 @@
 
 		});
 	}
-    $(document).ready(function(){
-        var warehouse_id    = {!! json_encode($warehouse_id) !!}
-
-        if (warehouse_id == "") {
-            $('#warehouse_id').select2('val', ' ');
-        }
-    });
+   
 </script>
 @stop
 @section('content_header')
@@ -75,12 +69,12 @@
                             <input type ="date" class="form-control form-control-inline input-medium date-picker input-date" data-date-format="dd-mm-yyyy" type="text" name="end_date" id="end_date" value="{{ $end_date }}" style="width: 15rem;"/>
                         </div>
                     </div>
-                    <div class = "col-md-6">
+                    {{-- <div class = "col-md-6">
                         <div class="form-group form-md-line-input">
                             <section class="control-label">Nama Gudang</section>
                             {!! Form::select('warehouse_id',  $warehouse, 0, ['class' => 'selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id']) !!}
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
             <div class="card-footer text-muted">
@@ -112,10 +106,14 @@
                 <thead>
                     <tr>
                         <th style='text-align:center; width: 5%'>No</th>
-                        <th style='text-align:center'>Nama Pemasok</th>
-                        <th style='text-align:center'>Nama Gudang</th>
-                        <th style='text-align:center'>Tanggal Retur Pembelian</th>
-                        <th style='text-align:center'>Jumlah Total</th>
+                        <th style='text-align:center'>Nama Supplier</th>
+                        <th style='text-align:center'>No Retur</th>
+                        <th style='text-align:center'>Tanggal</th>
+                        <th style='text-align:center'>Jumlah Barang</th>
+                        <th style='text-align:center'>Subtotal</th>
+                        <th style='text-align:center'>Diskon</th>
+                        <th style='text-align:center'>PPN</th>
+                        <th style='text-align:center'>Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -123,10 +121,14 @@
                    @foreach ($data as $row)
                    <tr>
                         <td class="text-center">{{ $no++ }}.</td>
-                        <td>{{ $row['purchase_return_supplier'] }}</td>
-                        <td>{{ $PRRC->getWarehouseName($row['warehouse_id']) }}</td>
+                        <td>{{ $PRRC->getSupplierName($row['supplier_id']) }}</td>
+                        <td>{{ $row['purchase_return_no'] }}</td>
                         <td>{{ date('d-m-Y', strtotime($row['purchase_return_date'])) }}</td>
-                        <td style="text-align: right">{{ number_format($row['purchase_item_subtotal'],2,'.',',') }}</td>
+                        <td style="text-align: right">{{ $row['purchase_return_quantity'] }}</td>
+                        <td style="text-align: right">{{ number_format($row['subtotal_amount_total'],2,'.',',') }}</td>
+                        <td style="text-align: right">{{ number_format($row['discount_amount_total'],2,'.',',') }}</td>
+                        <td style="text-align: right">{{ number_format($row['tax_ppn_amount'],2,'.',',') }}</td>
+                        <td style="text-align: right">{{ number_format($row['purchase_return_subtotal'],2,'.',',') }}</td>
                    </tr>
                        
                    @endforeach

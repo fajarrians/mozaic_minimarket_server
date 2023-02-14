@@ -110,16 +110,13 @@
                 <thead>
                     <tr>
                         <th style='text-align:center; width: 5%'>No</th>
-                        <th style='text-align:center; width: 10%'>Nama User</th>
-                        <th style='text-align:center; width: 10%'>No. Invoice Penjualan</th>
-                        <th style='text-align:center; width: 15%'>Tanggal Ivoice Penjualan</th>
-                        <th style='text-align:center; width: 12%'>Nama Barang</th>
-                        <th style='text-align:center; width: 10%'>Satuan</th>
-                        <th style='text-align:center; width: 5%'>Qty</th>
-                        <th style='text-align:center; width: 8%'>Harga</th>
-                        <th style='text-align:center; width: 8%'>Subtotal</th>
-                        <th style='text-align:center; width: 8%'>Diskon</th>
-                        <th style='text-align:center; width: 10%'>Subtotal st Diskon</th>
+                        <th style='text-align:center; width: 15%'>Nama User</th>
+                        <th style='text-align:center; width: 15%'>No. Penjualan</th>
+                        <th style='text-align:center; width: 15%'>Tanggal</th>
+                        <th style='text-align:center; width: 10%'>Jumlah Barang</th>
+                        <th style='text-align:center; width: 10%'>Subtotal</th>
+                        <th style='text-align:center; width: 10%'>Diskon</th>
+                        <th style='text-align:center; width: 10%'>Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,13 +127,10 @@
                             <td>{{ $SIBURC->getUserName($row['created_id']) }}</td>
                             <td>{{ $row['sales_invoice_no'] }}</td>
                             <td>{{ date('d-m-Y', strtotime($row['sales_invoice_date'])) }}</td>
-                            <td>{{ $SIBURC->getItemName($row['item_id']) }}</td>
-                            <td>{{ $SIBURC->getItemUnitName($row['item_unit_id']) }}</td>
-                            <td>{{ $row['quantity'] }}</td>
-                            <td style="text-align: right">{{ number_format($row['item_unit_price'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ $row['subtotal_item'] }}</td>
                             <td style="text-align: right">{{ number_format($row['subtotal_amount'],2,'.',',') }}</td>
-                            <td style="text-align: right">{{ number_format($row['discount_amount'],2,'.',',') }}</td>
-                            <td style="text-align: right">{{ number_format($row['subtotal_amount_after_discount'],2,'.',',') }}</td> 
+                            <td style="text-align: right">{{ number_format($row['discount_amount_total'],2,'.',',') }}</td>
+                            <td style="text-align: right">{{ number_format($row['total_amount'],2,'.',',') }}</td> 
                         </tr>
                     @endforeach
                 </tbody>

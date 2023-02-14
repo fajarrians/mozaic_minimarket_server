@@ -148,7 +148,7 @@ class PurchaseInvoicebyItemReportController extends Controller
 
         $total_amount = 0;
         foreach ($data as $key => $val) {
-            $total_amount += $val['subtotal_amount'];
+            $total_amount += $val['subtotal_amount_after_discount'];
         }
 
         return $total_amount;
@@ -212,38 +212,51 @@ class PurchaseInvoicebyItemReportController extends Controller
             </tr>
         </table>
         ";
+        $pdf::SetMargins(10, 10, 10, 10);
         $pdf::writeHTML($tbl, true, false, false, false, '');
-        
         $no = 1;
         $tblStock1 = "
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
-                <td width=\"5%\" ><div style=\"text-align: center;\">No</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Nama Kategori</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Nama Barang</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Jumlah Barang</div></td>
-                <td width=\"15%\" ><div style=\"text-align: center;\">Jumlah Pembelian</div></td>
+                <td width=\"5%\" ><div style=\"text-align: center; font-weight: bold\">No</div></td>
+                <td width=\"20%\" ><div style=\"text-align: center; font-weight: bold\">Nama Kategori</div></td>
+                <td width=\"45%\" ><div style=\"text-align: center; font-weight: bold\">Nama Barang</div></td>
+                <td width=\"15%\" ><div style=\"text-align: center; font-weight: bold\">Jumlah Barang</div></td>
+                <td width=\"15%\" ><div style=\"text-align: center; font-weight: bold\">Jumlah Pembelian</div></td>
             </tr>
         
              ";
 
         $no = 1;
+        $total_item = 0;
+        $total_amount = 0;
         $tblStock2 =" ";
         foreach ($data as $key => $val) {
             $tblStock2 .="
                 <tr>			
-                    <td style=\"text-align:left\">$no.</td>
+                    <td style=\"text-align:center\">$no.</td>
                     <td style=\"text-align:left\">".$this->getCategoryName($val['item_category_id'])."</td>
                     <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
-                    <td style=\"text-align:left\">".$this->getTotalItem($val['item_id'])."</td>
+                    <td style=\"text-align:right\">".$this->getTotalItem($val['item_id'])."</td>
                     <td style=\"text-align:right\">".number_format($this->getTotalAmount($val['item_id']),2,'.',',')."</td>
                 </tr>
                 
             ";
             $no++;
+            $total_item += $this->getTotalItem($val['item_id']);
+            $total_amount += $this->getTotalAmount($val['item_id']);
         }
         $tblStock3 = " 
-
+        <tr>
+            <td colspan=\"3\"><div style=\"text-align: center;  font-weight: bold\">TOTAL</div></td>
+            <td style=\"text-align: right\"><div style=\"font-weight: bold\">". $total_item ."</div></td>
+            <td style=\"text-align: right\"><div style=\"font-weight: bold\">". number_format($total_amount,2,'.',',') ."</div></td>
+        </tr>
+        </table>
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
+            </tr>
         </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3, true, false, false, false, '');
@@ -297,25 +310,28 @@ class PurchaseInvoicebyItemReportController extends Controller
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
             $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(5);
             $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(20);
-            $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(35);
             $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(20);
     
             $spreadsheet->getActiveSheet()->mergeCells("B1:F1");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
+            $spreadsheet->getActiveSheet()->getStyle('B3:F3')->getFont()->setBold(true);
 
             $spreadsheet->getActiveSheet()->getStyle('B3:F3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
             $spreadsheet->getActiveSheet()->getStyle('B3:F3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             $sheet->setCellValue('B1',"Laporan Pembelian Barang Dari Periode ".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
             $sheet->setCellValue('B3',"No");
-            $sheet->setCellValue('C3',"Nama Kategory");
+            $sheet->setCellValue('C3',"Nama Kategori");
             $sheet->setCellValue('D3',"Nama Barang");
             $sheet->setCellValue('E3',"Jumlah Barang");
             $sheet->setCellValue('F3',"Jumlah Pembelian");
             
             $j=4;
+            $total_item = 0;
+            $total_amount = 0;
             $no=0;
             
             foreach($data as $key=>$val){
@@ -331,7 +347,7 @@ class PurchaseInvoicebyItemReportController extends Controller
                     $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
                     $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                    $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
                     $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
 
@@ -352,8 +368,25 @@ class PurchaseInvoicebyItemReportController extends Controller
                     continue;
                 }
                 $j++;
+                $total_item += $this->getTotalItem($val['item_id']);
+                $total_amount += $this->getTotalAmount($val['item_id']);
         
             }
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':D'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':F'.$j)->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getNumberFormat()->setFormatCode('0.00');
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':F'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->setCellValue('B'.$j, 'TOTAL');
+            $sheet->setCellValue('E'.$j, $total_item);
+            $sheet->setCellValue('F'.$j, $total_amount);
+
+            $j++;
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':F'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->setCellValue('B'.$j, Auth::user()->name.", ".date('d-m-Y H:i'));
             
             $filename='Laporan_Pembelian_Barang_'.$start_date.'_s.d._'.$end_date.'.xls';
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -365,5 +398,65 @@ class PurchaseInvoicebyItemReportController extends Controller
         }else{
             echo "Maaf data yang di eksport tidak ada !";
         }
+    }
+
+    public function tablePurchaseItemReport(Request $request)
+    {
+        $draw 				= 		$request->get('draw');
+        $start 				= 		$request->get("start");
+        $rowPerPage 		= 		$request->get("length");
+        $orderArray 	    = 		$request->get('order');
+        $columnNameArray 	= 		$request->get('columns');
+        $searchArray 		= 		$request->get('search');
+        $columnIndex 		= 		$orderArray[0]['column'];
+        $columnName 		= 		$columnNameArray[$columnIndex]['data'];
+        $columnSortOrder 	= 		$orderArray[0]['dir'];
+        $searchValue 		= 		$searchArray['value'];
+
+
+        $users = InvtItem::where('data_state','=',0)
+        ->where('company_id', Auth::user()->company_id);
+        $total = $users->count();
+
+        $totalFilter = InvtItem::where('data_state','=',0)
+        ->where('company_id', Auth::user()->company_id);
+        if (!empty($searchValue)) {
+            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
+        }
+        $totalFilter = $totalFilter->count();
+
+
+        $arrData = InvtItem::where('data_state','=',0)
+        ->where('company_id', Auth::user()->company_id);
+        $arrData = $arrData->skip($start)->take($rowPerPage);
+        $arrData = $arrData->orderBy($columnName,$columnSortOrder);
+
+        if (!empty($searchValue)) {
+            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
+        }
+
+        $arrData = $arrData->get();
+
+         $no = $start;
+        $data = array();
+        foreach ($arrData as $key => $val) {
+            $no++;
+            $row = array();
+            $row['no'] = "<div class='text-center'>".$no.".</div>";
+            $row['item_category_name'] = $this->getCategoryName($val['item_category_id']);
+            $row['item_name'] = $val['item_name'];
+            $row['item_total'] = "<div class='text-right'>".$this->getTotalItem($val['item_id'])."</div>";
+            $row['total_amount'] = "<div class='text-right'>".number_format($this->getTotalAmount($val['item_id']),2,'.',',')."</div>";
+
+            $data[] = $row;
+        }
+        $response = array(
+            "draw" => intval($draw),
+            "recordsTotal" => $total,
+            "recordsFiltered" => $totalFilter,
+            "data" => $data,
+        );
+
+        return json_encode($response);
     }
 }

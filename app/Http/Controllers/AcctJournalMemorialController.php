@@ -31,7 +31,7 @@ class AcctJournalMemorialController extends Controller
             $end_date = Session::get('end_date');
         }
         $data = JournalVoucher::join('acct_journal_voucher_item','acct_journal_voucher_item.journal_voucher_id','=','acct_journal_voucher.journal_voucher_id')
-        // ->join('acct_account', 'acct_account.account_id','=','acct_journal_voucher_item.account_id')
+        ->select('acct_journal_voucher.journal_voucher_id','acct_journal_voucher_item.journal_voucher_debit_amount','acct_journal_voucher_item.journal_voucher_credit_amount','acct_journal_voucher_item.journal_voucher_item_id','acct_journal_voucher.transaction_module_code','acct_journal_voucher.journal_voucher_description','acct_journal_voucher.journal_voucher_date','acct_journal_voucher_item.account_id')
         ->where('acct_journal_voucher.journal_voucher_date', '>=', $start_date)
         ->where('acct_journal_voucher.journal_voucher_date', '<=', $end_date)
         ->where('acct_journal_voucher.company_id', Auth::user()->company_id)
@@ -61,21 +61,27 @@ class AcctJournalMemorialController extends Controller
 
     public function getMinID($journal_voucher_id)
     {
-        $data = JournalVoucherItem::where('journal_voucher_id', $journal_voucher_id)->first();
+        $data = JournalVoucherItem::select('journal_voucher_item_id')
+        ->where('journal_voucher_id', $journal_voucher_id)
+        ->first();
 
         return $data['journal_voucher_item_id'];
     }
 
     public function getAccountCode($account_id)
     {
-        $data = AcctAccount::where('account_id', $account_id)->first();
+        $data = AcctAccount::select('account_code')
+        ->where('account_id', $account_id)
+        ->first();
 
         return $data['account_code'];
     }
 
     public function getAccountName($account_id)
     {
-        $data = AcctAccount::where('account_id', $account_id)->first();
+        $data = AcctAccount::select('account_name')
+        ->where('account_id', $account_id)
+        ->first();
 
         return $data['account_name'];
     }

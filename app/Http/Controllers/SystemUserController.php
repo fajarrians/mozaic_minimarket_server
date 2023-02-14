@@ -35,6 +35,7 @@ class SystemUserController extends Controller
     public function index()
     {
         $systemuser = User::where('data_state','=',0)
+        ->where('user_id', '!=', 55)
         ->where('company_id', Auth::user()->company_id)
         ->get();
         return view('content/SystemUser/ListSystemUser',compact('systemuser'));
@@ -167,9 +168,5 @@ class SystemUserController extends Controller
             return redirect()->back()->with('msg',$msg);
         }
         
-        
-
-
-            
     }
 }

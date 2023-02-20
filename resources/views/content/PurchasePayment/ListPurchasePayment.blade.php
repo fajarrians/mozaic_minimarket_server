@@ -14,6 +14,16 @@
 
 		});
 	}
+
+    $(document).ready(function(){
+        var payment_method = {!! json_encode(session('payment_method')) !!};
+
+        if (payment_method == 1) {
+            window.open("{{ route('purchase-payment-print-recipt-cesh-payment') }}",'_blank');
+        } else if (payment_method == 2) {
+            window.open("{{ route('purchase-payment-print-recipt-non-cesh-payment') }}",'_blank');
+        }
+    });
 </script>
 @stop
 @section('content_header')
@@ -33,6 +43,11 @@
     <b>Daftar Pelunasan Hutang</b> <small>Kelola Pelunasan Hutang </small>
 </h3>
 <br/>
+@if(session('msg'))
+<div class="alert alert-info" role="alert">
+    {{session('msg')}}
+</div>
+@endif 
 <div id="accordion">
     <form  method="post" action="{{ route('filter-purchase-payment') }}" enctype="multipart/form-data">
     @csrf
@@ -79,12 +94,7 @@
         </div>
     </form>
 </div>
-<br/>
-@if(session('msg'))
-<div class="alert alert-info" role="alert">
-    {{session('msg')}}
-</div>
-@endif 
+
 <div class="card border border-dark">
   <div class="card-header bg-dark clearfix">
     <h5 class="mb-0 float-left">
@@ -100,12 +110,12 @@
             <table id="example" style="width:100%" class="table table-striped table-bordered table-hover table-full-width">
                 <thead>
                     <tr>
-                        <th style="text-align: center">No </th>
+                        <th style="text-align: center" width="5%">No </th>
                         <th style="text-align: center">Nama Supplier</th>
-                        <th style="text-align: center">Tanggal Pelunasan</th>
+                        <th style="text-align: center">Tanggal</th>
                         <th style="text-align: center">No Pelunasan</th>
-                        <th style="text-align: center">Jumlah Pelunasan Tunai</th>
-                        <th style="text-align: center">Jumlah Pelunasan Transfer</th>	
+                        <th style="text-align: center">Metode Pembayaran</th>
+                        <th style="text-align: center">Jumlah Pelunasan</th>
                         <th style="text-align: center">Aksi</th>
                     </tr>
                 </thead>
@@ -113,23 +123,15 @@
                     <?php $no = 1; ?>
                     @foreach($purchasepayment as $payment)
                     <tr>
-                        <td style='text-align:center'>{{$no}}</td>
-                        <td>{{$PurchasePayment->getCoreSupplierName($payment['supplier_id'])}}</td>
-                        <td>{{$payment['payment_date']}}</td>
-                        <td>{{$payment['payment_no']}}</td>
-                    <?php if($payment['payment_total_cash_amount']==null){?>
-                        <td style='text-align:right'>0.00</td>
-                    <?php }else{?>
-                        <td style='text-align:right'>{{number_format($payment['payment_total_cash_amount'], 2)}}</td>
-                    <?php } ?>
-                    <?php if($payment['payment_total_transfer_amount']==null){?>
-                        <td style='text-align:right'>0.00</td>
-                    <?php }else{?>
-                        <td style='text-align:right'>{{number_format($payment['payment_total_transfer_amount'], 2)}}</td>
-                    <?php } ?>
-                        <td class="">
+                        <td style='text-align:center'>{{ $no }}.</td>
+                        <td>{{ $PurchasePayment->getCoreSupplierName($payment['supplier_id']) }}</td>
+                        <td>{{ date('d-m-Y', strtotime($payment['payment_date'])) }}</td>
+                        <td>{{ $payment['payment_no'] }}</td>
+                        <td>{{ $PurchasePayment->paymentMethod($payment['payment_method']) }}</td>
+                        <td style='text-align:right'>{{ number_format($payment['payment_amount'],2,'.',',') }}</td>
+                        <td class="text-center">
                             <a type="button" class="btn btn-outline-warning btn-sm" href="{{ url('/purchase-payment/detail/'.$payment['payment_id']) }}">Detail</a>
-                            <a type="button" class="btn btn-outline-danger btn-sm" href="{{ url('/purchase-payment/delete/'.$payment['payment_id']) }}">Batal</a>
+                            <a type="button" class="btn btn-outline-danger btn-sm" href="{{ url('/purchase-payment/delete/'.$payment['payment_id']) }}">Hapus</a>
                         </td>
                     </tr>
                     <?php $no++; ?>

@@ -360,4 +360,163 @@ class CoreMemberReportController extends Controller
             echo "Maaf data yang di eksport tidak ada !";
         }
     }
+
+    public function openingBalenceCoreMember($member_id)
+    {
+        if(!$start_date = Session::get('start_date')){
+            $start_date = date('Y-m-d');
+        } else {
+            $start_date = Session::get('start_date');
+        }
+
+        $sales_invoice = SalesInvoice::where('customer_id', $member_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('sales_invoice_date','<',$start_date)
+        ->where('sales_payment_method', 2)
+        ->where('paid_amount',0)
+        ->get();
+
+        $opening = 0;
+        foreach ($sales_invoice as $key => $val) {
+            $opening += $val['total_amount'];
+        }
+
+        return $opening;
+    }
+
+    public function printCardCoreMemberReport($member_id)
+    {
+        if(!$start_date = Session::get('start_date')){
+            $start_date = date('Y-m-d');
+        } else {
+            $start_date = Session::get('start_date');
+        }
+        if(!$end_date = Session::get('end_date')){
+            $end_date = date('Y-m-d');
+        } else {
+            $end_date = Session::get('end_date');
+        }
+        $data_member = CoreMember::where('member_id', $member_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first();
+
+        $sales_invoice = SalesInvoice::where('customer_id', $member_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('sales_payment_method', 2)
+        ->where('sales_invoice_date','>=',$start_date)
+        ->where('sales_invoice_date','<=',$end_date)
+        ->where('paid_amount',0)
+        ->get();
+
+        $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
+
+        $pdf::SetPrintHeader(false);
+        $pdf::SetPrintFooter(false);
+
+        $pdf::SetMargins(10, 10, 10, 10); // put space of 10 on top
+
+        $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            $pdf::setLanguageArray($l);
+        }
+
+        $pdf::SetFont('helvetica', 'B', 20);
+
+        $pdf::AddPage();
+
+        $pdf::SetFont('helvetica', '', 8);
+
+        $tbl = "
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td><div style=\"text-align: center; font-size:14px; font-weight: bold\">KARTU PIUTANG</div></td>
+            </tr>
+        </table>
+        ";
+        $pdf::writeHTML($tbl, true, false, false, false, '');
+        
+        $tbl1 = "
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td width=\"13%\">Anggota</td>
+                <td width=\"2%\">:</td>
+                <td width=\"85%\">[".$data_member['member_no']."] ".$data_member['member_name']."</td>
+            </tr>
+            <tr>
+                <td width=\"13%\">Periode</td>
+                <td width=\"2%\">:</td>
+                <td width=\"85%\">".date('d-m-Y',strtotime($start_date))." s/d ".date('d-m-Y',strtotime($end_date))."</td>
+            </tr>
+        ";
+
+        $tbl2 = "
+        </table>
+        <div></div>
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\">
+            <div style=\"border-collapse:collapse;\">
+                <tr style=\"line-height: 0%;\">
+                    <td width=\"5%\"><div style=\"text-align: center; font-weight: bold;\">No</div></td>
+                    <td width=\"10%\"><div style=\"text-align: center; font-weight: bold\">Tanggal</div></td>
+                    <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Nomor</div></td>
+                    <td width=\"25%\"><div style=\"text-align: center; font-weight: bold\">Keterangan</div></td>
+                    <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Debit</div></td>
+                    <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Kredit</div></td>
+                    <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Saldo</div></td>
+                </tr>
+            </div>
+        </table>    
+        <table width=\"100%\" cellpadding=\"1\" border=\"0\">
+        ";
+        
+        $no = 0;
+        $tbl3 = "
+        <tr>
+            <td width=\"5%\"><div style=\"text-align: center;\"></div></td>
+            <td width=\"45%\"><div style=\"text-align: left; font-weight: bold;\">Saldo Awal...</div></td>
+            <td width=\"50%\"><div style=\"text-align: right;\">".number_format($this->openingBalenceCoreMember($member_id),2,'.',',')."</div></td>
+        </tr>
+        ";
+        $last_balence = $this->openingBalenceCoreMember($member_id);
+        $total_amount = 0;
+        foreach ($sales_invoice as $val) {
+            $no++;
+            $last_balence += $val['total_amount'];
+            $tbl3 .= "
+            <tr>
+                <td width=\"5%\"><div style=\"text-align: center;\">".$no.".</div></td>
+                <td width=\"10%\"><div style=\"text-align: left;\">".date('d-m-Y', strtotime($val['sales_invoice_date']))."</div></td>
+                <td width=\"15%\"><div style=\"text-align: left;\">".$val['sales_invoice_no']."</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Tagihan : ".$val['sales_invoice_no']."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($val['total_amount'],2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format(0,2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($last_balence,2,'.',',')."</div></td>
+            </tr>
+            ";
+            $total_amount += $val['total_amount'];
+        }
+        
+        $tbl4 = "
+        </table>
+        <table width=\"100%\" cellpadding=\"1\" border=\"0\">
+            <tr>
+                <td width=\"30%\"><div style=\"text-align: left; border-top: 1px solid black; font-weight: bold;\">Jumlah Mutasi</div></td>
+                <td width=\"25%\"><div style=\"text-align: left; border-top: 1px solid black;\">:</div></td>
+                <td width=\"15%\"><div style=\"text-align: right; border-top: 1px solid black;\">".number_format($total_amount,2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right; border-top: 1px solid black;\">".number_format(0,2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right; border-top: 1px solid black;\"></div></td>
+            </tr>
+        </table>
+        ";
+
+        $pdf::writeHTML($tbl1.$tbl2.$tbl3.$tbl4, true, false, false, false, '');
+
+
+        $filename = 'Kartu Piutang.pdf';
+        $pdf::Output($filename, 'I');
+    }
 }

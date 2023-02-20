@@ -723,6 +723,12 @@ class SalesInvoiceController extends Controller
         $table_sales_invoice->data_state    = 1;
         $table_sales_invoice->updated_id    = Auth::id();
 
+        SalesInvoiceItem::where('sales_invoice_id', $sales_invoice['sales_invoice_id'])
+        ->update([
+            'data_state' => 1,
+            'updated_id' => Auth::id()
+        ]);
+
         if($table_sales_invoice->save()){
             $msg = "Hapus Penjualan Berhasil";
             return redirect('/sales-invoice')->with('msg',$msg);

@@ -92,6 +92,11 @@ input[type=number]::-webkit-outer-spin-button {
 -webkit-appearance: none; 
    margin: 0; 
 }
+.checkbox-lg{
+    top: 1.2rem;
+    scale: 1.7;
+    margin-right: 0.8rem;
+}
 </style>
 <body class="@yield('classes_body')" @yield('body_data')>
 

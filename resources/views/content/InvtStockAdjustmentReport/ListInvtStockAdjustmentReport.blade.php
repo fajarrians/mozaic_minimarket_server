@@ -8,12 +8,16 @@
         $(document).ready(function(){
             var warehouse_id    = {!! json_encode($warehouse_id) !!}
             var category_id     = {!! json_encode($category_id) !!}
+            var order           = {!! json_encode($order) !!}
 
             if (warehouse_id == "") {
                 $('#warehouse_id').select2('val', ' ');
             }
             if (category_id == "") {
                 $('#category_id').select2('val', ' ');
+            }
+            if (order == "") {
+                $('#order').select2('val', ' ');
             }
         });
 
@@ -58,7 +62,7 @@
              "serverSide": true,
              "pageLength": 5,
              "lengthMenu": [ [5, 15, 20, 100000], [5, 15, 20, "All"] ],
-             "order": [[3, 'asc']],
+             "ordering": false,
              "ajax": "{{ url('table-stock-item') }}",
              "columns":[
                 {data: 'no'},
@@ -111,7 +115,7 @@
         <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body">
                 <div class = "row">
-                    <div class = "col-md-6">
+                    <div class = "col-md-4">
                         <div class="form-group form-md-line-input">
                             <section class="control-label">Nama Gudang
                                 
@@ -119,12 +123,20 @@
                             {!! Form::select('warehouse_id',  $warehouse, $warehouse_id, ['class' => 'selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id']) !!}
                         </div>
                     </div>
-                    <div class = "col-md-6">
+                    <div class = "col-md-4">
                         <div class="form-group form-md-line-input">
                             <section class="control-label">Nama Kategori Barang
                                 
                             </section>
                             {!! Form::select('item_category_id',  $category, $category_id, ['class' => 'selection-search-clear select-form', 'id' => 'category_id', 'name' => 'category_id']) !!}
+                        </div>
+                    </div>
+                    <div class = "col-md-4">
+                        <div class="form-group form-md-line-input">
+                            <section class="control-label">Urutkan Per
+                                
+                            </section>
+                            {!! Form::select('',  $orderList, $order, ['class' => 'selection-search-clear select-form', 'id' => 'order', 'name' => 'order']) !!}
                         </div>
                     </div>
 

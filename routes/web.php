@@ -13,6 +13,7 @@ use App\Http\Controllers\AcctPayableCardController;
 use App\Http\Controllers\AcctReceiptsController;
 use App\Http\Controllers\AcctReceiptsReportController;
 use App\Http\Controllers\AttendanceReportController;
+use App\Http\Controllers\CardStockItemController;
 use App\Http\Controllers\CashierCloseController;
 use App\Http\Controllers\ConfigurationDataController;
 use App\Http\Controllers\ConsolidatedDisbursementReportController;
@@ -400,14 +401,12 @@ Route::post('/purchase-payment/filter',[PurchasePaymentController::class, 'filte
 Route::get('/purchase-payment/reset-filter',[PurchasePaymentController::class, 'resetFilterPurchasePayment'])->name('reset-filter-purchase-payment');
 Route::get('/purchase-payment/search', [PurchasePaymentController::class, 'searchPurchasePayment'])->name('search-purchase-payment');
 Route::get('/purchase-payment/select-supplier/{supplier_id}', [PurchasePaymentController::class, 'selectSupplierPurchasePayment'])->name('select-supplier-purchase-payment');
-
 Route::post('/purchase-payment/elements-add/', [PurchasePaymentController::class, 'elements_add'])->name('elements-add-purchase-payment');
-Route::post('/purchase-payment/add-transfer-array/', [PurchasePaymentController::class, 'processAddTransferArray'])->name('add-transfer-array-purchase-payment');
 Route::post('/purchase-payment/process-add/', [PurchasePaymentController::class, 'processAddPurchasePayment'])->name('process-add-purchase-payment');
-Route::get('/purchase-payment/delete-transfer-array/{record_id}/{supplier_id}', [PurchasePaymentController::class, 'deleteTransferArray'])->name('delete-transfer-array-purchase-payment');
 Route::get('/purchase-payment/delete/{supplier_id}', [PurchasePaymentController::class, 'deletePurchasePayment'])->name('delete-purchase-payment');
-Route::post('/purchase-payment/process-delete', [PurchasePaymentController::class, 'processDeletePurchasePayment'])->name('process-delete-purchase-payment');
 Route::get('/purchase-payment/detail/{supplier_id}', [PurchasePaymentController::class, 'detailPurchasePayment'])->name('detail-purchase-payment');
+Route::get('/purchase-payment/print-recipt-cesh-payment', [PurchasePaymentController::class, 'printReciptCeshPayment'])->name('purchase-payment-print-recipt-cesh-payment');
+Route::get('/purchase-payment/print-recipt-non-cesh-payment', [PurchasePaymentController::class, 'printReciptNonCeshPayment'])->name('purchase-payment-print-recipt-non-cesh-payment');
 
 Route::get('/core-bank',[CoreBankController::class, 'index'])->name('core-bank');
 Route::post('/core-bank/add-elements',[CoreBankController::class, 'addElementsCoreBank'])->name('add-elements-core-bank');
@@ -428,6 +427,7 @@ Route::get('/core-member',[CoreMemberController::class, 'index'])->name('core-me
 Route::get('/core-member-report', [CoreMemberReportController::class, 'index'])->name('core-member-report');
 Route::post('/core-member-report/filter', [CoreMemberReportController::class, 'filterCoreMemberReport'])->name('filter-core-member-report');
 Route::get('/core-member-report/reset-filter', [CoreMemberReportController::class, 'resetFilterCoreMemberReport'])->name('reset-filter-core-member-report');
+Route::get('/core-member-report/print-card/{member_id}', [CoreMemberReportController::class, 'printCardCoreMemberReport'])->name('print-core-member-report-card');
 Route::get('/core-member-report/print', [CoreMemberReportController::class, 'printCoreMemberReport'])->name('print-core-member-report');
 Route::get('/core-member-report/export', [CoreMemberReportController::class, 'exportCoreMemberReport'])->name('export-core-member-report');
 
@@ -480,3 +480,10 @@ Route::get('sales-invoice-recap/print', [SalesInvoiceRecapController::class, 'pr
 Route::get('sales-invoice-recap/export', [SalesInvoiceRecapController::class, 'exportSalesRecap'])->name('export-sales-invoice-recap');
 
 Route::get('cashier-close', [CashierCloseController::class, 'index'])->name('cashier-close');
+Route::post('cashier-close/process', [CashierCloseController::class, 'processCashierClose'])->name('cashier-close-process');
+
+Route::get('card-stock-item',[CardStockItemController::class, 'index'])->name('card-stock-item');
+Route::get('card-stock-item/table-stock',[CardStockItemController::class, 'tableStockCardStockItem'])->name('card-stock-item-table-stock');
+Route::post('card-stock-item/filter',[CardStockItemController::class, 'filterCardStockItem'])->name('card-stock-item-filter');
+Route::get('card-stock-item/reset-filter',[CardStockItemController::class, 'resetFilterCardStockItem'])->name('card-stock-item-reset-filter');
+Route::get('card-stock-item/print/{item_stock_id}',[CardStockItemController::class, 'printCardStockItem'])->name('card-stock-item-print');

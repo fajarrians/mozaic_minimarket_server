@@ -710,6 +710,12 @@ class PurchaseInvoiceController extends Controller
                 'updated_id' => Auth::id()
             ]);
 
+            PurchaseInvoiceItem::where('purchase_invoice_id', $purchase_invoice['purchase_invoice_id'])
+            ->update([
+                'data_state' => 1,
+                'updated_id' => Auth::id()
+            ]);
+
             $msg = 'Hapus Pembelian Berhasil';
             return redirect('/purchase-invoice')->with('msg',$msg);
         } else {

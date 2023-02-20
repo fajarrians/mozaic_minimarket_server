@@ -37,6 +37,11 @@ class InvtStockAdjustmentReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
+        if(!$order = Session::get('order')){
+            $order = '';
+        } else {
+            $order = Session::get('order');
+        }
         $category = InvtItemCategory::where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get()
@@ -45,52 +50,11 @@ class InvtStockAdjustmentReportController extends Controller
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('warehouse_name','warehouse_id');
-
-        if ($warehouse_id == ""){
-            if ($category_id == "") {
-                $data = InvtItemStock::where('data_state',0)
-                ->where('company_id', Auth::user()->company_id)
-                ->get();
-            } else {
-                $data = InvtItemStock::where('data_state',0)
-                ->where('item_category_id',$category_id)
-                ->where('company_id', Auth::user()->company_id)
-                ->get();
-            }
-        } else if ($category_id == "") {
-            if ($warehouse_id == "") {
-                $data = InvtItemStock::where('data_state',0)
-                ->where('company_id', Auth::user()->company_id)
-                ->get();
-            } else {
-                $data = InvtItemStock::where('data_state',0)
-                ->where('warehouse_id',$warehouse_id)
-                ->where('company_id', Auth::user()->company_id)
-                ->get();
-            }
-        } else if ($warehouse_id == "" && $category_id == "") {
-            $data = InvtItemStock::where('data_state',0)
-            ->where('company_id', Auth::user()->company_id)
-            ->get();
-        } else {
-            $data = InvtItemStock::where('data_state',0)
-            ->where('item_category_id',$category_id)
-            ->where('warehouse_id',$warehouse_id)
-            ->where('company_id', Auth::user()->company_id)
-            ->get();
-        }
-
-        $rack_line = InvtItemRack::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->where('rack_status',0)
-        ->get()
-        ->pluck('rack_name','item_rack_id');
-        $rack_column = InvtItemRack::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->where('rack_status',1)
-        ->get()
-        ->pluck('rack_name','item_rack_id');
-        return view('content.InvtStockAdjustmentReport.ListInvtStockAdjustmentReport',compact('category','warehouse','category_id','warehouse_id','data','rack_line','rack_column'));
+        $orderList = array(
+            1 => 'Kategori',
+            2 => 'Rak'
+        );
+        return view('content.InvtStockAdjustmentReport.ListInvtStockAdjustmentReport',compact('category','warehouse','category_id','warehouse_id','orderList','order'));
     }
 
     public function editRackStockAdjustmentReport($stock_id)
@@ -199,9 +163,11 @@ class InvtStockAdjustmentReportController extends Controller
     {
         $category_id = $request->category_id;
         $warehouse_id = $request->warehouse_id;
+        $order = $request->order;
 
         Session::put('category_id',$category_id);
         Session::put('warehouse_id',$warehouse_id);
+        Session::put('order',$order);
 
         return redirect('/stock-adjustment-report');
     }
@@ -210,6 +176,7 @@ class InvtStockAdjustmentReportController extends Controller
     {
         Session::forget('category_id');
         Session::forget('warehouse_id');
+        Session::forget('order');
 
         return redirect('/stock-adjustment-report');
     }
@@ -279,51 +246,28 @@ class InvtStockAdjustmentReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
-        // $data = InvtStockAdjustment::join('invt_stock_adjustment_item','invt_stock_adjustment.stock_adjustment_id','=','invt_stock_adjustment_item.stock_adjustment_id')
-        // ->where('invt_stock_adjustment_item.item_category_id',$category_id)
-        // ->where('invt_stock_adjustment.warehouse_id',$warehouse_id)
-        // ->where('invt_stock_adjustment.company_id', Auth::user()->company_id)
-        // ->where('invt_stock_adjustment.data_state',0)
-        // ->get();
-        if ($warehouse_id == ""){
-            if ($category_id == "") {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            } else {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.item_category_id',$category_id)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            }
-        } else if ($category_id == "") {
-            if ($warehouse_id == "") {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            } else {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.warehouse_id',$warehouse_id)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            }
-        } else if ($warehouse_id == "" && $category_id == "") {
-            $data = InvtItemStock::where('invt_item_stock.data_state',0)
-            ->where('invt_item_stock.company_id', Auth::user()->company_id)
-            ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-            ->get();
+        if(!$order = Session::get('order')){
+            $order = '';
         } else {
-            $data = InvtItemStock::where('invt_item_stock.data_state',0)
-            ->where('invt_item_stock.item_category_id',$category_id)
-            ->where('invt_item_stock.warehouse_id',$warehouse_id)
-            ->where('invt_item_stock.company_id', Auth::user()->company_id)
-            ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-            ->get();
+            $order = Session::get('order');
         }
+
+        $data = InvtItemStock::where('invt_item_stock.data_state',0)
+        ->where('invt_item_stock.company_id', Auth::user()->company_id)
+        ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id');
+        if ($order == 1) {
+            $data = $data->orderBy('invt_item_stock.item_category_id','ASC');
+            $data = $data->orderBy('invt_item.item_name','ASC');
+        } else if ($order == 2) {
+            $data = $data->orderBy('invt_item_stock.rack_line','ASC');
+            $data = $data->orderBy('invt_item_stock.rack_column','ASC');
+        } else if ($warehouse_id != '') {
+            $data = $data->where('invt_item_stock.warehouse_id',$warehouse_id);
+        } else if ($category_id != '') {
+            $data = $data->where('invt_item_stock.item_category_id',$category_id);
+        }
+        $data = $data->get();
+
         if ($warehouse_id == null) {
             $warehouse_id = "Semua Gudang";
         } else {
@@ -413,7 +357,7 @@ class InvtStockAdjustmentReportController extends Controller
                     <td>".$this->getItemCategoryName($val['item_category_id'])."</td>
                     <td>".$this->getItemName($val['item_id'])."</td>
                     <td>".$this->getItemUnitName($val['item_unit_id'])."</td>
-                    <td>".$this->getRackName($val['rack_column']).' | '.$this->getRackName($val['rack_line'])."</td>
+                    <td>".$this->getRackName($val['rack_line']).' | '.$this->getRackName($val['rack_column'])."</td>
                     <td style=\"text-align:right\">".$this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id'])."</td>
                     <td style=\"text-align:right\">".number_format($val['item_unit_price'],2,'.',',')."</td>
                     <td style=\"text-align:right\">".number_format($val['item_unit_cost'],2,'.',',')."</td>
@@ -456,45 +400,28 @@ class InvtStockAdjustmentReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
-        if ($warehouse_id == ""){
-            if ($category_id == "") {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            } else {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.item_category_id',$category_id)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            }
-        } else if ($category_id == "") {
-            if ($warehouse_id == "") {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            } else {
-                $data = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->where('invt_item_stock.warehouse_id',$warehouse_id)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->get();
-            }
-        } else if ($warehouse_id == "" && $category_id == "") {
-            $data = InvtItemStock::where('invt_item_stock.data_state',0)
-            ->where('invt_item_stock.company_id', Auth::user()->company_id)
-            ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-            ->get();
+        if(!$order = Session::get('order')){
+            $order = '';
         } else {
-            $data = InvtItemStock::where('invt_item_stock.data_state',0)
-            ->where('invt_item_stock.item_category_id',$category_id)
-            ->where('invt_item_stock.warehouse_id',$warehouse_id)
-            ->where('invt_item_stock.company_id', Auth::user()->company_id)
-            ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-            ->get();
+            $order = Session::get('order');
         }
+
+        $data = InvtItemStock::where('invt_item_stock.data_state',0)
+        ->where('invt_item_stock.company_id', Auth::user()->company_id)
+        ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id');
+        if ($order == 1) {
+            $data = $data->orderBy('invt_item_stock.item_category_id','ASC');
+            $data = $data->orderBy('invt_item.item_name','ASC');
+        } else if ($order == 2) {
+            $data = $data->orderBy('invt_item_stock.rack_line','ASC');
+            $data = $data->orderBy('invt_item_stock.rack_column','ASC');
+        } else if ($warehouse_id != '') {
+            $data = $data->where('invt_item_stock.warehouse_id',$warehouse_id);
+        } else if ($category_id != '') {
+            $data = $data->where('invt_item_stock.item_category_id',$category_id);
+        }
+        $data = $data->get();
+
         if ($warehouse_id == null) {
             $warehouse_id = "Semua Gudang";
         } else {
@@ -581,7 +508,7 @@ class InvtStockAdjustmentReportController extends Controller
                     $sheet->setCellValue('C'.$j, $this->getItemCategoryName($val['item_category_id']));
                     $sheet->setCellValue('D'.$j, $this->getItemName($val['item_id']));
                     $sheet->setCellValue('E'.$j, $this->getItemUnitName($val['item_unit_id']));
-                    $sheet->setCellValue('F'.$j, $this->getRackName($val['rack_column']).' | '.$this->getRackName($val['rack_line']));
+                    $sheet->setCellValue('F'.$j, $this->getRackName($val['rack_line']).' | '.$this->getRackName($val['rack_column']));
                     $sheet->setCellValue('G'.$j, $this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id']));
                     $sheet->setCellValue('H'.$j, $val['item_unit_cost']);
                     $sheet->setCellValue('I'.$j, ($val['item_unit_cost'] * $this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id'])));
@@ -658,68 +585,34 @@ class InvtStockAdjustmentReportController extends Controller
         } else {
             $warehouse_id = Session::get('warehouse_id');
         }
-    
-        if ($warehouse_id == ""){
-            if ($category_id == "") {
-                $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
-                ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
-                ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
-                ->where('invt_item_stock.company_id', Auth::user()->company_id);
-            } else {
-                $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
-                ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
-                ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
-                ->where('invt_item_stock.item_category_id',$category_id)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id);
-            }
-        } else if ($category_id == "") {
-            if ($warehouse_id == "") {
-                $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
-                ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
-                ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
-                ->where('invt_item_stock.company_id', Auth::user()->company_id);
-            } else {
-                $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
-                ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-                ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
-                ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
-                ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
-                ->where('invt_item_stock.warehouse_id',$warehouse_id)
-                ->where('invt_item_stock.company_id', Auth::user()->company_id);
-            }
-        } else if ($warehouse_id == "" && $category_id == "") {
-            $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
-            ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-            ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
-            ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
-            ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
-            ->where('invt_item_stock.company_id', Auth::user()->company_id);
+        if(!$order = Session::get('order')){
+            $order = '';
         } else {
-            $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
-            ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
-            ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
-            ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
-            ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
-            ->where('invt_item_stock.item_category_id',$category_id)
-            ->where('invt_item_stock.warehouse_id',$warehouse_id)
-            ->where('invt_item_stock.company_id', Auth::user()->company_id);
+            $order = Session::get('order');
         }
+
+        $data_item = InvtItemStock::where('invt_item_stock.data_state',0)
+        ->join('invt_item','invt_item.item_id','=','invt_item_stock.item_id')
+        ->join('invt_item_unit','invt_item_unit.item_unit_id','=','invt_item_stock.item_unit_id')
+        ->join('invt_item_category','invt_item_category.item_category_id','=','invt_item_stock.item_category_id')
+        ->join('invt_warehouse', 'invt_warehouse.warehouse_id','=','invt_item_stock.warehouse_id')
+        ->where('invt_item_stock.company_id', Auth::user()->company_id);
+        if ($warehouse_id != '') {
+            $data_item = $data_item->where('invt_item_stock.warehouse_id',$warehouse_id);
+        } else if ($category_id != '') {
+            $data_item = $data_item->where('invt_item_stock.item_category_id',$category_id);
+        }
+
 
         $draw 				= 		$request->get('draw');
         $start 				= 		$request->get("start");
         $rowPerPage 		= 		$request->get("length");
-        $orderArray 	    = 		$request->get('order');
-        $columnNameArray 	= 		$request->get('columns');
+        // $orderArray 	    = 		$request->get('order');
+        // $columnNameArray 	= 		$request->get('columns');
         $searchArray 		= 		$request->get('search');
-        $columnIndex 		= 		$orderArray[0]['column'];
-        $columnName 		= 		$columnNameArray[$columnIndex]['data'];
-        $columnSortOrder 	= 		$orderArray[0]['dir'];
+        // $columnIndex 		= 		$orderArray[0]['column'];
+        // $columnName 		= 		$columnNameArray[$columnIndex]['data'];
+        // $columnSortOrder 	= 		$orderArray[0]['dir'];
         $searchValue 		= 		$searchArray['value'];
 
         $users = $data_item;
@@ -735,7 +628,13 @@ class InvtStockAdjustmentReportController extends Controller
 
         $arrData = $data_item;
         $arrData = $arrData->skip($start)->take($rowPerPage);
-        $arrData = $arrData->orderBy($columnName,$columnSortOrder);
+        if ($order == 1) {
+            $arrData = $arrData->orderBy('invt_item_stock.item_category_id','ASC');
+            $arrData = $arrData->orderBy('invt_item.item_name','ASC');
+        } else if ($order == 2) {
+            $arrData = $arrData->orderBy('invt_item_stock.rack_line','ASC');
+            $arrData = $arrData->orderBy('invt_item_stock.rack_column','ASC');
+        }
 
         if (!empty($searchValue)) {
             $arrData = $arrData->where('invt_item.item_name','like','%'.$searchValue.'%');

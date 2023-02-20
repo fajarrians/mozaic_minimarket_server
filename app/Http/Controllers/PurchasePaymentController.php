@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Configuration;
 use App\Http\Controllers\Controller;
 use App\Models\AcctAccount;
+use App\Models\AcctAccountSetting;
 use App\Models\CoreBank;
 use App\Models\CoreSupplier;
 use App\Models\JournalVoucher;
@@ -13,7 +15,7 @@ use App\Models\PreferenceTransactionModule;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchasePayment;
 use App\Models\PurchasePaymentItem;
-use App\Models\PurchasePaymentTransfer;
+use Elibyy\TCPDF\Facades\TCPDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +32,6 @@ class PurchasePaymentController extends Controller
     public function index()
     {
         Session::forget('purchasepaymentelements');
-        Session::forget('datapurchasepaymenttransfer');
 
         if(!Session::get('start_date')){
             $start_date     = date('Y-m-d');
@@ -43,14 +44,11 @@ class PurchasePaymentController extends Controller
             $end_date = Session::get('end_date');
         }
 
-        // $supplier_id        = Session::get('supplier_id');
-
         $purchasepayment    = PurchasePayment::where('data_state', 0)
         ->where('payment_date', '>=', $start_date)
         ->where('payment_date', '<=',$end_date)
         ->get();
 
-        // dd($purchasepayment);
         return view('content.PurchasePayment.ListPurchasePayment', compact('start_date','end_date','purchasepayment'));
     }
 
@@ -76,7 +74,6 @@ class PurchasePaymentController extends Controller
     public function searchPurchasePayment()
     {
         Session::forget('purchasepaymentelements');
-        Session::forget('datapurchasepaymenttransfer');
 
         $coresupplier = PurchaseInvoice::select('purchase_invoice.supplier_id', 'purchase_invoice.purchase_payment_method', 'core_supplier.supplier_name', 'core_supplier.supplier_address', DB::raw("SUM(purchase_invoice.owing_amount) as total_owing_amount"), DB::raw("SUM(purchase_invoice.return_amount) as total_return_amount"))
         ->join('core_supplier', 'core_supplier.supplier_id', 'purchase_invoice.supplier_id')
@@ -90,363 +87,240 @@ class PurchasePaymentController extends Controller
         return view('content.PurchasePayment.SearchPurchasePayment', compact('coresupplier'));
     }
 
-    public function getPayableAmount($supplier_id)
-    {
-        $data_purchase = PurchaseInvoice::where('supplier_id',$supplier_id)
-        ->where('purchase_payment_method',1)
-        ->get();
-
-        $payable_amount = 0;
-        foreach ($data_purchase as $key => $val) {
-            $payable_amount += $val['total_amount'];
-        }
-
-        return $payable_amount;
-    }
-
     public function selectSupplierPurchasePayment($supplier_id)
     {
-        $purchaseinvoiceowing = PurchaseInvoice::select('purchase_invoice.purchase_invoice_id', 'purchase_invoice.purchase_payment_method', 'purchase_invoice.supplier_id', 'purchase_invoice.owing_amount', 'purchase_invoice.purchase_invoice_date', 'purchase_invoice.paid_amount', 'purchase_invoice.purchase_invoice_no', 'purchase_invoice.subtotal_amount_total', 'purchase_invoice.discount_percentage_total', 'purchase_invoice.discount_amount_total', 'purchase_invoice.tax_ppn_amount', 'purchase_invoice.total_amount','purchase_invoice.company_id','purchase_invoice.data_state','purchase_invoice.return_amount')
-        ->where('purchase_invoice.supplier_id', $supplier_id)
-        ->where('purchase_invoice.company_id', Auth::user()->company_id)
-        ->where('purchase_invoice.purchase_payment_method', 1)
-        ->where('purchase_invoice.owing_amount', '!=',0)
-        ->where('purchase_invoice.data_state', 0)
-        ->get();
-        // dd($purchaseinvoiceowing);
-
-        $accountlist = AcctAccount::select(DB::raw("CONCAT(account_code,' - ',account_name) AS full_account"),'account_id')
-        ->where('data_state',0)
-        ->where('company_id',Auth::user()->company_id)
-        ->get()
-        ->pluck('full_account','account_id');
-
-        $supplier = CoreSupplier::findOrfail($supplier_id);
-
-        $banklist = CoreBank::where('data_state',0)
+        $purchaseinvoice = PurchaseInvoice::where('supplier_id', $supplier_id)
         ->where('company_id', Auth::user()->company_id)
-        ->get()
-        ->pluck('bank_name','bank_id');
-        // dd($data_payable);
+        ->where('purchase_payment_method', 1)
+        ->where('owing_amount', '!=',0)
+        ->where('data_state', 0)
+        ->get();
+
+        $supplier = CoreSupplier::where('supplier_id',$supplier_id)
+        ->first();
+
+        $payment_method_list = array(
+            1 => 'Tunai',
+            2 => 'Non Tunai',
+        );
         $purchasepaymentelements = Session::get('purchasepaymentelements');
-        $purchasepaymenttransfer = Session::get('datapurchasepaymenttransfer');
-        return view('content.PurchasePayment.AddPurchasePayment', compact('purchaseinvoiceowing','accountlist','banklist','purchasepaymentelements','purchasepaymenttransfer','supplier_id','supplier'));
+
+        return view('content.PurchasePayment.AddPurchasePayment', compact('purchaseinvoice','purchasepaymentelements','payment_method_list','supplier'));
     }
 
     public function elements_add(Request $request){
         $purchasepaymentelements= Session::get('purchasepaymentelements');
         if(!$purchasepaymentelements || $purchasepaymentelements == ''){
-            $purchasepaymentelements['payment_date']                = '';
-            $purchasepaymentelements['payment_remark']              = '';
-            $purchasepaymentelements['cash_account_id']             = '';
-            $purchasepaymentelements['payment_total_cash_amount']   = '';
+            $purchasepaymentelements['payment_date']     = '';
+            $purchasepaymentelements['payment_remark']   = '';
+            $purchasepaymentelements['payment_method']   = '';
         }
         $purchasepaymentelements[$request->name] = $request->value;
         Session::put('purchasepaymentelements', $purchasepaymentelements);
     }
-
-    public function processAddTransferArray(Request $request)
+    
+    public function paymentMethod($key)
     {
-        $purchasepaymenttransfer = array(
-            'bank_id'                       => $request->bank_id,
-            'payment_transfer_account_name' => $request->payment_transfer_account_name,
-            'payment_transfer_account_no'   => $request->payment_transfer_account_no,
-            'payment_transfer_amount'       => $request->payment_transfer_amount,
+        $payment_method_list = array(
+            1 => 'Tunai',
+            2 => 'Non Tunai',
         );
 
-        $lastpurchasepaymenttransfer = Session::get('datapurchasepaymenttransfer');
-        if($lastpurchasepaymenttransfer !== null){
-            array_push($lastpurchasepaymenttransfer, $purchasepaymenttransfer);
-            Session::put('datapurchasepaymenttransfer', $lastpurchasepaymenttransfer);
-        }else{
-            $lastpurchasepaymenttransfer = [];
-            array_push($lastpurchasepaymenttransfer, $purchasepaymenttransfer);
-            Session::push('datapurchasepaymenttransfer', $purchasepaymenttransfer);
-        }
+        return $payment_method_list[$key];
     }
 
     public function processAddPurchasePayment(Request $request)
     {
-        // dd($request->all());
-
-        $allrequest = $request->all();
-        $datapurchasepaymenttransfer = Session::get('datapurchasepaymenttransfer');
-
-        $fields = $request->validate([
-            'payment_date'                      => 'required',
+        $request->validate([
+            'payment_date'   => 'required',
+            'payment_method' => 'required',
         ]);
 
-        $data = array (
-            'payment_date'                      => $fields['payment_date'],
-            'company_id'                        => Auth::user()->company_id,
-            'cash_account_id'				    => $request->cash_account_id,
-            'supplier_id'						=> $request->supplier_id,
-            'payment_remark'					=> $request->payment_remark,
-            'payment_amount'					=> $request->payment_amount,
-            'payment_allocated'					=> $request->allocation_total,
-            'payment_shortover'					=> $request->shortover_total,
-            'payment_total_amount'				=> $request->payment_amount,
-            'payment_total_cash_amount'			=> $request->payment_total_cash_amount,
-            'payment_total_transfer_amount'		=> $request->payment_total_transfer_amount,
-            'created_id'						=> Auth::id(),
-            'updated_id'						=> Auth::id(),
+        $transaction_module_code = 'PH';
+        $transaction_module_id = $this->getTransactionModuleID($transaction_module_code);
+
+        $payment_amount = 0;
+        for ($i=1; $i <= $request->total_invoice ; $i++) {
+            if ($request['purchase_invoice_id_'.$i] != null) {
+                $purchase_invoice = PurchaseInvoice::where('purchase_invoice_id', $request['purchase_invoice_id_'.$i])
+                ->first();
+
+                $payment_amount += $purchase_invoice['total_amount'] - $purchase_invoice['return_amount'];
+            }
+        }
+
+        $dataPayment = array(
+            'company_id'        => Auth::user()->company_id,
+            'supplier_id'       => $request->supplier_id,
+            'payment_method'    => $request->payment_method,
+            'payment_date'      => $request->payment_date,
+            'payment_remark'    => $request->payment_remark,
+            'payment_amount'    => $payment_amount,
+            'created_id'        => Auth::id(),
+            'updated_id'        => Auth::id(),
         );
-
-        $payment_total_amount = $data['payment_allocated'] + $data['payment_shortover'];
-
-        $selisih_shortover = $data['payment_total_amount'] - $payment_total_amount;
-
-        $transaction_module_code 	= "PH";
-
-        $transactionmodule 		    = PreferenceTransactionModule::where('transaction_module_code', $transaction_module_code)
+        PurchasePayment::create($dataPayment);
+        
+        $purchasepayment = PurchasePayment::where('company_id', Auth::user()->company_id)
+        ->orderBy('payment_id','DESC')
         ->first();
 
-        $transaction_module_id 		= $transactionmodule['transaction_module_id'];
+        for ($i=1; $i <= $request->total_invoice ; $i++) {
+            if ($request['purchase_invoice_id_'.$i] != null) {
+                $purchase_invoice = PurchaseInvoice::where('purchase_invoice_id', $request['purchase_invoice_id_'.$i])
+                ->first();
 
-        $preferencecompany 			= PreferenceCompany::first();
-        
-        if(PurchasePayment::create($data)){
-            $PurchasePayment_last 		= PurchasePayment::select('payment_id', 'payment_no')
-            ->where('created_id', $data['created_id'])
-            ->orderBy('payment_id', 'DESC')
-            ->first();
-            
-            $journal_voucher_period 	= date("Ym", strtotime($data['payment_date']));
+                $table                  = PurchaseInvoice::findOrFail($request['purchase_invoice_id_'.$i]);
+                $table->paid_amount     = $purchase_invoice->total_amount;
+                $table->owing_amount    = 0;
+                $table->updated_id      = Auth::id();
+                $table->save();
 
-            $data_journal = array(
-                'company_id'				    => $data['company_id'],
-                'journal_voucher_period' 		=> $journal_voucher_period,
-                'journal_voucher_date'			=> $data['payment_date'],
-                'journal_voucher_status'        => 1,
-                'journal_voucher_title'			=> 'Pelunasan Hutang '.$PurchasePayment_last['payment_no'],
-                'journal_voucher_no'			=> $PurchasePayment_last['payment_no'],
-                'journal_voucher_description'	=> $data['payment_remark'],
-                'transaction_module_id'			=> $transaction_module_id,
-                'transaction_module_code'		=> $transaction_module_code,
-                'transaction_journal_no' 		=> $PurchasePayment_last['payment_no'],
-                'created_id' 					=> $data['created_id'],
-                'updated_id' 					=> $data['created_id'],
-            );
-            
-            JournalVoucher::create($data_journal);		
-
-            $journalvoucher = JournalVoucher::where('created_id', $data['created_id'])
-            ->orderBy('journal_voucher_id', 'DESC')
-            ->first();
-
-            $journal_voucher_id 	= $journalvoucher['journal_voucher_id'];
-
-            $payment = PurchasePayment::where('created_id', $data['created_id'])
-            ->orderBy('payment_id', 'DESC')
-            ->first();
-
-            $payment_id = $payment['payment_id'];
-
-            for($i = 1; $i < $request->item_total; $i++){
-                $data_paymentitem = array(
-                    'payment_id'		 		=> $payment_id,
-                    'purchase_invoice_id' 		=> $allrequest[$i.'_purchase_invoice_id'],
-                    'purchase_invoice_no' 		=> $allrequest[$i.'_purchase_invoice_no'],
-                    'purchase_invoice_date' 	=> $allrequest[$i.'_purchase_invoice_date'],
-                    'purchase_invoice_amount'	=> $allrequest[$i.'_purchase_invoice_amount'],
-                    'total_amount' 				=> $allrequest[$i.'_total_amount'],
-                    'paid_amount' 				=> $allrequest[$i.'_paid_amount'],
-                    'owing_amount' 				=> $allrequest[$i.'_owing_amount'],
-                    'allocation_amount' 		=> $allrequest[$i.'_allocation'],
-                    'shortover_amount'	 		=> $allrequest[$i.'_shortover'],
-                    'last_balance' 				=> $allrequest[$i.'_last_balance']
+                $dataPaymentItem = array(
+                    'company_id'            => Auth::user()->company_id,
+                    'payment_id'            => $purchasepayment['payment_id'],
+                    'purchase_invoice_id'   => $purchase_invoice['purchase_invoice_id'],
+                    'purchase_invoice_no'   => $purchase_invoice['purchase_invoice_no'],
+                    'return_amount'         => $purchase_invoice['return_amount'],
+                    'date_invoice'          => $purchase_invoice['purchase_invoice_date'],
+                    'due_date_invoice'      => $purchase_invoice['purchase_invoice_due_date'],
+                    'total_amount'          => $purchase_invoice['total_amount'] - $purchase_invoice['return_amount'],
+                    'created_id'            => Auth::id(),
+                    'updated_id'            => Auth::id(),
                 );
 
-                if($data_paymentitem['allocation_amount'] > 0){
-                    if(PurchasePaymentItem::create($data_paymentitem)){
+                PurchasePaymentItem::create($dataPaymentItem);
+            }
+        }
 
-                        $purchaseinvoice = PurchaseInvoice::where('data_state', 0)
-                        ->where('purchase_invoice_id', $data_paymentitem['purchase_invoice_id'])
-                        ->first();
+        $journal = array(
+            'company_id'                    => Auth::user()->company_id,
+            'transaction_module_id'         => $transaction_module_id,
+            'transaction_module_code'       => $transaction_module_code,
+            'journal_voucher_status'        => 1,
+            'journal_voucher_date'          => $request->payment_date,
+            'journal_voucher_description'   => $this->getTransactionModuleName($transaction_module_code),
+            'journal_voucher_period'        => date('Ym', strtotime($request->payment_date)),
+            'transaction_journal_no'        => $purchasepayment['payment_no'],
+            'journal_voucher_title'         => $this->getTransactionModuleName($transaction_module_code),
+            'created_id'                    => Auth::id(),
+            'updated_id'                    => Auth::id()
+        );
+        if (JournalVoucher::create($journal)) {
 
-                        $purchaseinvoice->paid_amount       = $purchaseinvoice['paid_amount'] + $data_paymentitem['allocation_amount'] + $data_paymentitem['shortover_amount'];
-                        $purchaseinvoice->owing_amount      = $data_paymentitem['last_balance'];
-                        $purchaseinvoice->shortover_amount  = $purchaseinvoice['shortover_amount'] + $data_paymentitem['shortover_amount'];
-                        $purchaseinvoice->save();
-
-                        $msg = "Tambah Pelunasan Hutang Berhasil";
-                        continue;
-                    }else{
-                        $msg = "Tambah Pelunasan Hutang Gagal";
-                        return redirect('/purchase-payment/select-supplier/'.$data['supplier_id'])->with('msg',$msg);
-                    }
+            if ($request->payment_method == 1) {
+                $account_setting_name = 'purchase_cash_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
                 }
+                $journal_debit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_debit);
                 
-            }
-
-            $account 		= AcctAccount::where('account_id', $preferencecompany['account_payable_id'])
-            ->where('data_state', 0)
-            ->first();
-
-            $account_id_default_status 		= $account['account_default_status'];
-
-            $data_debit = array (
-                'journal_voucher_id'			=> $journal_voucher_id,
-                'account_id'					=> $preferencecompany['account_payable_id'],
-                'journal_voucher_description'	=> $data_journal['journal_voucher_description'],
-                'journal_voucher_amount'		=> $payment_total_amount,
-                'journal_voucher_debit_amount'	=> $payment_total_amount,
-                'account_id_default_status'		=> $account_id_default_status,
-                'account_id_status'				=> 0,
-                'company_id'                    => Auth::user()->company_id,
-                'created_id'                    => Auth::id(),
-                'updated_id'                    => Auth::id(),
-            );
-
-            JournalVoucherItem::create($data_debit);
-
-            if($selisih_shortover > 0){
-
-                $account 		= AcctAccount::where('account_id', $preferencecompany['account_shortover_id'])
-                ->where('data_state', 0)
-                ->first();
-
-                $account_id_default_status 		= $account['account_default_status'];
-
-                $data_debit = array (
-                    'journal_voucher_id'			=> $journal_voucher_id,
-                    'account_id'					=> $preferencecompany['account_shortover_id'],
-                    'journal_voucher_description'	=> $data_journal['journal_voucher_description'],
-                    'journal_voucher_amount'		=> $selisih_shortover,
-                    'journal_voucher_debit_amount'	=> $selisih_shortover,
-                    'account_id_default_status'		=> $account_id_default_status,
-                    'account_id_status'				=> 0,
-                    'company_id'                    => Auth::user()->company_id,
-                    'created_id'                    => Auth::id(),
-                    'updated_id'                    => Auth::id(),
-                );
-
-                JournalVoucherItem::create($data_debit);
-            } else if($selisih_shortover < 0){
-
-                $account 		= AcctAccount::where('account_id', $preferencecompany['account_shortover_id'])
-                ->where('data_state', 0)
-                ->first();
-
-                $account_id_default_status 		= $account['account_default_status'];
-
-                $data_credit = array (
-                    'journal_voucher_id'			=> $journal_voucher_id,
-                    'account_id'					=> $preferencecompany['account_shortover_id'],
-                    'journal_voucher_description'	=> $data_journal['journal_voucher_description'],
-                    'journal_voucher_amount'		=> $selisih_shortover,
-                    'journal_voucher_credit_amount'	=> $selisih_shortover,
-                    'account_id_default_status'		=> $account_id_default_status,
-                    'account_id_status'				=> 1,
-                    'company_id'                    => Auth::user()->company_id,
-                    'created_at'                    => Auth::id(),
-                    'updated_at'                    => Auth::id(),
-                );
-
-                JournalVoucherItem::create($data_credit);
-            }
-
-
-            if($data['payment_total_cash_amount'] != '' || $data['payment_total_cash_amount'] != 0){
-
-                $account 		= AcctAccount::where('account_id', $data['cash_account_id'])
-                ->where('data_state', 0)
-                ->first();
-
-                $account_id_default_status 		= $account['account_default_status'];
-
-                $data_credit = array (
-                    'journal_voucher_id'			=> $journal_voucher_id,
-                    'account_id'					=> $data['cash_account_id'],
-                    'journal_voucher_description'	=> $data_journal['journal_voucher_description'],
-                    'journal_voucher_amount'		=> $data['payment_total_cash_amount'],
-                    'journal_voucher_credit_amount'	=> $data['payment_total_cash_amount'],
-                    'account_id_default_status'		=> $account_id_default_status,
-                    'account_id_status'				=> 1,
-                    'company_id'                    => Auth::user()->company_id,
-                    'created_id'                    => Auth::id(),
-                    'updated_id'                    => Auth::id(),
-                );
-
-                JournalVoucherItem::create($data_credit);
-            }
-
-            if(is_array($datapurchasepaymenttransfer) && !empty($datapurchasepaymenttransfer) && $datapurchasepaymenttransfer != null){
-                foreach ($datapurchasepaymenttransfer as $keyTransfer => $valTransfer) {
-                    $transfer_bank = CoreBank::where('bank_id', $valTransfer['bank_id'])
-                    ->first();
-
-                    $transfer_account_id = $transfer_bank['account_id'];
-
-                    $datatransfer = array(
-                        'payment_id'							=> $payment_id,
-                        'bank_id'							    => $valTransfer['bank_id'],
-                        'account_id'							=> $transfer_account_id,
-                        'payment_transfer_bank_name'			=> $transfer_bank['bank_name'],
-                        'payment_transfer_amount'				=> $valTransfer['payment_transfer_amount'],
-                        'payment_transfer_account_name'			=> $valTransfer['payment_transfer_account_name'],
-                        'payment_transfer_account_no'			=> $valTransfer['payment_transfer_account_no'],
-                    );
-
-                    if(PurchasePaymentTransfer::create($datatransfer)){
-
-                        $account 		= AcctAccount::where('account_id', $transfer_account_id)
-                        ->where('data_state', 0)
-                        ->first();
-        
-                        $account_id_default_status 		= $account['account_default_status'];
-
-                        $data_credit = array (
-                            'journal_voucher_id'			=> $journal_voucher_id,
-                            'account_id'					=> $transfer_account_id,
-                            'journal_voucher_description'	=> $data_journal['journal_voucher_description'],
-                            'journal_voucher_amount'		=> $datatransfer['payment_transfer_amount'],
-                            'journal_voucher_credit_amount'	=> $datatransfer['payment_transfer_amount'],
-                            'account_id_default_status'		=> $account_id_default_status,
-                            'account_id_status'				=> 1,
-                            'company_id'                    => Auth::user()->company_id,
-                            'created_id'                    => Auth::id(),
-                            'updated_id'                    => Auth::id(),
-                        );
-
-                        JournalVoucherItem::create($data_credit);
-
-                            
-                    }
+                $account_setting_name = 'purchase_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
                 }
+                $journal_credit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_credit);
+            } else {
+                $account_setting_name = 'purchase_non_cash_cash_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
+                }
+                $journal_debit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_debit);
+                
+                $account_setting_name = 'purchase_non_cash_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
+                }
+                $journal_credit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_credit);
             }
 
-            $msg = "Tambah Pelunasan Hutang Berhasil";            
+            Session::flash('payment_method', $request->payment_method);
+            $msg = "Tambah Pelunasan Hutang Berhasil";
             return redirect('/purchase-payment')->with('msg',$msg);
-        }else{
+        } else {
             $msg = "Tambah Pelunasan Hutang Gagal";
             return redirect('/purchase-payment')->with('msg',$msg);
         }
-    }
-
-    public function deleteTransferArray($record_id, $supplier_id)
-    {
-        $arrayBaru			= array();
-        $dataArrayHeader	= Session::get('datapurchasepaymenttransfer');
-        
-        foreach($dataArrayHeader as $key=>$val){
-            if($key != $record_id){
-                $arrayBaru[$key] = $val;
-            }
-        }
-        Session::forget('datapurchasepaymenttransfer');
-        Session::put('datapurchasepaymenttransfer', $arrayBaru);
-
-        return redirect('/purchase-payment/select-supplier/'.$supplier_id);
-    }
-
-    public function getCoreBankName($bank_id)
-    {
-        $data = CoreBank::where('bank_id', $bank_id)
-        ->where('data_state', 0)
-        ->first();
-
-        return $data['bank_name'];
     }
 
     public function getCoreSupplierName($supplier_id)
@@ -458,189 +332,470 @@ class PurchasePaymentController extends Controller
         return $supplier['supplier_name'];
     }
 
-    public function getAccountName($account_id)
-    {
-        $account = AcctAccount::where('data_state', 0)
-        ->where('account_id', $account_id)
-        ->first();
-
-        return $account['account_name'];
-    }
-
     public function detailPurchasePayment($payment_id)
     {
-
-        $purchasepayment = PurchasePayment::findOrFail($payment_id);
-
-        $purchasepaymentitem = PurchasePaymentItem::select('purchase_payment_item.*', 'purchase_invoice.purchase_invoice_date', 'purchase_invoice.purchase_invoice_no', 'purchase_payment_item.shortover_amount AS shortover_value')
-        ->join('purchase_invoice', 'purchase_invoice.purchase_invoice_id', 'purchase_payment_item.purchase_invoice_id')
-        ->where('payment_id', $purchasepayment['payment_id'])
-        ->get();
-
-        $purchasepaymenttransfer = PurchasePaymentTransfer::where('payment_id', $purchasepayment['payment_id'])
-        ->get();
-
-        $supplier = CoreSupplier::where('data_state', 0)
-        ->where('supplier_id', $purchasepayment['supplier_id'])
+        $purchasepayment = PurchasePayment::where('payment_id', $payment_id)
+        ->where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
         ->first();
-        
-        return view('content/PurchasePayment/DetailPurchasePayment',compact('payment_id', 'purchasepayment', 'purchasepaymentitem', 'purchasepaymenttransfer',  'supplier'));
+
+        $purchasepaymentitem = PurchasePaymentItem::where('payment_id', $payment_id)
+        ->where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get();
+
+        return view('content.PurchasePayment.DetailPurchasePayment',compact('purchasepayment','purchasepaymentitem'));
     }
+
 
     public function deletePurchasePayment($payment_id)
     {
-
-        $purchasepayment = PurchasePayment::findOrFail($payment_id);
-
-        $purchasepaymentitem = PurchasePaymentItem::select('purchase_payment_item.*', 'purchase_invoice.purchase_invoice_date', 'purchase_invoice.purchase_invoice_no', 'purchase_payment_item.shortover_amount AS shortover_value')
-        ->join('purchase_invoice', 'purchase_invoice.purchase_invoice_id', 'purchase_payment_item.purchase_invoice_id')
-        ->where('payment_id', $purchasepayment['payment_id'])
-        ->get();
-
-        $purchasepaymenttransfer = PurchasePaymentTransfer::where('payment_id', $purchasepayment['payment_id'])
-        ->get();
-
-        $supplier = CoreSupplier::where('data_state', 0)
-        ->where('supplier_id', $purchasepayment['supplier_id'])
+        $purchasepayment = PurchasePayment::where('payment_id', $payment_id)
+        ->where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
         ->first();
-        
-        return view('content.PurchasePayment.DeletePurchasePayment',compact('payment_id', 'purchasepayment', 'purchasepaymentitem', 'purchasepaymenttransfer',  'supplier'));
+
+        $purchasepaymentitem = PurchasePaymentItem::where('payment_id', $payment_id)
+        ->where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get();
+
+        foreach ($purchasepaymentitem as $key => $val) {
+            $tablePaymentItem               = PurchasePaymentItem::findOrFail($val['payment_item_id']);
+            $tablePaymentItem->data_state   = 1;
+            $tablePaymentItem->updated_id   = Auth::id();
+            $tablePaymentItem->save();
+
+            $tablePurchaseInvoice               = PurchaseInvoice::findOrFail($val['purchase_invoice_id']);
+            $tablePurchaseInvoice->paid_amount  = 0;
+            $tablePurchaseInvoice->owing_amount = $val['total_amount'] + $val['return_amount'];
+            $tablePurchaseInvoice->updated_id   = Auth::id();
+            $tablePurchaseInvoice->save();
+        }
+
+        $tablePayment               = PurchasePayment::findOrFail($payment_id);
+        $tablePayment->data_state   = 1;
+        $tablePayment->updated_id   = Auth::id();
+        $tablePayment->save();
+
+        $transaction_module_code = 'BPH';
+        $transaction_module_id = $this->getTransactionModuleID($transaction_module_code);
+        $journal = array(
+            'company_id'                    => Auth::user()->company_id,
+            'transaction_module_id'         => $transaction_module_id,
+            'transaction_module_code'       => $transaction_module_code,
+            'journal_voucher_status'        => 1,
+            'journal_voucher_date'          => date('Y-m-d'),
+            'journal_voucher_description'   => $this->getTransactionModuleName($transaction_module_code),
+            'journal_voucher_period'        => date('Ym'),
+            'transaction_journal_no'        => $purchasepayment['payment_no'],
+            'journal_voucher_title'         => $this->getTransactionModuleName($transaction_module_code),
+            'created_id'                    => Auth::id(),
+            'updated_id'                    => Auth::id()
+        );
+        if (JournalVoucher::create($journal)) {
+
+            if ($purchasepayment->payment_method == 1) {
+                $account_setting_name = 'purchase_cash_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if($account_setting_status == 0){
+                    $account_setting_status = 1;
+                } else {
+                    $account_setting_status = 0;
+                }
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
+                }
+                $journal_debit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_debit);
+                
+                $account_setting_name = 'purchase_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if($account_setting_status == 1){
+                    $account_setting_status = 0;
+                } else {
+                    $account_setting_status = 1;
+                }
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
+                }
+                $journal_credit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_credit);
+            } else {
+                $account_setting_name = 'purchase_non_cash_cash_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if($account_setting_status == 0){
+                    $account_setting_status = 1;
+                } else {
+                    $account_setting_status = 0;
+                }
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
+                }
+                $journal_debit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_debit);
+                
+                $account_setting_name = 'purchase_non_cash_payment_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if($account_setting_status == 1){
+                    $account_setting_status = 0;
+                } else {
+                    $account_setting_status = 1;
+                }
+                if ($account_setting_status == 0){
+                    $debit_amount = $purchasepayment['payment_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $purchasepayment['payment_amount'];
+                }
+                $journal_credit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $purchasepayment['payment_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'created_id'                    => Auth::id(),
+                    'updated_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_credit);
+            }
+
+            $msg = "Hapus Pelunasan Hutang Berhasil";
+            return redirect('/purchase-payment')->with('msg',$msg);
+        } else {
+            $msg = "Hapus Pelunasan Hutang Gagal";
+            return redirect('/purchase-payment')->with('msg',$msg);
+        }
+    }
+    
+    public function getAccountSettingStatus($account_setting_name)
+    {
+        $data = AcctAccountSetting::where('company_id', Auth::user()->company_id)
+        ->where('account_setting_name', $account_setting_name)
+        ->first();
+
+        return $data['account_setting_status'];
     }
 
-    public function processDeletePurchasePayment(Request $request)
+    public function getAccountId($account_setting_name)
     {
-        // dd($request->all());
-        $payment_no 			        = $request->payment_no;
-        
-        $purchasepayment                = PurchasePayment::findOrFail($request->payment_id);
-        $purchasepayment->voided_remark = $request->voided_remark;
-        $purchasepayment->voided_on     = date('Y-m-d H:i:s');
-        $purchasepayment->voided_id     = Auth::id();
-        $purchasepayment->data_state    = 2;
-        
+        $data = AcctAccountSetting::where('company_id', Auth::user()->company_id)
+        ->where('account_setting_name', $account_setting_name)
+        ->first();
 
-        if($purchasepayment->save()){
-            $purchasepaymentitem 	= PurchasePaymentItem::where('payment_id', $request->payment_id)->get();
+        return $data['account_id'];
+    }
 
-            $subtotal_amount = 0;
-            foreach ($purchasepaymentitem as $ki => $vi){
-                $purchaseinvoice = PurchaseInvoice::where('purchase_invoice_id', $vi['purchase_invoice_id'])->first();
+    public function getAccountDefaultStatus($account_id)
+    {
+        $data = AcctAccount::where('account_id',$account_id)->first();
 
-                $purchaseinvoice->paid_amount       = $purchaseinvoice['paid_amount'] - ($vi['allocation_amount'] + $vi['shortover_amount']);
-                $purchaseinvoice->owing_amount      = $purchaseinvoice['owing_amount'] + ($vi['allocation_amount'] + $vi['shortover_amount']);
-                $purchaseinvoice->shortover_amount  = $purchaseinvoice['shortover_amount'] - $vi['shortover_amount'];
+        return $data['account_default_status'];
+    }
 
-                $purchaseinvoice->save();
+    public function getTransactionModuleID($transaction_module_code)
+    {
+        $data = PreferenceTransactionModule::where('transaction_module_code',$transaction_module_code)->first();
 
-                $subtotal_amount += $vi['allocation_amount'] + $vi['shortover_amount'];
-            }
+        return $data['transaction_module_id'];
+    }
 
-            $journalvoucher = JournalVoucher::where('transaction_journal_no', $payment_no)->where('company_id', Auth::user()->company_id)->first();
+    public function getTransactionModuleName($transaction_module_code)
+    {
+        $data = PreferenceTransactionModule::where('transaction_module_code',$transaction_module_code)->first();
 
-            $data_journal = array(
-                'company_id'				    => $journalvoucher['company_id'],
-                'journal_voucher_period' 		=> $journalvoucher['journal_voucher_period'],
-                'journal_voucher_status'        => 1,
-                'journal_voucher_date'			=> date('Y-m-d'),
-                'journal_voucher_title'			=> 'Pembatalan Pelunasan Hutang '.$payment_no,
-                'journal_voucher_no'			=> $payment_no,
-                'journal_voucher_description'	=> $request->voided_remark,
-                'transaction_module_id'			=> 10,
-                'transaction_module_code'		=> 'BPH',
-                'transaction_journal_no' 		=> $payment_no,
-                'created_id' 					=> $journalvoucher['created_id'],
-                'updated_id' 					=> $journalvoucher['created_id'],
-            );
-            
-            JournalVoucher::create($data_journal);	
-            
-            $journal_voucher_id = JournalVoucher::where('transaction_journal_no', $payment_no)->orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+        return $data['transaction_module_name'];
+    }
 
-            $journalvoucher_item_first = JournalVoucherItem::where('company_id', Auth::user()->company_id)->where('journal_voucher_id', $journalvoucher['journal_voucher_id'])->first();
-            $account_setting_status_first =  $journalvoucher_item_first['account_id_status'];
+    public function printReciptCeshPayment()
+    {
+        $purchasepayment = PurchasePayment::where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->orderBy('payment_id','DESC')
+        ->first();
 
-            $journalvoucher_item_end = JournalVoucherItem::where('company_id', Auth::user()->company_id)->where('journal_voucher_item_id', $journalvoucher_item_first['journal_voucher_item_id'] + 1)->first();
-            $account_setting_status_end =  $journalvoucher_item_end['account_id_status'];
+        $purchasepaymentitem = PurchasePaymentItem::where('payment_id', $purchasepayment['payment_id'])
+        ->where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get();
 
-            if($account_setting_status_end == 0){
-                $account_setting_status_end = 1;
-            } else {
-                $account_setting_status_end = 0;
-            }
-            if ($account_setting_status_end == 0){ 
-                $debit_amount = $journalvoucher_item_end['journal_voucher_amount'];
-                $credit_amount = 0;
-            } else {
-                $debit_amount = 0;
-                $credit_amount = $journalvoucher_item_end['journal_voucher_amount'];
-            }
-            $journal_debit = array(
-                'company_id'                    => Auth::user()->company_id,
-                'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
-                'account_id'                    => $journalvoucher_item_end['account_id'],
-                'journal_voucher_amount'        => $journalvoucher_item_end['journal_voucher_amount'],
-                'account_id_default_status'     => $journalvoucher_item_end['account_id_default_status'],
-                'account_id_status'             => $account_setting_status_end,
-                'journal_voucher_debit_amount'  => $debit_amount,
-                'journal_voucher_credit_amount' => $credit_amount,
-                'updated_id'                    => Auth::id(),
-                'created_id'                    => Auth::id()
-            );
-            JournalVoucherItem::create($journal_debit);
-    
-            if($account_setting_status_first == 1){
-                $account_setting_status_first = 0;
-            } else {
-                $account_setting_status_first = 1;
-            }
-            if ($account_setting_status_first == 0){
-                $debit_amount = $journalvoucher_item_first['journal_voucher_amount'];
-                $credit_amount = 0;
-            } else {
-                $debit_amount = 0;
-                $credit_amount = $journalvoucher_item_first['journal_voucher_amount'];
-            }
-            $journal_credit = array(
-                'company_id'                    => Auth::user()->company_id,
-                'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
-                'account_id'                    => $journalvoucher_item_first['account_id'],
-                'journal_voucher_amount'        => $journalvoucher_item_first['journal_voucher_amount'],
-                'account_id_default_status'     => $journalvoucher_item_first['account_id_default_status'],
-                'account_id_status'             => $account_setting_status_first,
-                'journal_voucher_debit_amount'  => $debit_amount,
-                'journal_voucher_credit_amount' => $credit_amount,
-                'updated_id'                    => Auth::id(),
-                'created_id'                    => Auth::id()
-            );
-            JournalVoucherItem::create($journal_credit);
+        $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
 
+        $pdf::SetPrintHeader(false);
+        $pdf::SetPrintFooter(false);
 
-            // $journalvoucher 	    = JournalVoucher::where('transaction_journal_no', $payment_no)->where('company_id', Auth::user()->company_id)->first();
-            // $journal_voucher_id 	= $journalvoucher['journal_voucher_id'];
+        $pdf::SetMargins(10, 10, 10, 10); // put space of 10 on top
 
-            // $acctjournalvoucheritem = JournalVoucherItem::where('journal_voucher_id', $journal_voucher_id)->where('company_id', Auth::user()->company_id)->get();
+        $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
 
-            // $journalvoucher 	            = JournalVoucher::where('journal_voucher_id', $journal_voucher_id)->first();
-            // $journalvoucher->voided         = 1;
-            // $journalvoucher->voided_id      = Auth::id();
-            // $journalvoucher->voided_on      = date('Y-m-d H:i:s');
-            // $journalvoucher->voided_remark  = $request->voided_remark;
-            // $journalvoucher->data_state     = 2;
-
-            // if ($journalvoucher->save()){
-            //     foreach ($acctjournalvoucheritem as $keyItem => $valItem) {
-            //         $journalvoucheritem = JournalVoucherItem::where('journal_voucher_item_id', $valItem['journal_voucher_item_id'])->first();
-            //         $journalvoucheritem->data_state = 2;
-
-            //         $journalvoucheritem->save();
-            //     }
-            // }
-
-            $msg = "Pembatalan Pelunasan Hutang Berhasil";
-            return redirect('/purchase-payment')->with('msg',$msg);
-        }else{
-            $msg = "Pembatalan Pelunasan Hutang Gagal";
-            return redirect('/purchase-payment/delete/'.$request->payment_id)->with('msg',$msg);
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            $pdf::setLanguageArray($l);
         }
+
+        $pdf::SetFont('helvetica', 'B', 20);
+
+        $pdf::AddPage();
+
+        $pdf::SetFont('helvetica', '', 8);
+
+        $tbl = "
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td><div style=\"text-align: center; font-size:14px; font-weight: bold\">BUKTI PENGELUARAN KAS</div></td>
+            </tr>
+        </table>
+        ";
+        $pdf::writeHTML($tbl, true, false, false, false, '');
+        
+        $tbl1 = "
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td width=\"16%\">Dibayarkan Kepada</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\">".$this->getCoreSupplierName($purchasepayment['supplier_id'])."</td>
+            </tr>
+            <tr>
+                <td width=\"16%\">Sejumlah</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\"><div style=\"font-weight: bold;\">Rp. ".number_format($purchasepayment['payment_amount'],2,'.',',')."</div></td>
+            </tr>
+            <tr>
+                <td width=\"18%\"></td>
+                <td width=\"82%\" style=\"font-style: italic; border: 0.1px solid black; line-height: 150%;\"><div style=\"font-style: italic;\"> # ".Configuration::numtotxt($purchasepayment['payment_amount'])." #</div></td>
+            </tr>
+            <tr>
+                <td width=\"16%\">Keterangan</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\">Pembayaran  Hutang Untuk Nota - Nota Berikut :</td>
+            </tr>
+        ";
+
+        $no = 1; 
+        $total_amount = 0;
+        foreach ($purchasepaymentitem as $key => $val) {
+            $tbl1 .= "
+                <tr>
+                    <td width=\"18%\"></td>
+                    <td width=\"4%\" style=\"text-align:center;\">".$no.")</td>
+                    <td width=\"16%\">".$val['purchase_invoice_no']."</td>
+                    <td width=\"5%\" style=\"text-align:center;\">Tgl.</td>
+                    <td width=\"10%\">".date('d-m-Y', strtotime($val['date_invoice']))."</td>
+                    <td width=\"5%\" style=\"text-align:center;\">Rp.</td>
+                    <td width=\"13%\"  style=\"text-align:right;\">".number_format($val['total_amount'],2,'.',',')."</td>
+                </tr>
+            ";
+            $total_amount += $val['total_amount'];
+            $no++;
+        }
+
+        $tbl1 .= "
+            <tr>
+                <td width=\"18%\"></td>
+                <td width=\"35%\" style=\"border-top:1px solid black;\"></td>
+                <td width=\"5%\" style=\"text-align:center; border-top:1px solid black;\">Rp.</td>
+                <td width=\"13%\"  style=\"text-align:right; border-top:1px solid black;\">".number_format($total_amount,2,'.',',')."</td>
+            </tr>
+        ";
+        
+        $tbl2 = "
+        </table>
+        <div></div>
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"2\" border=\"1\">
+            <tr>
+                <td width=\"25%\" style=\"height: 80px;\"><div style=\"text-align: left;\">Sekertaris I,</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Bendahara Toko,</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Petugas Toko, <br><br><br><br><br>".strtoupper(Auth::user()->name)."</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Penerima,</div></td>
+            </tr>
+        </table>    
+        ";
+        
+        $pdf::writeHTML($tbl1.$tbl2, true, false, false, false, '');
+
+
+        $filename = 'Bukti Pembayaran Hutang.pdf';
+        $pdf::Output($filename, 'I');
+    }
+
+    public function printReciptNonCeshPayment()
+    {
+        $purchasepayment = PurchasePayment::where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->orderBy('payment_id','DESC')
+        ->first();
+
+        $purchasepaymentitem = PurchasePaymentItem::where('payment_id', $purchasepayment['payment_id'])
+        ->where('data_state', 0)
+        ->where('company_id', Auth::user()->company_id)
+        ->get();
+
+        $coreBank = CoreBank::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first();
+
+        $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
+
+        $pdf::SetPrintHeader(false);
+        $pdf::SetPrintFooter(false);
+
+        $pdf::SetMargins(10, 10, 10, 10); // put space of 10 on top
+
+        $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            $pdf::setLanguageArray($l);
+        }
+
+        $pdf::SetFont('helvetica', 'B', 20);
+
+        $pdf::AddPage();
+
+        $pdf::SetFont('helvetica', '', 8);
+
+        $tbl = "
+        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td><div style=\"text-align: center; font-size:14px; font-weight: bold\">BUKTI PENGELUARAN BANK</div></td>
+            </tr>
+        </table>
+        ";
+        $pdf::writeHTML($tbl, true, false, false, false, '');
+        
+        $tbl1 = "
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
+            <tr>
+                <td width=\"16%\">Dibayarkan Kepada</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\">".$this->getCoreSupplierName($purchasepayment['supplier_id'])."</td>
+            </tr>
+            <tr>
+                <td width=\"16%\">Bank</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\">".$coreBank['bank_name']."</td>
+            </tr>
+            <tr>
+                <td width=\"16%\">Sejumlah</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\"><div style=\"font-weight: bold;\">Rp. ".number_format($purchasepayment['payment_amount'],2,'.',',')."</div></td>
+            </tr>
+            <tr>
+                <td width=\"18%\"></td>
+                <td width=\"82%\" style=\"font-style: italic; border: 0.1px solid black; line-height: 150%;\"><div style=\"font-style: italic;\"> # ".Configuration::numtotxt($purchasepayment['payment_amount'])." #</div></td>
+            </tr>
+            <tr>
+                <td width=\"16%\">Keterangan</td>
+                <td width=\"2%\">:</td>
+                <td width=\"82%\">Pembayaran  Hutang Untuk Nota - Nota Berikut :</td>
+            </tr>
+        ";
+
+        $no = 1; 
+        $total_amount = 0;
+        foreach ($purchasepaymentitem as $key => $val) {
+            $tbl1 .= "
+                <tr>
+                    <td width=\"18%\"></td>
+                    <td width=\"4%\" style=\"text-align:center;\">".$no.")</td>
+                    <td width=\"16%\">".$val['purchase_invoice_no']."</td>
+                    <td width=\"5%\" style=\"text-align:center;\">Tgl.</td>
+                    <td width=\"10%\">".date('d-m-Y', strtotime($val['date_invoice']))."</td>
+                    <td width=\"5%\" style=\"text-align:center;\">Rp.</td>
+                    <td width=\"13%\"  style=\"text-align:right;\">".number_format($val['total_amount'],2,'.',',')."</td>
+                </tr>
+            ";
+            $total_amount += $val['total_amount'];
+            $no++;
+        }
+
+        $tbl1 .= "
+            <tr>
+                <td width=\"18%\"></td>
+                <td width=\"35%\" style=\"border-top:1px solid black;\"></td>
+                <td width=\"5%\" style=\"text-align:center; border-top:1px solid black;\">Rp.</td>
+                <td width=\"13%\"  style=\"text-align:right; border-top:1px solid black;\">".number_format($total_amount,2,'.',',')."</td>
+            </tr>
+        ";
+        
+        $tbl2 = "
+        </table>
+        <div></div>
+        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"2\" border=\"1\">
+            <tr>
+                <td width=\"25%\" style=\"height: 80px;\"><div style=\"text-align: left;\">Sekertaris I,</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Bendahara Toko,</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Petugas Toko, <br><br><br><br><br>".strtoupper(Auth::user()->name)."</div></td>
+                <td width=\"25%\"><div style=\"text-align: left;\">Penerima,</div></td>
+            </tr>
+        </table>    
+        ";
+        
+        $pdf::writeHTML($tbl1.$tbl2, true, false, false, false, '');
+
+
+        $filename = 'Bukti Pembayaran Hutang.pdf';
+        $pdf::Output($filename, 'I');
     }
 }

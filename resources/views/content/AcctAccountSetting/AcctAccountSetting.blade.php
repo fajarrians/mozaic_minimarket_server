@@ -104,7 +104,7 @@
                     </tr>
 
                     <tr>
-                        <th colspan="3" style="text-align: center !important ;width: 100% !important">Pembayaran Hutang</th>
+                        <th colspan="3" style="text-align: center !important ;width: 100% !important">Pembayaran Hutang Tunai</th>
                     </tr>
                     <tr>
                         <th style="text-align: left !important; width: 40% !important">Hutang</th>
@@ -122,6 +122,28 @@
                         </td>
                         <td style="text-align: left !important; width: 30% !important">
                             {!! Form::select(0, $status, $AccountSetting->getAccountSettingStatus('purchase_cash_payment_account'),['class' => 'selection-search-clear select-form','name'=>'purchase_cash_payment_account_status','id'=>'purchase_cash_payment_account_status']) !!}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th colspan="3" style="text-align: center !important ;width: 100% !important">Pembayaran Hutang Non Tunai</th>
+                    </tr>
+                    <tr>
+                        <th style="text-align: left !important; width: 40% !important">Hutang</th>
+                        <td style="text-align: left !important; width: 30% !important">
+                            {!! Form::select(0, $accountlist, $AccountSetting->getAccountId('purchase_non_cash_payment_account'),['class' => 'selection-search-clear select-form','name'=>'purchase_non_cash_payment_account_id','id'=>'purchase_non_cash_payment_account_id']) !!}
+                        </td>
+                        <td style="text-align: left !important; width: 30% !important">
+                            {!! Form::select(0, $status, $AccountSetting->getAccountSettingStatus('purchase_non_cash_payment_account'),['class' => 'selection-search-clear select-form','name'=>'purchase_non_cash_payment_account_status','id'=>'purchase_non_cash_payment_account_status']) !!}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="text-align: left !important; width: 40% !important">Kas</th>
+                        <td style="text-align: left !important; width: 30% !important">
+                            {!! Form::select(0, $accountlist, $AccountSetting->getAccountId('purchase_non_cash_cash_payment_account'),['class' => 'selection-search-clear select-form','name'=>'purchase_non_cash_cash_payment_account_id','id'=>'purchase_non_cash_cash_payment_account_id']) !!}
+                        </td>
+                        <td style="text-align: left !important; width: 30% !important">
+                            {!! Form::select(0, $status, $AccountSetting->getAccountSettingStatus('purchase_non_cash_cash_payment_account'),['class' => 'selection-search-clear select-form','name'=>'purchase_non_cash_cash_payment_account_status','id'=>'purchase_non_cash_cash_payment_account_status']) !!}
                         </td>
                     </tr>
 

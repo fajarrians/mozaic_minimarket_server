@@ -41,20 +41,20 @@
                 </h5>
             </div>
         
-            <form method="post" id="form-prevent" action="{{ route('process-add-item-barcode') }}" enctype="multipart/form-data">
+            <form method="post" id="form-prevent" action="{{ route('cashier-close-process') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="card-body">
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <a class="text-dark">Tanggal Awal<a class='red'> *</a></a>
-                                <input style="width: 50%" class="form-control input-bb" name="start_date" id="start_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" value="  "/>
+                                <input style="width: 50%" class="form-control input-bb" name="start_date" id="start_date" type="datetime-local" autocomplete="off" value="{{ $start_date }}"/>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <a class="text-dark">Tanggal Akhir<a class='red'> *</a></a>
-                                <input style="width: 50%" class="form-control input-bb" name="start_date" id="start_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" value="  "/>
+                                <input style="width: 50%" class="form-control input-bb" name="end_date" id="end_date" type="datetime-local" autocomplete="off" value="{{ $end_date }}"/>
                             </div>
                         </div>
                     </div>

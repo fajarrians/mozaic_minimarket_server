@@ -50,59 +50,67 @@ class AcctAccountSettingController extends Controller
             '4_account_setting_status'   => $request->input('purchase_cash_payment_account_status'),
             '4_account_setting_name'     => 'purchase_cash_payment_account',
 
-            '5_account_id'               => $request->input('purchase_payable_account_id'),
-            '5_account_setting_status'   => $request->input('purchase_payable_account_status'),
-            '5_account_setting_name'     => 'purchase_payable_account',
-
-            '6_account_id'               => $request->input('purchase_cash_payable_account_id'),
-            '6_account_setting_status'   => $request->input('purchase_cash_payable_account_status'),
-            '6_account_setting_name'     => 'purchase_cash_payable_account',
-
-            '7_account_id'               => $request->input('purchase_return_account_id'),
-            '7_account_setting_status'   => $request->input('purchase_return_account_status'),
-            '7_account_setting_name'     => 'purchase_return_account',
-
-            '8_account_id'               => $request->input('purchase_return_cash_account_id'),
-            '8_account_setting_status'   => $request->input('purchase_return_cash_account_status'),
-            '8_account_setting_name'     => 'purchase_return_cash_account',
-
-            '9_account_id'               => $request->input('sales_account_id'),
-            '9_account_setting_status'   => $request->input('sales_account_status'),
-            '9_account_setting_name'     => 'sales_account',
-
-            '10_account_id'               => $request->input('sales_cash_account_id'),
-            '10_account_setting_status'   => $request->input('sales_cash_account_status'),
-            '10_account_setting_name'     => 'sales_cash_account',
+            '5_account_id'               => $request->input('purchase_non_cash_payment_account_id'),
+            '5_account_setting_status'   => $request->input('purchase_non_cash_payment_account_status'),
+            '5_account_setting_name'     => 'purchase_non_cash_payment_account',
             
-            '11_account_id'               => $request->input('sales_receivable_account_id'),
-            '11_account_setting_status'   => $request->input('sales_receivable_account_status'),
-            '11_account_setting_name'     => 'sales_receivable_account',
+            '6_account_id'               => $request->input('purchase_non_cash_cash_payment_account_id'),
+            '6_account_setting_status'   => $request->input('purchase_non_cash_cash_payment_account_status'),
+            '6_account_setting_name'     => 'purchase_non_cash_cash_payment_account',
+
+            '7_account_id'               => $request->input('purchase_payable_account_id'),
+            '7_account_setting_status'   => $request->input('purchase_payable_account_status'),
+            '7_account_setting_name'     => 'purchase_payable_account',
+
+            '8_account_id'               => $request->input('purchase_cash_payable_account_id'),
+            '8_account_setting_status'   => $request->input('purchase_cash_payable_account_status'),
+            '8_account_setting_name'     => 'purchase_cash_payable_account',
+
+            '9_account_id'               => $request->input('purchase_return_account_id'),
+            '9_account_setting_status'   => $request->input('purchase_return_account_status'),
+            '9_account_setting_name'     => 'purchase_return_account',
+
+            '10_account_id'               => $request->input('purchase_return_cash_account_id'),
+            '10_account_setting_status'   => $request->input('purchase_return_cash_account_status'),
+            '10_account_setting_name'     => 'purchase_return_cash_account',
+
+            '11_account_id'               => $request->input('sales_account_id'),
+            '11_account_setting_status'   => $request->input('sales_account_status'),
+            '11_account_setting_name'     => 'sales_account',
+
+            '12_account_id'               => $request->input('sales_cash_account_id'),
+            '12_account_setting_status'   => $request->input('sales_cash_account_status'),
+            '12_account_setting_name'     => 'sales_cash_account',
             
-            '12_account_id'               => $request->input('sales_cash_receivable_account_id'),
-            '12_account_setting_status'   => $request->input('sales_cash_receivable_account_status'),
-            '12_account_setting_name'     => 'sales_cash_receivable_account',
+            '13_account_id'               => $request->input('sales_receivable_account_id'),
+            '13_account_setting_status'   => $request->input('sales_receivable_account_status'),
+            '13_account_setting_name'     => 'sales_receivable_account',
+            
+            '14_account_id'               => $request->input('sales_cash_receivable_account_id'),
+            '14_account_setting_status'   => $request->input('sales_cash_receivable_account_status'),
+            '14_account_setting_name'     => 'sales_cash_receivable_account',
 
-            '13_account_id'               => $request->input('sales_cashless_account_id'),
-            '13_account_setting_status'   => $request->input('sales_cashless_account_status'),
-            '13_account_setting_name'     => 'sales_cashless_account',
+            '15_account_id'               => $request->input('sales_cashless_account_id'),
+            '15_account_setting_status'   => $request->input('sales_cashless_account_status'),
+            '15_account_setting_name'     => 'sales_cashless_account',
 
-            '14_account_id'               => $request->input('sales_cashless_cash_account_id'),
-            '14_account_setting_status'   => $request->input('sales_cashless_cash_account_status'),
-            '14_account_setting_name'     => 'sales_cashless_cash_account',
+            '16_account_id'               => $request->input('sales_cashless_cash_account_id'),
+            '16_account_setting_status'   => $request->input('sales_cashless_cash_account_status'),
+            '16_account_setting_name'     => 'sales_cashless_cash_account',
 
-            '15_account_id'               => $request->input('expenditure_account_id'),
-            '15_account_setting_status'   => $request->input('expenditure_account_status'),
-            '15_account_setting_name'     => 'expenditure_account',
+            '17_account_id'               => $request->input('expenditure_account_id'),
+            '17_account_setting_status'   => $request->input('expenditure_account_status'),
+            '17_account_setting_name'     => 'expenditure_account',
 
-            '16_account_id'               => $request->input('expenditure_cash_account_id'),
-            '16_account_setting_status'   => $request->input('expenditure_cash_account_status'),
-            '16_account_setting_name'     => 'expenditure_cash_account',
+            '18_account_id'               => $request->input('expenditure_cash_account_id'),
+            '18_account_setting_status'   => $request->input('expenditure_cash_account_status'),
+            '18_account_setting_name'     => 'expenditure_cash_account',
             
         );
 
         $company_id = AcctAccountSetting::where('company_id', Auth::user()->company_id)->first();
         if(!empty($company_id)){
-            for($key = 1; $key<=16;$key++){
+            for($key = 1; $key<=18;$key++){
                 $data_item = array(
                     'account_id' 				=> $data[$key."_account_id"],
                     'account_setting_status'	=> $data[$key."_account_setting_status"],
@@ -115,7 +123,7 @@ class AcctAccountSettingController extends Controller
                 ->update($data_item);
             }
         } else {
-            for($key = 1; $key<=16;$key++){
+            for($key = 1; $key<=18;$key++){
                 $data_item = array(
                     'account_id' 				=> $data[$key."_account_id"],
                     'account_setting_status'	=> $data[$key."_account_setting_status"],

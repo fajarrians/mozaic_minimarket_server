@@ -288,29 +288,25 @@ class InvtItemController extends Controller
 
 
         $users = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
-        ->where('invt_item.data_state','=',0)
+        ->where('invt_item.data_state',0)
         ->where('invt_item.company_id', Auth::user()->company_id);
         $total = $users->count();
 
-        $totalFilter = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
-        ->where('invt_item.data_state','=',0)
-        ->where('invt_item.company_id', Auth::user()->company_id);
+        $totalFilter = $users;
         if (!empty($searchValue)) {
-            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
-            $totalFilter = $totalFilter->orWhere('item_code','like','%'.$searchValue.'%');
+            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
+            $totalFilter = $totalFilter->orWhere('item_code','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
         }
         $totalFilter = $totalFilter->count();
 
 
-        $arrData = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
-        ->where('invt_item.data_state','=',0)
-        ->where('invt_item.company_id', Auth::user()->company_id);
+        $arrData = $users;
         $arrData = $arrData->skip($start)->take($rowPerPage);
         $arrData = $arrData->orderBy($columnName,$columnSortOrder);
 
         if (!empty($searchValue)) {
-            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
-            $arrData = $arrData->orWhere('item_code','like','%'.$searchValue.'%');
+            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
+            $arrData = $arrData->orWhere('item_code','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
         }
 
         $arrData = $arrData->get();

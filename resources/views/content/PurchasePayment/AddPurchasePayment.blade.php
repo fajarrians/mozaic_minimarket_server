@@ -21,6 +21,47 @@
         });
     }
 
+    function add_payment(id, value){
+
+        if ($('#'+id).is(':checked') == true) {
+            var total_payable = parseInt($('#total_payable').val());
+            var item_payable = parseInt($('#total_payable_'+value).val());
+            var final_total_payable = total_payable + item_payable;
+            var total_payment = parseInt($('#total_payment').val());
+            var shortover_amount = total_payment - total_payable;
+
+            $('#total_payment_view').val(toRp(total_payment));
+            $('#shortover_amount_view').text(toRp(shortover_amount));
+            $('#total_payable_view').text(toRp(final_total_payable));
+            $('#total_payable').val(final_total_payable);
+        } else {
+            var total_payable = parseInt($('#total_payable').val());
+            var item_payable = parseInt($('#total_payable_'+value).val());
+            var final_total_payable = total_payable - item_payable;
+
+            $('#total_payable_view').text(toRp(final_total_payable));
+            $('#total_payable').val(final_total_payable);
+        }
+
+    }
+
+    $(document).ready(function(){
+        var payment_method = $('#payment_method').val();
+
+        if (payment_method == 1) {
+            $('#payment_method_view').text('Tunai');
+        } else if (payment_method == 2) {
+            $('#payment_method_view').text('Non Tunai');
+        }
+
+        $('#payment_method').change(function(){
+            if (this.value == 1) {
+                $('#payment_method_view').text('Tunai');
+            } else if (this.value == 2) {
+                $('#payment_method_view').text('Non Tunai');
+            }
+        })
+    });
 </script>
 @stop
 @section('content_header')
@@ -120,6 +161,8 @@
                     </thead>
                     @php
                         $no = 1;
+                        $total_retur = 0;
+                        $total_payable = 0;
                     @endphp
                         @foreach ($purchaseinvoice as $key => $val)
                             <tr>
@@ -130,10 +173,35 @@
                                 <td class="text-right">{{ number_format($val['return_amount'],2,'.',',') }}</td>
                                 <td class="text-right">{{ number_format($val['total_amount'] - $val['return_amount'],2,'.',',') }}</td>
                                 <td class="text-center">
-                                    <input class="checkbox-lg text-center" type="checkbox" id="purchase_invoice_id_{{ $no }}" name="purchase_invoice_id_{{ $no }}" value="{{ $val['purchase_invoice_id'] }}">
+                                    <input class="checkbox-lg text-center" type="checkbox" id="purchase_invoice_id_{{ $no }}" name="purchase_invoice_id_{{ $no }}" value="{{ $val['purchase_invoice_id'] }}" onchange="add_payment(this.name,{{ $no }})">
+                                    <input class="text-center" type="text" id="total_payable_{{ $no }}" name="total_payable_{{ $no }}" value="{{ $val['total_amount'] - $val['return_amount'] }}" hidden>
                                 </td>
                             </tr>
+                            @php
+                                $total_retur += $val['return_amount'];
+                                $total_payable += $val['total_amount'] - $val['return_amount'];
+                            @endphp
                         @endforeach
+                        <tr>
+                            <th colspan="5" class="text-left">Total</th>
+                            <th class="text-right" id="total_payable_view">{{ number_format(0,2,'.',',') }}</th>
+                            <td>
+                                <input class="text-center" type="text" id="total_payable" name="total_payable" value="0" hidden>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-left" id="payment_method_view">Tunai</th>
+                            <th class="text-right">
+                                <input class="form-control input-bb text-right" type="text" id="total_payment_view" name="total_payment_view" value="">
+                                <input class="form-control input-bb text-right" type="text" id="total_payment" name="total_payment" value="0" hidden>
+                            </th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-left">Pembulatan</th>
+                            <th class="text-right" id="shortover_amount_view">{{ number_format(0,2,'.',',') }}</th>
+                            <td></td>
+                        </tr>
                     </tbody>
                     <input type="text" id="total_invoice" name="total_invoice" value="{{ $no }}" hidden>
                 </table>

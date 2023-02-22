@@ -114,6 +114,7 @@ class PurchaseInvoiceController extends Controller
             $datases['purchase_invoice_remark']     = '';
             $datases['purchase_payment_method']     = '';
             $datases['purchase_invoice_due_date']   = '';
+            $datases['purchase_invoice_due_day']    = '';
         }
         $datases[$request->name] = $request->value;
         $datases = Session::put('datases', $datases);
@@ -202,7 +203,7 @@ class PurchaseInvoiceController extends Controller
             'warehouse_id'              => $fields['warehouse_id'],
             'purchase_payment_method'   => $fields['purchase_payment_method'],
             'purchase_invoice_date'     => $fields['purchase_invoice_date'],
-            'purchase_invoice_due_date' => date('Y-m-d', strtotime('+'.$request['purchase_invoice_due_date'].' days',strtotime($fields['purchase_invoice_date']))),
+            'purchase_invoice_due_date' => date('Y-m-d', strtotime('+'.$request['purchase_invoice_due_day'].' days',strtotime($fields['purchase_invoice_date']))),
             'purchase_invoice_remark'   => $fields['purchase_invoice_remark'],
             'subtotal_item'             => $fields['subtotal_item'],
             'discount_percentage_total' => $discount_percentage_total,

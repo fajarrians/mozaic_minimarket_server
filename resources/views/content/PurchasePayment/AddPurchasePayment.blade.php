@@ -21,26 +21,39 @@
         });
     }
 
-    function add_payment(id, value){
+    function count_amount(name, value, no) {
+        if (name == 'purchase_invoice_id') {
+            if ($('#purchase_invoice_id_'+no).is(':checked') == true) {
+                var total_payable = parseInt($('#total_payable').val());
+                var total_payment = parseInt($('#total_payment').val());
+                var final_total_payable = total_payable + value;
+                var rounding_amount = total_payment - final_total_payable;
 
-        if ($('#'+id).is(':checked') == true) {
-            var total_payable = parseInt($('#total_payable').val());
-            var item_payable = parseInt($('#total_payable_'+value).val());
-            var final_total_payable = total_payable + item_payable;
-            var total_payment = parseInt($('#total_payment').val());
-            var shortover_amount = total_payment - total_payable;
+                $('#total_payable').val(final_total_payable);
+                $('#total_payable_view').text(toRp(final_total_payable));
+                $('#total_payment_view').val(toRp(total_payment));
+                $('#rounding_amount').val(rounding_amount);
+                $('#rounding_amount_view').text(toRp(rounding_amount));
+            } else {
+                var total_payable = parseInt($('#total_payable').val());
+                var total_payment = parseInt($('#total_payment').val());
+                var final_total_payable = total_payable - value;
+                var rounding_amount = total_payment - final_total_payable;
 
-            $('#total_payment_view').val(toRp(total_payment));
-            $('#shortover_amount_view').text(toRp(shortover_amount));
-            $('#total_payable_view').text(toRp(final_total_payable));
-            $('#total_payable').val(final_total_payable);
-        } else {
-            var total_payable = parseInt($('#total_payable').val());
-            var item_payable = parseInt($('#total_payable_'+value).val());
-            var final_total_payable = total_payable - item_payable;
+                $('#total_payable').val(final_total_payable);
+                $('#total_payable_view').text(toRp(final_total_payable));
+                $('#total_payment_view').val(toRp(total_payment));
+                $('#rounding_amount').val(rounding_amount);
+                $('#rounding_amount_view').text(toRp(rounding_amount));
+            }
+        } else if (name == 'total_payment_view') {
+            var total_payable = parseInt($('#total_payable').val()); 
+            var rounding_amount = value - total_payable;
 
-            $('#total_payable_view').text(toRp(final_total_payable));
-            $('#total_payable').val(final_total_payable);
+            $('#total_payment_view').val(toRp(value));
+            $('#total_payment').val(value);
+            $('#rounding_amount').val(rounding_amount);
+            $('#rounding_amount_view').text(toRp(rounding_amount));
         }
 
     }
@@ -173,8 +186,7 @@
                                 <td class="text-right">{{ number_format($val['return_amount'],2,'.',',') }}</td>
                                 <td class="text-right">{{ number_format($val['total_amount'] - $val['return_amount'],2,'.',',') }}</td>
                                 <td class="text-center">
-                                    <input class="checkbox-lg text-center" type="checkbox" id="purchase_invoice_id_{{ $no }}" name="purchase_invoice_id_{{ $no }}" value="{{ $val['purchase_invoice_id'] }}" onchange="add_payment(this.name,{{ $no }})">
-                                    <input class="text-center" type="text" id="total_payable_{{ $no }}" name="total_payable_{{ $no }}" value="{{ $val['total_amount'] - $val['return_amount'] }}" hidden>
+                                    <input class="checkbox-lg text-center" type="checkbox" id="purchase_invoice_id_{{ $no }}" name="purchase_invoice_id_{{ $no }}" value="{{ $val['purchase_invoice_id'] }}" onchange="count_amount('purchase_invoice_id',{{ $val['total_amount'] - $val['return_amount'] }},{{ $no }})">
                                 </td>
                             </tr>
                             @php
@@ -192,15 +204,15 @@
                         <tr>
                             <th colspan="5" class="text-left" id="payment_method_view">Tunai</th>
                             <th class="text-right">
-                                <input class="form-control input-bb text-right" type="text" id="total_payment_view" name="total_payment_view" value="">
+                                <input class="form-control input-bb text-right" type="text" id="total_payment_view" name="total_payment_view" onchange="count_amount(this.name, this.value)" autocomplete="off">
                                 <input class="form-control input-bb text-right" type="text" id="total_payment" name="total_payment" value="0" hidden>
                             </th>
                             <td></td>
                         </tr>
                         <tr>
                             <th colspan="5" class="text-left">Pembulatan</th>
-                            <th class="text-right" id="shortover_amount_view">{{ number_format(0,2,'.',',') }}</th>
-                            <td></td>
+                            <th class="text-right" id="rounding_amount_view">{{ number_format(0,2,'.',',') }}</th>
+                            <td><input class="form-control input-bb text-right" type="text" id="rounding_amount" name="rounding_amount" value="0" hidden></td>
                         </tr>
                     </tbody>
                     <input type="text" id="total_invoice" name="total_invoice" value="{{ $no }}" hidden>

@@ -139,13 +139,13 @@ class PurchasePaymentController extends Controller
         $transaction_module_code = 'PH';
         $transaction_module_id = $this->getTransactionModuleID($transaction_module_code);
 
-        $payment_amount = 0;
+        $payable_amount = 0;
         for ($i=1; $i <= $request->total_invoice ; $i++) {
             if ($request['purchase_invoice_id_'.$i] != null) {
                 $purchase_invoice = PurchaseInvoice::where('purchase_invoice_id', $request['purchase_invoice_id_'.$i])
                 ->first();
 
-                $payment_amount += $purchase_invoice['total_amount'] - $purchase_invoice['return_amount'];
+                $payable_amount += $purchase_invoice['total_amount'] - $purchase_invoice['return_amount'];
             }
         }
 
@@ -155,7 +155,9 @@ class PurchasePaymentController extends Controller
             'payment_method'    => $request->payment_method,
             'payment_date'      => $request->payment_date,
             'payment_remark'    => $request->payment_remark,
-            'payment_amount'    => $payment_amount,
+            'payable_amount'    => $payable_amount,
+            'payment_amount'    => $request->total_payment,
+            'rounding_amount'   => $request->rounding_amount,
             'created_id'        => Auth::id(),
             'updated_id'        => Auth::id(),
         );
@@ -633,7 +635,6 @@ class PurchasePaymentController extends Controller
         ";
 
         $no = 1; 
-        $total_amount = 0;
         foreach ($purchasepaymentitem as $key => $val) {
             $tbl1 .= "
                 <tr>
@@ -646,8 +647,18 @@ class PurchasePaymentController extends Controller
                     <td width=\"13%\"  style=\"text-align:right;\">".number_format($val['total_amount'],2,'.',',')."</td>
                 </tr>
             ";
-            $total_amount += $val['total_amount'];
             $no++;
+        }
+
+        if ($purchasepayment['rounding_amount'] != 0) {
+            $tbl1 .= "
+                <tr>
+                    <td width=\"22%\"></td>
+                    <td width=\"31%\" style=\"\">Pembulatan</td>
+                    <td width=\"5%\" style=\"text-align:center;\">Rp.</td>
+                    <td width=\"13%\"  style=\"text-align:right;\">".number_format($purchasepayment['rounding_amount'],2,'.',',')."</td>
+                </tr>
+            ";
         }
 
         $tbl1 .= "
@@ -655,7 +666,7 @@ class PurchasePaymentController extends Controller
                 <td width=\"18%\"></td>
                 <td width=\"35%\" style=\"border-top:1px solid black;\"></td>
                 <td width=\"5%\" style=\"text-align:center; border-top:1px solid black;\">Rp.</td>
-                <td width=\"13%\"  style=\"text-align:right; border-top:1px solid black;\">".number_format($total_amount,2,'.',',')."</td>
+                <td width=\"13%\"  style=\"text-align:right; border-top:1px solid black;\">".number_format($purchasepayment['payable_amount'] + $purchasepayment['rounding_amount'],2,'.',',')."</td>
             </tr>
         ";
         
@@ -753,7 +764,6 @@ class PurchasePaymentController extends Controller
         ";
 
         $no = 1; 
-        $total_amount = 0;
         foreach ($purchasepaymentitem as $key => $val) {
             $tbl1 .= "
                 <tr>
@@ -766,8 +776,18 @@ class PurchasePaymentController extends Controller
                     <td width=\"13%\"  style=\"text-align:right;\">".number_format($val['total_amount'],2,'.',',')."</td>
                 </tr>
             ";
-            $total_amount += $val['total_amount'];
             $no++;
+        }
+
+        if ($purchasepayment['rounding_amount'] != 0) {
+            $tbl1 .= "
+                <tr>
+                    <td width=\"22%\"></td>
+                    <td width=\"31%\" style=\"\">Pembulatan</td>
+                    <td width=\"5%\" style=\"text-align:center;\">Rp.</td>
+                    <td width=\"13%\"  style=\"text-align:right;\">".number_format($purchasepayment['rounding_amount'],2,'.',',')."</td>
+                </tr>
+            ";
         }
 
         $tbl1 .= "
@@ -775,7 +795,7 @@ class PurchasePaymentController extends Controller
                 <td width=\"18%\"></td>
                 <td width=\"35%\" style=\"border-top:1px solid black;\"></td>
                 <td width=\"5%\" style=\"text-align:center; border-top:1px solid black;\">Rp.</td>
-                <td width=\"13%\"  style=\"text-align:right; border-top:1px solid black;\">".number_format($total_amount,2,'.',',')."</td>
+                <td width=\"13%\"  style=\"text-align:right; border-top:1px solid black;\">".number_format($purchasepayment['payable_amount'] + $purchasepayment['rounding_amount'],2,'.',',')."</td>
             </tr>
         ";
         

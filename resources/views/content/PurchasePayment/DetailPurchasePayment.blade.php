@@ -2,6 +2,19 @@
 @extends('adminlte::page')
 
 @section('title', 'MOZAIC Minimarket')
+@section('js')
+<script>
+    $(document).ready(function(){
+        var payment_method = {!! json_encode($purchasepayment['payment_method']) !!};
+
+        if (payment_method == 1) {
+            $('#payment_method_view').text('Tunai');
+        } else if (payment_method == 2) {
+            $('#payment_method_view').text('Non Tunai');
+        }
+    });
+</script>
+@stop
 @section('content_header')
     
 <nav aria-label="breadcrumb">
@@ -98,6 +111,18 @@
                                 <td class="text-right">{{ number_format($val['total_amount'],2,'.',',') }}</td>
                             </tr>
                         @endforeach
+                        <tr>
+                            <th colspan="5" class="text-left">Total</th>
+                            <th class="text-right">{{ number_format($purchasepayment['payable_amount'],2,'.',',') }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-left" id="payment_method_view">Tunai</th>
+                            <th class="text-right">{{ number_format($purchasepayment['payment_amount'],2,'.',',') }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-left">Pembulatan</th>
+                            <th class="text-right">{{ number_format($purchasepayment['rounding_amount'],2,'.',',') }}</th>
+                        </tr>
                     </tbody>
                 </table>
             </div>

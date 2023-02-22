@@ -469,6 +469,13 @@
             });
         });
 
+        $('#purchase_invoice_due_day').change(function(){
+            var purchase_invoice_due_date = $('#purchase_invoice_due_date').val();
+            var purchase_invoice_due_day = purchase_invoice_due_date.substring(8,10);
+            var due_date = parseInt(purchase_invoice_due_day) + parseInt(this.value);
+            console.log(due_date);
+        });
+
     });
 </script>
 @stop
@@ -779,16 +786,24 @@
                             {!! Form::select(0, $purchase_payment_method, $datases['purchase_payment_method'], ['class' => 'form-control selection-search-clear select-form', 'id' => 'purchase_payment_method', 'name' => 'purchase_payment_method', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
                         </div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <a class="text-dark">Tanggal Pembelian<a class='red'> *</a></a>
-                            <input style="width: 50%" class="form-control input-bb" name="purchase_invoice_date" id="purchase_invoice_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_invoice_date'] ? $datases['purchase_invoice_date'] : date('Y-m-d') }}"/>
+                            <input class="form-control input-bb" name="purchase_invoice_date" id="purchase_invoice_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_invoice_date'] ? $datases['purchase_invoice_date'] : date('Y-m-d') }}"/>
                         </div>
                     </div>
-                    <div class="col-md-4 d-none" id="due_date">
-                        <div class="form-group">
-                            <a class="text-dark">Jatuh Tempo (hari)<a class='red'> *</a></a>
-                            <input style="width: 100%" class="form-control input-bb" name="purchase_invoice_due_date" id="purchase_invoice_due_date" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_invoice_due_date'] ? $datases['purchase_invoice_due_date'] : 0 }}"/>
+                    <div class="d-none col-md-8 row" id="due_date">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <a class="text-dark">Tanggal Jatuh Tempo<a class='red'> *</a></a>
+                                <input class="form-control input-bb" name="purchase_invoice_due_date" id="purchase_invoice_due_date" type="date" data-date-format="dd-mm-yyyy" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_invoice_due_date'] ? $datases['purchase_invoice_due_date'] : date('Y-m-d') }}"/>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <a class="text-dark">Jatuh Tempo (hari)<a class='red'> *</a></a>
+                                <input style="width: 100%" class="form-control input-bb" name="purchase_invoice_due_day" id="purchase_invoice_due_day" type="text" autocomplete="off" onchange="function_elements_add(this.name, this.value)" value="{{ $datases['purchase_invoice_due_day'] ? $datases['purchase_invoice_due_day'] : 0 }}"/>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-9 mt-3">

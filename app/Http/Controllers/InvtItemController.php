@@ -285,6 +285,7 @@ class InvtItemController extends Controller
         $columnName 		= 		$columnNameArray[$columnIndex]['data'];
         $columnSortOrder 	= 		$orderArray[0]['dir'];
         $searchValue 		= 		$searchArray['value'];
+        $valueArray         = explode (" ",$searchValue);
 
 
         $users = InvtItem::join('invt_item_category', 'invt_item_category.item_category_id', '=', 'invt_item.item_category_id')
@@ -294,8 +295,13 @@ class InvtItemController extends Controller
 
         $totalFilter = $users;
         if (!empty($searchValue)) {
-            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
-            $totalFilter = $totalFilter->orWhere('item_code','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $totalFilter = $totalFilter->where('invt_item.item_name','like','%'.$val.'%');
+                }
+            } else {
+                $totalFilter = $totalFilter->where('invt_item.item_name','like','%'.$searchValue.'%');
+            }
         }
         $totalFilter = $totalFilter->count();
 
@@ -305,8 +311,13 @@ class InvtItemController extends Controller
         $arrData = $arrData->orderBy($columnName,$columnSortOrder);
 
         if (!empty($searchValue)) {
-            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
-            $arrData = $arrData->orWhere('item_code','like','%'.$searchValue.'%')->where('invt_item.data_state',0);
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $arrData = $arrData->where('invt_item.item_name','like','%'.$val.'%');
+                }
+            } else {
+                $arrData = $arrData->where('invt_item.item_name','like','%'.$searchValue.'%');
+            }
         }
 
         $arrData = $arrData->get();

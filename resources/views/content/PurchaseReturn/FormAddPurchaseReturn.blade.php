@@ -284,7 +284,7 @@
                 // }
             ?>
     
-        <form method="post" action="{{ route('process-add-purchase-return') }}" enctype="multipart/form-data">
+        <form id="form-return" method="post" action="{{ route('process-add-purchase-return') }}" enctype="multipart/form-data">
             @csrf
             <div class="card-body">
                 <div class="row form-group">
@@ -474,7 +474,7 @@
         <div class="card-footer text-muted">
             <div class="form-actions float-right">
                 <button type="reset" name="Reset" class="btn btn-danger" onClick="reset_add();"><i class="fa fa-times"></i> Reset Data</button>
-                <button type="submit" name="Save" class="btn btn-success" onclick="$(this).addClass('disabled');" title="Save"><i class="fa fa-check"></i> Simpan</button>
+                <button type="button" name="Save" class="btn btn-success" onclick="$(this).addClass('disabled');$('#form-return').submit();" title="Save"><i class="fa fa-check"></i> Simpan</button>
             </div>
         </div>
 </form>

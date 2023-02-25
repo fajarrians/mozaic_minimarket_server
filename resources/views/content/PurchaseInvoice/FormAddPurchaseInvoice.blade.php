@@ -470,10 +470,48 @@
         });
 
         $('#purchase_invoice_due_day').change(function(){
-            var purchase_invoice_due_date = $('#purchase_invoice_due_date').val();
-            var purchase_invoice_due_day = purchase_invoice_due_date.substring(8,10);
-            var due_date = parseInt(purchase_invoice_due_day) + parseInt(this.value);
-            console.log(due_date);
+            if (this.value != '') {
+                var date_invoice = new Date($('#purchase_invoice_date').val());
+                date_invoice.setDate(date_invoice.getDate() + parseInt(this.value));
+                var date_str = date_invoice.toISOString();
+                var day = date_str.substring(8, 10);
+                var month = date_str.substring(5, 7);
+                var year = date_str.substring(0, 4);
+                var due_date = year + '-' + month + '-' + day;
+    
+                $('#purchase_invoice_due_date').val(due_date);
+                
+                setTimeout(() => {
+                    function_elements_add('purchase_invoice_due_date', due_date);
+                }, 100);
+            } else {
+                var date_invoice = new Date($('#purchase_invoice_date').val());
+                date_invoice.setDate(date_invoice.getDate() + 0);
+                var date_str = date_invoice.toISOString();
+                var day = date_str.substring(8, 10);
+                var month = date_str.substring(5, 7);
+                var year = date_str.substring(0, 4);
+                var due_date = year + '-' + month + '-' + day;
+    
+                $('#purchase_invoice_due_date').val(due_date);
+                
+                setTimeout(() => {
+                    function_elements_add('purchase_invoice_due_date', due_date);
+                }, 100);
+            }
+        });
+
+        $('#purchase_invoice_due_date').change(function(){
+            var due_date = new Date(this.value);
+            var date_invoice = new Date($('#purchase_invoice_date').val());
+            var difference = due_date.getTime() - date_invoice.getTime();
+            var due_day_date = difference / (1000 * 3600 * 24);
+
+            $('#purchase_invoice_due_day').val(due_day_date);
+            
+            setTimeout(() => {
+                function_elements_add('purchase_invoice_due_day', due_day_date);
+            }, 100);
         });
 
     });
@@ -763,7 +801,7 @@
         </div>
     
     
-        <form method="post" action="{{ route('process-add-purchase-invoice') }}" enctype="multipart/form-data">
+        <form id="form-invoice" method="post" action="{{ route('process-add-purchase-invoice') }}" enctype="multipart/form-data">
             @csrf
             <div class="card-body">
                 <div class="row form-group">
@@ -1016,7 +1054,7 @@
             <div class="card-footer text-muted">
                 <div class="form-actions float-right">
                     <button type="reset" name="Reset" class="btn btn-danger" onclick="reset_add();"><i class="fa fa-times"></i> Reset Data</button>
-                    <button type="submit" name="Save" class="btn btn-success" onclick="$(this).addClass('disabled');" title="Save"><i class="fa fa-check"></i> Simpan</button>
+                    <button type="button" name="Save" class="btn btn-success" onclick="$(this).addClass('disabled');$('#form-invoice').submit();" title="Save"><i class="fa fa-check"></i> Simpan</button>
                 </div>
             </div>
     </form>

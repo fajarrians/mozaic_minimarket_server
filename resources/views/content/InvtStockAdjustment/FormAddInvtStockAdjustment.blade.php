@@ -281,7 +281,7 @@
         </div>
         <div class="card-footer text-muted">
             <div class="form-actions float-right">
-                <button type="submit" name="Save" class="btn btn-success" title="Save"><i class="fa fa-check"></i> Simpan</button>
+                <button type="button" name="Save" onclick="$(this).addClass('disabled');$('form').submit();" class="btn btn-success" title="Save"><i class="fa fa-check"></i> Simpan</button>
             </div>
         </div>
     </form>

@@ -166,10 +166,36 @@ class SalesInvoicebyItemReportController extends Controller
 
         $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-        $pdf::SetPrintHeader(false);
+        $pdf::setHeaderCallback(function($pdf){
+            $pdf->SetFont('helvetica', '', 8);
+            $header = "
+            <div></div>
+                <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
+                    <tr>
+                        <td rowspan=\"3\" width=\"76%\"><img src=\"".asset('resources/assets/img/logo_kopkar.png')."\" width=\"120\"></td>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Halaman</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".$pdf->getAliasNumPage()." / ".$pdf->getAliasNbPages()."</div></td>
+                    </tr>  
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                    </tr>
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".date('d-m-Y H:i')."</div></td>
+                    </tr>
+                </table>
+                <hr>
+            ";
+
+            $pdf->writeHTML($header, true, false, false, false, '');
+        });
         $pdf::SetPrintFooter(false);
 
-        $pdf::SetMargins(10, 10, 10, 10); // put space of 10 on top
+        $pdf::SetMargins(10, 20, 10, 10); // put space of 10 on top
 
         $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
 
@@ -215,35 +241,27 @@ class SalesInvoicebyItemReportController extends Controller
         $totalamount = 0;
         $tblStock2 =" ";
         foreach ($data as $key => $val) {
-            $id = $val['purchase_retur_id'];
 
-            if($val['purchase_retur_id'] == $id){
-                $tblStock2 .="
-                    <tr>			
-                        <td style=\"text-align:center\">$no.</td>
-                        <td style=\"text-align:left\">".$this->getCategoryName($val['item_category_id'])."</td>
-                        <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
-                        <td style=\"text-align:right\">".$this->getTotalItem($val['item_id'])."</td>
-                        <td style=\"text-align:right\">".number_format($this->getTotalAmount($val['item_id']),2,'.',',')."</td>
-                    </tr>
-                    
-                ";
-                $no++;
-                $totalitem += $this->getTotalItem($val['item_id']);
-                $totalamount += $this->getTotalAmount($val['item_id']);
-            }
+            $tblStock2 .="
+                <tr nobr=\"true\">			
+                    <td style=\"text-align:center\">$no.</td>
+                    <td style=\"text-align:left\">".$this->getCategoryName($val['item_category_id'])."</td>
+                    <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
+                    <td style=\"text-align:right\">".$this->getTotalItem($val['item_id'])."</td>
+                    <td style=\"text-align:right\">".number_format($this->getTotalAmount($val['item_id']),2,'.',',')."</td>
+                </tr>
+                
+            ";
+            $no++;
+            $totalitem += $this->getTotalItem($val['item_id']);
+            $totalamount += $this->getTotalAmount($val['item_id']);
         }
         $tblStock3 = " 
-        <tr>
+        <tr nobr=\"true\">
             <td colspan=\"3\"><div style=\"text-align: center;  font-weight: bold\">TOTAL</div></td>
             <td style=\"text-align:right;\"><div style=\"font-weight: bold\">". $totalitem ."</div></td>
             <td style=\"text-align: right\"><div style=\"font-weight: bold\">". number_format($totalamount,2,'.',',') ."</div></td>
         </tr>
-        </table>
-        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
-            <tr>
-                <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
-            </tr>
         </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3, true, false, false, false, '');
@@ -385,16 +403,17 @@ class SalesInvoicebyItemReportController extends Controller
 
     public function tableSalesInvoiceByItem(Request $request)
     {
-        $draw 				= 		$request->get('draw');
-        $start 				= 		$request->get("start");
-        $rowPerPage 		= 		$request->get("length");
-        $orderArray 	    = 		$request->get('order');
-        $columnNameArray 	= 		$request->get('columns');
-        $searchArray 		= 		$request->get('search');
-        $columnIndex 		= 		$orderArray[0]['column'];
-        $columnName 		= 		$columnNameArray[$columnIndex]['data'];
-        $columnSortOrder 	= 		$orderArray[0]['dir'];
-        $searchValue 		= 		$searchArray['value'];
+        $draw 				= $request->get('draw');
+        $start 				= $request->get("start");
+        $rowPerPage 		= $request->get("length");
+        $orderArray 	    = $request->get('order');
+        $columnNameArray 	= $request->get('columns');
+        $searchArray 		= $request->get('search');
+        $columnIndex 		= $orderArray[0]['column'];
+        $columnName 		= $columnNameArray[$columnIndex]['data'];
+        $columnSortOrder 	= $orderArray[0]['dir'];
+        $searchValue 		= $searchArray['value'];
+        $valueArray         = explode (" ",$searchValue);
 
 
         $users = InvtItem::where('data_state','=',0)
@@ -404,7 +423,13 @@ class SalesInvoicebyItemReportController extends Controller
         $totalFilter = InvtItem::where('data_state','=',0)
         ->where('company_id', Auth::user()->company_id);
         if (!empty($searchValue)) {
-            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $totalFilter = $totalFilter->where('item_name','like','%'.$val.'%');
+                }
+            } else {
+                $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
+            }
         }
         $totalFilter = $totalFilter->count();
 
@@ -415,7 +440,13 @@ class SalesInvoicebyItemReportController extends Controller
         $arrData = $arrData->orderBy($columnName,$columnSortOrder);
 
         if (!empty($searchValue)) {
-            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $arrData = $arrData->where('item_name','like','%'.$val.'%');
+                }
+            } else {
+                $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
+            }
         }
 
         $arrData = $arrData->get();
@@ -531,10 +562,36 @@ class SalesInvoicebyItemReportController extends Controller
 
         $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-        $pdf::SetPrintHeader(false);
+        $pdf::setHeaderCallback(function($pdf){
+            $pdf->SetFont('helvetica', '', 8);
+            $header = "
+            <div></div>
+                <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
+                    <tr>
+                        <td rowspan=\"3\" width=\"76%\"><img src=\"".asset('resources/assets/img/logo_kopkar.png')."\" width=\"120\"></td>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Halaman</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".$pdf->getAliasNumPage()." / ".$pdf->getAliasNbPages()."</div></td>
+                    </tr>  
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                    </tr>
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".date('d-m-Y H:i')."</div></td>
+                    </tr>
+                </table>
+                <hr>
+            ";
+
+            $pdf->writeHTML($header, true, false, false, false, '');
+        });
         $pdf::SetPrintFooter(false);
 
-        $pdf::SetMargins(10, 10, 10, 10); // put space of 10 on top
+        $pdf::SetMargins(10, 20, 10, 10); // put space of 10 on top
 
         $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
 
@@ -575,27 +632,18 @@ class SalesInvoicebyItemReportController extends Controller
         $no = 1;
         $tblStock2 =" ";
         foreach ($data as $key => $val) {
-            $id = $val['purchase_retur_id'];
-
-            if($val['purchase_retur_id'] == $id){
-                $tblStock2 .="
-                    <tr>			
-                        <td style=\"text-align:center\">$no.</td>
-                        <td style=\"text-align:left\">".$this->getCategoryName($val['item_category_id'])."</td>
-                        <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
-                    </tr>
-                    
-                ";
-                $no++;
-            }
+            $tblStock2 .="
+                <tr nobr=\"true\">			
+                    <td style=\"text-align:center\">$no.</td>
+                    <td style=\"text-align:left\">".$this->getCategoryName($val['item_category_id'])."</td>
+                    <td style=\"text-align:left\">".$this->getItemName($val['item_id'])."</td>
+                </tr>
+                
+            ";
+            $no++;
         }
         $tblStock3 = " 
 
-        </table>
-        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
-            <tr>
-                <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
-            </tr>
         </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3, true, false, false, false, '');
@@ -755,16 +803,17 @@ class SalesInvoicebyItemReportController extends Controller
             $data = InvtItem::whereNotIn('item_id', $coba1);
         } 
 
-        $draw 				= 		$request->get('draw');
-        $start 				= 		$request->get("start");
-        $rowPerPage 		= 		$request->get("length");
-        $orderArray 	    = 		$request->get('order');
-        $columnNameArray 	= 		$request->get('columns');
-        $searchArray 		= 		$request->get('search');
-        $columnIndex 		= 		$orderArray[0]['column'];
-        $columnName 		= 		$columnNameArray[$columnIndex]['data'];
-        $columnSortOrder 	= 		$orderArray[0]['dir'];
-        $searchValue 		= 		$searchArray['value'];
+        $draw 				= $request->get('draw');
+        $start 				= $request->get("start");
+        $rowPerPage 		= $request->get("length");
+        $orderArray 	    = $request->get('order');
+        $columnNameArray 	= $request->get('columns');
+        $searchArray 		= $request->get('search');
+        $columnIndex 		= $orderArray[0]['column'];
+        $columnName 		= $columnNameArray[$columnIndex]['data'];
+        $columnSortOrder 	= $orderArray[0]['dir'];
+        $searchValue 		= $searchArray['value'];
+        $valueArray         = explode (" ",$searchValue);
 
 
         $users = $data;
@@ -772,7 +821,13 @@ class SalesInvoicebyItemReportController extends Controller
 
         $totalFilter = $data;
         if (!empty($searchValue)) {
-            $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $totalFilter = $totalFilter->where('item_name','like','%'.$val.'%');
+                }
+            } else {
+                $totalFilter = $totalFilter->where('item_name','like','%'.$searchValue.'%');
+            }
         }
         $totalFilter = $totalFilter->count();
 
@@ -782,7 +837,13 @@ class SalesInvoicebyItemReportController extends Controller
         $arrData = $arrData->orderBy($columnName,$columnSortOrder);
 
         if (!empty($searchValue)) {
-            $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $arrData = $arrData->where('item_name','like','%'.$val.'%');
+                }
+            } else {
+                $arrData = $arrData->where('item_name','like','%'.$searchValue.'%');
+            }
         }
 
         $arrData = $arrData->get();

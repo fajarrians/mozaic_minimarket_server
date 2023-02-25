@@ -276,10 +276,36 @@ class InvtStockAdjustmentReportController extends Controller
 
         $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
 
-        $pdf::SetPrintHeader(false);
+        $pdf::setHeaderCallback(function($pdf){
+            $pdf->SetFont('helvetica', '', 8);
+            $header = "
+            <div></div>
+                <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
+                    <tr>
+                        <td rowspan=\"3\" width=\"76%\"><img src=\"".asset('resources/assets/img/logo_kopkar.png')."\" width=\"120\"></td>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Halaman</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".$pdf->getAliasNumPage()." / ".$pdf->getAliasNbPages()."</div></td>
+                    </tr>  
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                    </tr>
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".date('d-m-Y H:i')."</div></td>
+                    </tr>
+                </table>
+                <hr>
+            ";
+
+            $pdf->writeHTML($header, true, false, false, false, '');
+        });
         $pdf::SetPrintFooter(false);
 
-        $pdf::SetMargins(16, 10, 10, 10); // put space of 10 on top
+        $pdf::SetMargins(10, 20, 10, 10); // put space of 10 on top
 
         $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
 
@@ -352,7 +378,7 @@ class InvtStockAdjustmentReportController extends Controller
         foreach ($data as $key => $val) {
 
             $tblStock2 .="
-                <tr>			
+                <tr nobr=\"true\">			
                     <td style=\"text-align:center\">$no.</td>
                     <td>".$this->getItemCategoryName($val['item_category_id'])."</td>
                     <td>".$this->getItemName($val['item_id'])."</td>
@@ -370,16 +396,11 @@ class InvtStockAdjustmentReportController extends Controller
             $total_amount += $val['item_unit_cost'] * ($this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id']));
         }
         $tblStock3 = " 
-        <tr>
+        <tr nobr=\"true\">
             <td colspan=\"5\"><div style=\"text-align: center;  font-weight: bold\">TOTAL</div></td>
             <td style=\"text-align: right\"><div style=\"font-weight: bold\">". $total_stock ."</div></td>
             <td colspan=\"3\" style=\"text-align: right\"><div style=\"font-weight: bold\">". number_format($total_amount,2,'.',',') ."</div></td>
         </tr>
-        </table>
-        <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
-            <tr>
-                <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
-            </tr>
         </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3, true, false, false, false, '');
@@ -614,14 +635,20 @@ class InvtStockAdjustmentReportController extends Controller
         // $columnName 		= 		$columnNameArray[$columnIndex]['data'];
         // $columnSortOrder 	= 		$orderArray[0]['dir'];
         $searchValue 		= 		$searchArray['value'];
+        $valueArray         = explode (" ",$searchValue);
 
         $users = $data_item;
         $total = $users->count();
 
         $totalFilter = $data_item;
         if (!empty($searchValue)) {
-            $totalFilter = $totalFilter->where('invt_item.item_name','like','%'.$searchValue.'%');
-            $totalFilter = $totalFilter->orWhere('invt_item_unit.item_unit_name','like','%'.$searchValue.'%');
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $totalFilter = $totalFilter->where('invt_item.item_name','like','%'.$val.'%');
+                }
+            } else {
+                $totalFilter = $totalFilter->where('invt_item.item_name','like','%'.$searchValue.'%');
+            }
         }
         $totalFilter = $totalFilter->count();
 
@@ -637,8 +664,13 @@ class InvtStockAdjustmentReportController extends Controller
         }
 
         if (!empty($searchValue)) {
-            $arrData = $arrData->where('invt_item.item_name','like','%'.$searchValue.'%');
-            $arrData = $arrData->orWhere('invt_item_unit.item_unit_name','like','%'.$searchValue.'%');
+            if (count($valueArray) != 1) {
+                foreach ($valueArray as $key => $val) {
+                    $arrData = $arrData->where('invt_item.item_name','like','%'.$val.'%');
+                }
+            } else {
+                $arrData = $arrData->where('invt_item.item_name','like','%'.$searchValue.'%');
+            }
         }
 
         $arrData = $arrData->get();

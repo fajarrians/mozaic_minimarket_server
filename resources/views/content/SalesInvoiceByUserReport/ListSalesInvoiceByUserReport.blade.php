@@ -15,6 +15,15 @@
 
 		});
 	}
+
+    $(document).ready(function(){
+
+        var user_id = {!! json_encode(session('user_id')) !!};
+    
+        if (user_id == null) {
+            $('#user_id').select2('val','0');
+        }
+    });
 </script>
 @stop
 @section('content_header')
@@ -75,7 +84,7 @@
                                     *
                                 </span>
                             </section>
-                            {!! Form::select('user_id', $user, 0, ['class' => 'selection-search-clear select-form', 'id' => 'user_id', 'name' => 'user_id']) !!}
+                            {!! Form::select('user_id', $user, $user_id, ['class' => 'selection-search-clear select-form', 'id' => 'user_id', 'name' => 'user_id']) !!}
                         </div>
                     </div>
                     

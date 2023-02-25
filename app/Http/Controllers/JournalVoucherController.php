@@ -245,10 +245,36 @@ class JournalVoucherController extends Controller
 
         $pdf = new TCPDF('P', PDF_UNIT, 'F4', true, 'UTF-8', false);
 
-        $pdf::SetPrintHeader(false);
+        $pdf::setHeaderCallback(function($pdf){
+            $pdf->SetFont('helvetica', '', 8);
+            $header = "
+            <div></div>
+                <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
+                    <tr>
+                        <td rowspan=\"3\" width=\"76%\"><img src=\"".asset('resources/assets/img/logo_kopkar.png')."\" width=\"120\"></td>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Halaman</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".$pdf->getAliasNumPage()." / ".$pdf->getAliasNbPages()."</div></td>
+                    </tr>  
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                    </tr>
+                    <tr>
+                        <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>
+                        <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".date('d-m-Y H:i')."</div></td>
+                    </tr>
+                </table>
+                <hr>
+            ";
+
+            $pdf->writeHTML($header, true, false, false, false, '');
+        });
         $pdf::SetPrintFooter(false);
 
-        $pdf::SetMargins(7, 7, 7, 7); // put space of 10 on top
+        $pdf::SetMargins(10, 20, 10, 10); // put space of 10 on top
 
         $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
 
@@ -261,7 +287,7 @@ class JournalVoucherController extends Controller
 
         $pdf::AddPage();
 
-        $pdf::SetFont('helvetica', '', 10);
+        $pdf::SetFont('helvetica', '', 8);
 
         $tbl = "
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"0\">
@@ -269,10 +295,10 @@ class JournalVoucherController extends Controller
                 <td><div style=\"text-align: center; font-size:14px;font-weight: bold\">JURNAL UMUM</div></td>
             </tr>
                 <tr>
-                <td><div style=\"text-align: center; font-size:10px\">".$data['company_name']."</div></td>
+                <td><div style=\"text-align: center;\">".$data['company_name']."</div></td>
             </tr>
             <tr>
-                <td><div style=\"text-align: center; font-size:10px\">Jam : ".date('H:i:s')."</div></td>
+                <td><div style=\"text-align: center;\">Jam : ".date('H:i')."</div></td>
             </tr>
         </table>";
 
@@ -311,11 +337,11 @@ class JournalVoucherController extends Controller
         $total_kredit = 0;
         foreach ($data1 as $key => $val) {
             $tbl3 .= "
-                    <tr>
-                        <td width=\"5%\"><div style=\"text-align: center;font-size:12px\">".$no."</div></td>
-                        <td width=\"45%\"><div style=\"text-align: left;font-size:12px\">".$this->getAccountCode($val['account_id'])." - ".$this->getAccountName($val['account_id'])."</div></td>
-                        <td width=\"25%\"><div style=\"text-align: right;font-size:12px\">".number_format($val['journal_voucher_debit_amount'],2,'.',',')."</div></td>
-                        <td width=\"25%\"><div style=\"text-align: right;font-size:12px\">".number_format($val['journal_voucher_credit_amount'],2,'.',',')."</div></td>
+                    <tr nobr=\"true\">
+                        <td width=\"5%\"><div style=\"text-align: center;\">".$no."</div></td>
+                        <td width=\"45%\"><div style=\"text-align: left;\">".$this->getAccountCode($val['account_id'])." - ".$this->getAccountName($val['account_id'])."</div></td>
+                        <td width=\"25%\"><div style=\"text-align: right;\">".number_format($val['journal_voucher_debit_amount'],2,'.',',')."</div></td>
+                        <td width=\"25%\"><div style=\"text-align: right;\">".number_format($val['journal_voucher_credit_amount'],2,'.',',')."</div></td>
                     </tr>
             ";  
             $total_debet += $val['journal_voucher_debit_amount'];
@@ -323,17 +349,11 @@ class JournalVoucherController extends Controller
             $no++;
         }
         $tbl4 = "
-            <tr>
-                <td width=\"5%\"><div style=\"text-align: center;font-size:12px\"></div></td>
-                <td width=\"45%\"><div style=\"text-align: left;font-size:12px\"></div></td>
-                <td width=\"25%\"><div style=\"text-align: right;font-size:12px\"></div></td>
-                <td width=\"25%\"><div style=\"text-align: right;font-size:12px\"></div></td>
-            </tr>		
         </table>
 
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
-            <tr>
-                <td colspan=\"2\" width=\"50%\"></td>
+            <tr nobr=\"true\">
+                <td colspan=\"2\" width=\"50%\" style=\"text-align: left;font-weight:bold\">TOTAL</td>
                 <td width=\"25%\"><div style=\"text-align: right;font-weight:bold\">".number_format($total_debet,2,'.',',')."</div></td>
                 <td width=\"25%\"><div style=\"text-align: right;font-weight:bold\">".number_format($total_kredit,2,'.',',')."</div></td>
             </tr>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\InvtItem;
 use App\Models\InvtItemCategory;
+use App\Models\InvtItemPackge;
 use App\Models\InvtItemStock;
 use App\Models\InvtItemUnit;
 use App\Models\InvtStockAdjustment;
@@ -14,6 +15,7 @@ use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class InvtStockAdjustmentController extends Controller
@@ -26,9 +28,7 @@ class InvtStockAdjustmentController extends Controller
 
     public function index()
     {
-        Session::forget('category_id');
-        Session::forget('item_id');
-        Session::forget('unit_id');
+        Session::forget('item_packge_id');
         Session::forget('warehouse_id');
         Session::forget('date');
         Session::forget('datases');
@@ -53,20 +53,10 @@ class InvtStockAdjustmentController extends Controller
 
     public function addStockAdjustment()
     {
-        if(!$category_id = Session::get('category_id')){
-            $category_id = '';
+        if(!$item_packge_id = Session::get('item_packge_id')){
+            $item_packge_id = '';
         } else {
-            $category_id = Session::get('category_id');
-        }
-        if(!$item_id = Session::get('item_id')){
-            $item_id = '';
-        } else {
-            $item_id = Session::get('item_id');
-        }
-        if(!$unit_id = Session::get('unit_id')){
-            $unit_id = '';
-        } else {
-             $unit_id = Session::get('unit_id');
+            $item_packge_id = Session::get('item_packge_id');
         }
         if(!$date = Session::get('date')){
             $date = date('Y-m-d');
@@ -79,40 +69,36 @@ class InvtStockAdjustmentController extends Controller
              $warehouse_id = Session::get('warehouse_id');
         }
 
-        $categorys  = InvtItemCategory::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->get()
-        ->pluck('item_category_name','item_category_id');
         $warehouse  = InvtWarehouse::where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get()
         ->pluck('warehouse_name','warehouse_id');
-        $units      = InvtItemUnit::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
+        $items     = InvtItemPackge::join('invt_item','invt_item_packge.item_id','=','invt_item.item_id')
+        ->join('invt_item_unit','invt_item_packge.item_unit_id','=','invt_item_unit.item_unit_id')
+        ->select(DB::raw("CONCAT(item_name,' - ',item_unit_name) AS full_name"),'invt_item_packge.item_packge_id' ,'invt_item_packge.item_id','invt_item_packge.item_category_id','invt_item_packge.item_unit_id')
+        ->where('invt_item.data_state',0)
+        ->where('invt_item_packge.item_unit_id','!=',null)
+        ->where('invt_item.company_id', Auth::user()->company_id)
         ->get()
-        ->pluck('item_unit_name','item_unit_id');
-        $items      = InvtItem::where('data_state',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->get()
-        ->pluck('item_name','item_id');
+        ->pluck('full_name', 'item_packge_id');
+        $package = InvtItemPackge::where('item_packge_id',$item_packge_id)
+        ->first();
         $datasess   = Session::get('datases');
-        $data       = InvtItemStock::where('item_id', $item_id)
-        ->where('item_category_id', $category_id)
-        ->where('item_unit_id', $unit_id)
+        $data       = InvtItemStock::where('item_id', $package['item_id'])
+        ->where('item_category_id', $package['item_category_id'])
+        ->where('item_unit_id', $package['item_unit_id'])
         ->where('warehouse_id',$warehouse_id)
         ->where('company_id', Auth::user()->company_id)
         ->where('data_state',0)
         ->get();
-        return view('content.InvtStockAdjustment.FormAddInvtStockAdjustment', compact('categorys', 'units', 'items', 'datasess', 'data', 'date','warehouse','category_id','warehouse_id','item_id','unit_id'));
+        return view('content.InvtStockAdjustment.FormAddInvtStockAdjustment', compact('items', 'datasess', 'data', 'date','warehouse','warehouse_id','item_packge_id'));
     }
 
     public function addElementsStockAdjustment(Request $request)
     {
         $datasess = Session::get('datases');
         if(!$datasess || $datasess == ''){
-            $datasess['item_category_id']        = '';
-            $datasess['item_id']                 = '';
-            $datasess['item_unit_id']            = '';
+            $datasess['item_packge_id']          = '';
             $datasess['warehouse_id']            = '';
             $datasess['stock_adjustment_date']   = '';
         }
@@ -124,21 +110,15 @@ class InvtStockAdjustmentController extends Controller
     public function filterAddStockAdjustment(Request $request)
     {
         $request->validate([
-            'item_category_id'      => 'required',
-            'item_id'               => 'required',
-            'item_unit_id'          => 'required',
+            'item_packge_id'        => 'required',
             'warehouse_id'          => 'required',
             'stock_adjustment_date' => 'required',
         ]);
-        $category_id    = $request->item_category_id;
-        $item_id        = $request->item_id;
-        $unit_id        = $request->item_unit_id;
+        $item_packge_id = $request->item_packge_id;
         $warehouse_id   = $request->warehouse_id;
         $date           = $request->stock_adjustment_date;
 
-        Session::put('category_id', $category_id);
-        Session::put('item_id', $item_id);
-        Session::put('unit_id', $unit_id);
+        Session::put('item_packge_id', $item_packge_id);
         Session::put('warehouse_id', $warehouse_id);
         Session::put('date',$date);
 
@@ -189,7 +169,6 @@ class InvtStockAdjustmentController extends Controller
 
     public function processAddStockAdjustment(Request $request)
     {
-
         $data_header = array(
             'stock_adjustment_date' => Session::get('date'),
             'warehouse_id'          => Session::get('warehouse_id'),

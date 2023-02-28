@@ -51,52 +51,15 @@
 
     $(document).ready(function(){
         var warehouse_id    = {!! json_encode($warehouse_id) !!};
-        var category_id     = {!! json_encode($category_id) !!};
-        var item_id         = {!! json_encode($item_id) !!};
-        var unit_id         = {!! json_encode($unit_id) !!};
+        var item_packge_id  = {!! json_encode($item_packge_id) !!};
 
         if (warehouse_id == "") {
             $('#warehouse_id').select2('val',' ');
         }
-        if (category_id == "") {
-            $('#item_category_id').select2('val',' ');
-        }
-        if (item_id == "") {
-            $('#item_id').empty('val',' ');
-        }
-        if (unit_id == "") {
-            $('#item_unit_id').empty('val',' ');
+        if (item_packge_id == "") {
+            $('#item_packge_id').select2('val',' ');
         }
 
-        $('#item_category_id').change(function(){
-            $('#item_id').empty();
-            $('#item_unit_id').empty();
-            var id = $('#item_category_id').val();
-            $.ajax({
-                url: "{{ url('select-item') }}"+'/'+id,
-                type: "GET",
-                dataType: "html",
-                success:function(data)
-                {
-                    $('#item_id').html(data);
-
-                }
-            });
-        });
-        $('#item_id').change(function(){
-            $('#item_unit_id').empty();
-            var id = $('#item_id').val();
-            $.ajax({
-                url: "{{ url('select-item-unit') }}"+'/'+id,
-                type: "GET",
-                dataType: "html",
-                success:function(data)
-                {
-                    $('#item_unit_id').html(data);
-
-                }
-            });
-        });
     });
 </script>
 @stop
@@ -156,24 +119,24 @@
                         {!! Form::select('warehouse_id',  $warehouse, $warehouse_id, ['class' => 'form-control selection-search-clear select-form', 'id' => 'warehouse_id', 'name' => 'warehouse_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
                     </div>
                 </div>
-                <div class="col-md-6">
+                {{-- <div class="col-md-6">
                     <div class="form-group">
                         <a class="text-dark">Nama Kategori Barang<a class='red'> *</a></a>
                         {!! Form::select('item_category_id',  $categorys, $category_id, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_category_id', 'name' => 'item_category_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
                     </div>
-                </div>
+                </div> --}}
                 <div class="col-md-6">
                     <div class="form-group">
                         <a class="text-dark">Nama Barang<a class='red'> *</a></a>
-                        {!! Form::select('item_id',  $items, $item_id, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_id', 'name' => 'item_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
+                        {!! Form::select('item_packge_id',  $items, $item_packge_id, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_packge_id', 'name' => 'item_packge_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
                     </div>
                 </div>
-                <div class="col-md-6">
+                {{-- <div class="col-md-6">
                     <div class="form-group">
                         <a class="text-dark">Kode Satuan<a class='red'> *</a></a>
                         {!! Form::select('item_unit_id',  $units, $unit_id, ['class' => 'form-control selection-search-clear select-form', 'id' => 'item_unit_id', 'name' => 'item_unit_id', 'onchange' => 'function_elements_add(this.name, this.value)']) !!}
                     </div>
-                </div>
+                </div> --}}
                 <div class="col-md-3">
                     <div class="form-group">
                         <a class="text-dark">Tanggal Penyesuaian Stok<a class='red'> *</a></a>

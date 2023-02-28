@@ -35,7 +35,7 @@ class SystemUserController extends Controller
     public function index()
     {
         $systemuser = User::where('data_state','=',0)
-        ->where('user_id', '!=', 55)
+        ->where('user_group_id', '!=', 1)
         ->where('company_id', Auth::user()->company_id)
         ->get();
         return view('content/SystemUser/ListSystemUser',compact('systemuser'));
@@ -45,6 +45,7 @@ class SystemUserController extends Controller
     {
         $systemusergroup    = SystemUserGroup::where('data_state','=',0)
         ->where('company_id', Auth::user()->company_id)
+        ->where('user_group_id', '!=', 1)
         ->get();
         $coresection        = CoreSection::where('data_state','=',0)
         ->where('company_id', Auth::user()->company_id)
@@ -78,6 +79,7 @@ class SystemUserController extends Controller
     {
         $systemusergroup    = SystemUserGroup::where('data_state','=',0)
         ->where('company_id', Auth::user()->company_id)
+        ->where('user_group_id', '!=', 1)
         ->get()
         ->pluck('user_group_name','user_group_id');
         $systemuser         = User::where('user_id',$user_id)->first();

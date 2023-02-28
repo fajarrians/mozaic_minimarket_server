@@ -216,8 +216,13 @@
                         </thead>
                         <tbody>
                           <?php $no = 1; ?>
+                          @if (count($data) == 0)
+                              <tr>
+                                <td colspan="7" class="text-center">Data Kosong</td>
+                              </tr>
+                          @else
                             @foreach ($data as $row)
-                              <?php $no++ ?>
+                                <?php $no++ ?>
                                 <tr>
                                     <td>
                                         {{ $ISAC->getItemName($row['item_id']) }}
@@ -245,35 +250,9 @@
                                     <td style="text-align: center">
                                         <input class="form-control input-bb" type="text" name="stock_adjustment_item_remark" id="stock_adjustment_item_remark" autocomplete="off">
                                     </td>
-                                  {{-- <td>
-                                      {{ $ISAC->getItemName($row['item_id']) }}
-                                      <input type="text" name="{{ $row['purchase_invoice_item_id'] }}no" id="no" value="{{ $row['purchase_invoice_item_id'] }}" hidden>
-                                      <input type="text" name="{{ $row['purchase_invoice_item_id'] }}_item_id" id="{{ $no }}_item_id" value="{{ $row['item_id'] }}" hidden>
-                                      <input type="text" name="{{ $row['purchase_invoice_item_id'] }}_item_category_id" id="{{ $no }}_item_category_id" value="{{ $row['item_category_id'] }}" hidden>
-                                  </td>
-                                  <td>
-                                      {{ $ISAC->getItemUnitName($row['item_unit_id']) }}
-                                      <input type="text" name="{{ $row['purchase_invoice_item_id'] }}_item_unit_id" id="{{ $no }}_item_unit_id" value="{{ $row['item_unit_id'] }}" hidden>
-                                  </td>
-                                  <td>
-                                      {{ $ISAC->getWarehouseName($row['warehouse_id']) }}
-                                      <input type="text" name="{{ $row['purchase_invoice_item_id'] }}_warehouse_id" id="{{ $no }}_warehouse_id" value="{{ $row['item_unit_id'] }}" hidden>
-                                  </td>
-                                  <td>
-                                      {{ $ISAC->getItemStock($row['item_id'],$row['item_unit_id'],$row['item_category_id'],$row['warehouse_id']) }}
-                                      <input type="text" name="{{ $row['purchase_invoice_item_id'] }}_last_balance_data" id="{{ $no }}_last_balance_data" onchange="function_last_balance_physical({{ $no }}, this.value)" value="{{ $ISAC->getItemStock($row['item_id'],$row['item_unit_id'],$row['item_category_id'],$row['warehouse_id']) }}" hidden >
-                                  </td>
-                                  <td style="text-align: center">
-                                      <input class="form-control input-bb" type="text" name="{{ $row['purchase_invoice_item_id'] }}_last_balance_adjustment" id="{{ $no }}_last_balance_adjustment" onchange="function_last_balance_physical({{ $no }}, this.value)" autocomplete="off">
-                                  </td>
-                                  <td style="text-align: center">
-                                      <input class="form-control input-bb" type="text" name="{{ $row['purchase_invoice_item_id'] }}_last_balance_physical" id="{{ $no }}_last_balance_physical" readonly>
-                                  </td>
-                                  <td style="text-align: center">
-                                      <input class="form-control input-bb" type="text" name="{{ $row['purchase_invoice_item_id'] }}_stock_adjustment_item_remark" id="{{ $no }}_stock_adjustment_item_remark" autocomplete="off">
-                                  </td> --}}
                                 </tr>
                             @endforeach
+                          @endif
                         </tbody>
                     </table>
                 </div>

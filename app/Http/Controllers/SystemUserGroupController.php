@@ -36,19 +36,16 @@ class SystemUserGroupController extends Controller
     {
         $systemusergroup = SystemUserGroup::where('data_state','=',0)
         ->where('company_id', Auth::user()->company_id)
+        ->where('user_group_id', '!=', 1)
         ->get();
         return view('content/SystemUserGroup/ListSystemUserGroup',compact('systemusergroup'));
     }
 
     public function addSystemUserGroup(Request $request)
     {
-        $systemusergroup    = SystemUserGroup::where('data_state','=',0)
-        ->where('company_id', Auth::user()->company_id)
-        ->get();
-
         $systemmenu         = SystemMenu::get();
 
-        return view('content/SystemUserGroup/FormAddSystemUserGroup',compact('systemusergroup', 'systemmenu'));
+        return view('content/SystemUserGroup/FormAddSystemUserGroup',compact('systemmenu'));
     }
 
     public function processAddSystemUserGroup(Request $request)

@@ -53,7 +53,23 @@ class SalesInvoiceRecapController extends Controller
         return redirect('/sales-invoice-recap');
     }
 
-    public function getAmount($key)
+    public function getAmount($date, $method)
+    {   
+        $data = SalesInvoice::where('data_state',0)
+        ->where('sales_invoice_date',$date)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('sales_payment_method', $method)
+        ->get();
+
+        $amount = 0;
+        foreach ($data as $key => $val) {
+            $amount += $val['total_amount'];
+        }
+
+        return $amount;
+    }
+
+    public function getAmountTotal($key)
     {   
         if(!Session::get('start_date')){
             $start_date = date('Y-m-d');
@@ -99,6 +115,9 @@ class SalesInvoiceRecapController extends Controller
             4 => 'Ovo',
             5 => 'Shopeepay'
         ];
+
+        $datediff = strtotime($end_date) - strtotime($start_date);
+        $count_date = round($datediff / (60 * 60 * 24));
 
         $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
@@ -163,26 +182,30 @@ class SalesInvoiceRecapController extends Controller
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
                 <td width=\"10%\"><div style=\"text-align: center; font-weight: bold\">No</div></td>
-                <td width=\"45%\"><div style=\"text-align: center; font-weight: bold\">Metode Pembayaran</div></td>
-                <td width=\"45%\"><div style=\"text-align: center; font-weight: bold\">Total</div></td>
-
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Tanggal</div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Tunai</div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Piutang</div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Gopay</div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Ovo</div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Shopeepay</div></td>
             </tr>
         
              ";
 
         $no = 1;
         $tblStock2 =" ";
-        foreach ($data as $key => $val) {
-
-            $tblStock2 .="
-                <tr nobr=\"true\">			
-                    <td style=\"text-align:center\">$no.</td>
-                    <td style=\"text-align:left\">".$val."</td>
-                    <td style=\"text-align:right\">".number_format($this->getAmount($key),2,'.',',')."</td>
-                </tr>
-                
+        for ($i=0; $i <= $count_date ; $i++) { 
+            $tblStock2 .= "
+            <tr nobr=\"true\">
+                <td width=\"10%\"><div style=\"text-align: center;\">".$no++.".</div></td>
+                <td width=\"15%\"><div style=\"text-align: center;\">".date('d-m-Y', strtotime("+".$i." days", strtotime($start_date)))."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($this->getAmount(date('Y-m-d', strtotime("+".$i." days", strtotime($start_date))), 1),2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($this->getAmount(date('Y-m-d', strtotime("+".$i." days", strtotime($start_date))), 2),2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($this->getAmount(date('Y-m-d', strtotime("+".$i." days", strtotime($start_date))), 3),2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($this->getAmount(date('Y-m-d', strtotime("+".$i." days", strtotime($start_date))), 4),2,'.',',')."</div></td>
+                <td width=\"15%\"><div style=\"text-align: right;\">".number_format($this->getAmount(date('Y-m-d', strtotime("+".$i." days", strtotime($start_date))), 5),2,'.',',')."</div></td>
+            </tr>
             ";
-            $no++;
         }
         $tblStock3 = " 
         </table>";
@@ -205,7 +228,6 @@ class SalesInvoiceRecapController extends Controller
         } else {
             $end_date = Session::get('end_date');
         }
-
         $data = [
             1 => 'Tunai',
             2 => 'Piutang',
@@ -213,6 +235,9 @@ class SalesInvoiceRecapController extends Controller
             4 => 'Ovo',
             5 => 'Shopeepay'
         ];
+
+        $datediff = strtotime($end_date) - strtotime($start_date);
+        $count_date = round($datediff / (60 * 60 * 24));
 
         $spreadsheet = new Spreadsheet();
 
@@ -231,20 +256,28 @@ class SalesInvoiceRecapController extends Controller
             $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(5);
             $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(40);
             $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(40);
+            $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(40);
+            $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(40);
+            $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(40);
+            $spreadsheet->getActiveSheet()->getColumnDimension('H')->setWidth(40);
 
     
-            $spreadsheet->getActiveSheet()->mergeCells("B1:D1");
+            $spreadsheet->getActiveSheet()->mergeCells("B1:H1");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
-            $spreadsheet->getActiveSheet()->getStyle('B3:D3')->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('B3:H3')->getFont()->setBold(true);
 
-            $spreadsheet->getActiveSheet()->getStyle('B3:D3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-            $spreadsheet->getActiveSheet()->getStyle('B3:D3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('B3:H3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('B3:H3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             $sheet->setCellValue('B1',"Recap Penjualan Dari Periode ".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
             $sheet->setCellValue('B3',"No");
-            $sheet->setCellValue('C3',"Metode Pembayaran");
-            $sheet->setCellValue('D3',"Total");
+            $sheet->setCellValue('C3',"Tanggal");
+            $sheet->setCellValue('D3',"Tunai");
+            $sheet->setCellValue('E3',"Piutang");
+            $sheet->setCellValue('F3',"Gopay");
+            $sheet->setCellValue('G3',"ovo");
+            $sheet->setCellValue('H3',"Shopeepay");
             
             $j=4;
             $no=0;

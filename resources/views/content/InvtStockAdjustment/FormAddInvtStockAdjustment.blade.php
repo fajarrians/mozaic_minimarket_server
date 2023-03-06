@@ -94,6 +94,14 @@
     @endforeach
 </div>
 @endif
+@if(count($check) > 0)
+<div class="alert alert-danger" role="alert">
+     Barang yang dipilih sudah pernah disesuaikan hari ini :
+    @foreach ($check as $key => $val)
+        <li>{{$val['last_balance_data']}} Menjadi {{$val['last_balance_adjustment']}}. Keterangan : {{$val['stock_adjustment_item_remark']}}</li>
+    @endforeach
+</div>
+@endif
 <div class="card border border-dark">
     <div class="card-header border-dark bg-dark">
         <h5 class="mb-0 float-left">

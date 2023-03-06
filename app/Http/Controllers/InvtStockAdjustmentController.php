@@ -85,13 +85,25 @@ class InvtStockAdjustmentController extends Controller
         ->first();
         $datasess   = Session::get('datases');
         $data       = InvtItemStock::where('item_id', $package['item_id'])
-        ->where('item_category_id', $package['item_category_id'])
-        ->where('item_unit_id', $package['item_unit_id'])
+        // ->where('item_category_id', $package['item_category_id'])
+        // ->where('item_unit_id', $package['item_unit_id'])
         ->where('warehouse_id',$warehouse_id)
         ->where('company_id', Auth::user()->company_id)
         ->where('data_state',0)
         ->get();
-        return view('content.InvtStockAdjustment.FormAddInvtStockAdjustment', compact('items', 'datasess', 'data', 'date','warehouse','warehouse_id','item_packge_id'));
+
+        if($package['item_id']){
+            $check = InvtStockAdjustmentItem::select('last_balance_data', 'last_balance_adjustment', 'stock_adjustment_item_remark')
+            ->where('item_id', $package['item_id'])
+            ->whereYear('created_at', date('Y'))
+            ->whereMonth('created_at', date('m'))
+            ->whereDay('created_at', date('d'))
+            ->where('data_state', 0)
+            ->get();
+        }else{
+            $check = array();
+        }
+        return view('content.InvtStockAdjustment.FormAddInvtStockAdjustment', compact('items', 'datasess', 'data', 'date','warehouse','warehouse_id','item_packge_id','check'));
     }
 
     public function addElementsStockAdjustment(Request $request)

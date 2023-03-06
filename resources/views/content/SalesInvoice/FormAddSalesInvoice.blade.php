@@ -45,8 +45,8 @@
                         change_amount = paid_amount - total_amount_af_discount;
 
                         if (paid_amount != 0) {
-                            $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                            $('#change_amount').val(Math.abs(change_amount));
+                            $('#change_amount_view').val(toRp(change_amount));
+                            $('#change_amount').val(change_amount);
                         }
                         $('#subtotal_amount_view').text('Rp '+toRp(total_amount_af_discount));
                         $('#subtotal_amount_change').val(total_amount_af_discount);
@@ -103,8 +103,8 @@
                     change_amount = paid_amount - total_amount_af_discount;
 
                     if (paid_amount != 0) {
-                        $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                        $('#change_amount').val(Math.abs(change_amount));
+                        $('#change_amount_view').val(toRp(change_amount));
+                        $('#change_amount').val(change_amount);
                     }
                     $('#subtotal_amount_view').text('Rp '+toRp(total_amount_af_discount));
                     $('#subtotal_amount_change').val(total_amount_af_discount);
@@ -156,8 +156,8 @@
             change_amount = paid_amount - total_amount_af_discount;
 
             if (paid_amount != 0) {
-                $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                $('#change_amount').val(Math.abs(change_amount));
+                $('#change_amount_view').val(toRp(change_amount));
+                $('#change_amount').val(change_amount);
             }
             $('#subtotal_amount_view').text('Rp '+toRp(total_amount_af_discount));
             $('#subtotal_amount_change').val(total_amount_af_discount);
@@ -221,8 +221,8 @@
                     change_amount = paid_amount - total_amount_af_discount;
     
                     if (paid_amount != 0) {
-                        $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                        $('#change_amount').val(Math.abs(change_amount));
+                        $('#change_amount_view').val(toRp(change_amount));
+                        $('#change_amount').val(change_amount);
                     }
                     $('#subtotal_amount_view').text('Rp '+toRp(total_amount_af_discount));
                     $('#subtotal_amount_change').val(total_amount_af_discount);
@@ -262,8 +262,8 @@
                             $('#subtotal_amount_view').text('Rp '+toRp(total_amount_af_voucher_amount));
                             $('#subtotal_amount_change').val(total_amount_af_voucher_amount);
                             if (paid_amount != '') {
-                                $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                                $('#change_amount').val(Math.abs(change_amount));
+                                $('#change_amount_view').val(toRp(change_amount));
+                                $('#change_amount').val(change_amount);
                             }
                         }
                 }
@@ -277,8 +277,8 @@
             $('#subtotal_amount_change').val(total_amount_af_discount);
             $('#discount_amount_total').val(discount_amount);
             if (paid_amount != '') {
-                $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                $('#change_amount').val(Math.abs(change_amount));
+                $('#change_amount_view').val(toRp(change_amount));
+                $('#change_amount').val(change_amount);
             }
         } else if ((voucher_id != null) && ((discount_percentage_total != 0) && (discount_percentage_total <= 100))) {
             $.ajax({
@@ -302,8 +302,8 @@
                             $('#subtotal_amount_change').val(total_amount_af_discount);
                             $('#discount_amount_total').val(discount_amount);
                             if (paid_amount != '') {
-                                $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                                $('#change_amount').val(Math.abs(change_amount));
+                                $('#change_amount_view').val(toRp(change_amount));
+                                $('#change_amount').val(change_amount);
                             }
                         }
                 }
@@ -314,8 +314,8 @@
 
             if (paid_amount != '') {
                 change_amount = paid_amount - subtotal_amount;
-                $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                $('#change_amount').val(Math.abs(change_amount));
+                $('#change_amount_view').val(toRp(change_amount));
+                $('#change_amount').val(change_amount);
             }
         } else if (discount_percentage_total > 100) {
             alert('Diskon Tidak Boleh Melebihi 100%');
@@ -327,8 +327,8 @@
             $('#subtotal_amount_change').val(subtotal_amount_af_voucher_amount);
             if (paid_amount != '') {
                 change_amount = paid_amount - subtotal_amount_af_voucher_amount;
-                $('#change_amount_view').val(toRp(Math.abs(change_amount)));
-                $('#change_amount').val(Math.abs(change_amount));
+                $('#change_amount_view').val(toRp(change_amount));
+                $('#change_amount').val(change_amount);
             }
         }
 

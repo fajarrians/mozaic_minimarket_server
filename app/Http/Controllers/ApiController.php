@@ -24,6 +24,7 @@ use App\Models\PreferenceTransactionModule;
 use App\Models\PreferenceVoucher;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
+use App\Models\SIIRemoveLog;
 use App\Models\SystemLoginLog;
 use App\Models\SystemUserGroup;
 use App\Models\User;
@@ -999,5 +1000,26 @@ class ApiController extends Controller
             
             return $amount;
         }
+    }
+
+    public function postDataSIIRemoveLog(Request $request)
+    {
+        $removeLog = array(
+            'sii_remove_log_id'         => $request['sii_remove_log_id'],
+            'company_id'                => $request['company_id'],
+            'sales_invoice_id'          => $request['sales_invoice_id'],
+            'sales_invoice_item_id'     => $request['sales_invoice_item_id'],
+            'sales_invoice_no'          => $request['sales_invoice_no'],
+            'sii_amount'                => $request['sii_amount'],
+            'data_state'                => $request['data_state'],
+            'created_id'                => $request['created_id'],
+            'updated_id'                => $request['updated_id'],
+            'created_at'                => $request['created_at'],
+            'updated_at'                => $request['updated_at'],
+        );
+
+        $data = SIIRemoveLog::create($removeLog);
+
+        return $data;
     }
 }

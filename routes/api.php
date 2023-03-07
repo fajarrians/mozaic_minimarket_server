@@ -31,6 +31,7 @@ Route::get('get-data-item-stock',[ApiController::class, 'getDataItemStock']);
 Route::get('get-data-item-rack',[ApiController::class, 'getDataItemRack']);
 Route::post('post-data-sales-invoice',[ApiController::class, 'postDataSalesInvoice']);
 Route::post('post-data-sales-invoice-item',[ApiController::class, 'postDataSalesInvoiceItem']);
+Route::post('post-data-sii-remove-log',[ApiController::class, 'postDataSIIRemoveLog']);
 Route::get('get-data-sales-invoice',[ApiController::class, 'getDataSalesInvoice']);
 Route::get('get-data-expenditure',[ApiController::class, 'getDataExpenditure']);
 Route::get('get-data-profit-loss-report',[ApiController::class, 'getDataProfitLossReport']);

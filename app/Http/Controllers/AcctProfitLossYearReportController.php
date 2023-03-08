@@ -517,7 +517,7 @@ class AcctProfitLossYearReportController extends Controller
 			</table>
             <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
                 <tr>
-                    <td style=\"text-align:right\">".Auth::user()->name.", ".date('d-m-Y H:i')."</td>
+                    <td style=\"text-align:right\">".ucfirst(Auth::user()->name).", ".date('d-m-Y H:i')."</td>
                 </tr>
             </table>";
 

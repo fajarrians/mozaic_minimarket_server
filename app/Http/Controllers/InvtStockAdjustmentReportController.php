@@ -290,7 +290,7 @@ class InvtStockAdjustmentReportController extends Controller
                     <tr>
                         <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
                         <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
-                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".ucfirst(Auth::user()->name)."</div></td>
                     </tr>
                     <tr>
                         <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>
@@ -344,7 +344,7 @@ class InvtStockAdjustmentReportController extends Controller
             <tr>
                 <td width=\"8%\"><div style=\"\">Dicetak</div></td>
                 <td width=\"2%\"><div style=\"\">:</div></td>
-                <td width=\"50%\"><div style=\"\">".Auth::user()->name."</div></td>
+                <td width=\"50%\"><div style=\"\">".ucfirst(Auth::user()->name)."</div></td>
             </tr>
             <tr>
                 <td width=\"8%\"><div style=\"\">Gudang</div></td>

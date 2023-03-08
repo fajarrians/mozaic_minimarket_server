@@ -180,7 +180,7 @@ class SalesInvoicebyItemReportController extends Controller
                     <tr>
                         <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
                         <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
-                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".ucfirst(Auth::user()->name)."</div></td>
                     </tr>
                     <tr>
                         <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>
@@ -576,7 +576,7 @@ class SalesInvoicebyItemReportController extends Controller
                     <tr>
                         <td width=\"10%\"><div style=\"text-align: left;\">Dicetak</div></td>
                         <td width=\"2%\"><div style=\"text-align: center;\">:</div></td>
-                        <td width=\"12%\"><div style=\"text-align: left;\">".Auth::user()->name."</div></td>
+                        <td width=\"12%\"><div style=\"text-align: left;\">".ucfirst(Auth::user()->name)."</div></td>
                     </tr>
                     <tr>
                         <td width=\"10%\"><div style=\"text-align: left;\">Tgl. Cetak</div></td>

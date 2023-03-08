@@ -1083,7 +1083,7 @@ class SalesInvoiceController extends Controller
         ";
         $pdf::writeHTML($tbl, true, false, false, false, '');
         
-        $kasir = Auth::user()->name;
+        $kasir = ucfirst(Auth::user()->name);
         if (strlen($kasir) > 10) {
             $kasir = substr($kasir, 0, 9) . '...';
         } else {

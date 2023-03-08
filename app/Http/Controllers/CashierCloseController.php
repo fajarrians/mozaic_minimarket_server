@@ -121,7 +121,7 @@ class CashierCloseController extends Controller
             <tr>
                 <td width=\"25%\">KASIR</td>
                 <td width=\"5%\" style=\"text-align: center;\">:</td>
-                <td width=\"70%\">".Auth::user()->name."</td>
+                <td width=\"70%\">".ucfirst(Auth::user()->name)."</td>
             </tr>
         </table>
         <div>-------------------------------------------------------</div>

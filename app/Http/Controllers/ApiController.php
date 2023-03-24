@@ -1002,7 +1002,6 @@ class ApiController extends Controller
         }
     }
 	
-
     public function postDataSIIRemoveLog(Request $request)
     {
         $removeLog = array(

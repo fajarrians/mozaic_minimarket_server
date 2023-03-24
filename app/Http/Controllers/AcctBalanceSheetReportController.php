@@ -117,7 +117,8 @@ class AcctBalanceSheetReportController extends Controller
 
         $data = JournalVoucher::select('acct_journal_voucher_item.account_id_status','acct_journal_voucher_item.journal_voucher_amount')
         ->join('acct_journal_voucher_item','acct_journal_voucher_item.journal_voucher_id','acct_journal_voucher.journal_voucher_id')
-        ->whereMonth('acct_journal_voucher.journal_voucher_date', $month)
+        ->whereMonth('acct_journal_voucher.journal_voucher_date' ,'>=' , 1)
+        ->whereMonth('acct_journal_voucher.journal_voucher_date', '<=', $month)
         ->whereYear('acct_journal_voucher.journal_voucher_date', $year)
         ->where('acct_journal_voucher.data_state',0)
         ->where('acct_journal_voucher_item.account_id', $account_id)
@@ -125,11 +126,11 @@ class AcctBalanceSheetReportController extends Controller
         ->get();
         $data_first = JournalVoucher::select('acct_journal_voucher_item.account_id_status')
         ->join('acct_journal_voucher_item','acct_journal_voucher_item.journal_voucher_id','acct_journal_voucher.journal_voucher_id')
-        ->whereMonth('acct_journal_voucher.journal_voucher_date', $month)
         ->whereYear('acct_journal_voucher.journal_voucher_date', $year)
         ->where('acct_journal_voucher.data_state',0)
         ->where('acct_journal_voucher.company_id', Auth::user()->company_id)
         ->where('acct_journal_voucher_item.account_id', $account_id)
+        ->orderBy('acct_journal_voucher_item.journal_voucher_item_id', 'ASC')
         ->first();
         
         $amount = 0;
@@ -146,7 +147,7 @@ class AcctBalanceSheetReportController extends Controller
             $amount = $amount1 - $amount2;
         }
         
-        return $amount;
+        return abs($amount);
     }
 
     public function printAcctBalanceSheetReport()
@@ -195,7 +196,7 @@ class AcctBalanceSheetReportController extends Controller
         $tbl = "
             <table cellspacing=\"0\" cellpadding=\"5\" border=\"0\">
                 <tr>
-                    <td colspan=\"5\"><div style=\"text-align: center; font-size:14px\">LAPORAN NERACA<BR>Periode ".$this->getMonthName($month)." ".$year."</div></td>
+                    <td colspan=\"5\"><div style=\"text-align: center; font-size:14px\">LAPORAN NERACA<BR>Periode Januari - ".$this->getMonthName($month)." ".$year."</div></td>
                 </tr>
             </table>
         ";
@@ -695,7 +696,7 @@ class AcctBalanceSheetReportController extends Controller
             $spreadsheet->getActiveSheet()->getStyle('B4:E4')->getFont()->setBold(true);	
             $spreadsheet->getActiveSheet()->setCellValue('B1',"Laporan Neraca ");	
             // $spreadsheet->getActiveSheet()->setCellValue('B2',$preferencecompany['company_name']);	
-            $spreadsheet->getActiveSheet()->setCellValue('B2',"Periode ".$this->getMonthName($month)." ".$year."");	
+            $spreadsheet->getActiveSheet()->setCellValue('B2',"Periode Januari - ".$this->getMonthName($month)." ".$year."");	
             
             $j = 4;
             $no = 0;

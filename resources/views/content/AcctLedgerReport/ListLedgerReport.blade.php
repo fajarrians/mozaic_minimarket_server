@@ -196,24 +196,24 @@
                                         if($last_balance>0){
                                             echo "
                                                 <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
-                                                <td style='text-align: right'>0</td>
+                                                <td style='text-align: right'>0.00</td>
                                             ";
                                         }else{
                                             echo "
-                                                <td style='text-align: right'>0</td>
+                                                <td style='text-align: right'>0.00</td>
                                                 <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
                                             ";
                                         }
                                     }else{
                                         if($last_balance>0){
                                             echo "
-                                                <td style='text-align: right'>0</td>
+                                                <td style='text-align: right'>0.00</td>
                                                 <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
                                             ";
                                         }else{
                                             echo "
                                                 <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
-                                                <td style='text-align: right'>0</td>
+                                                <td style='text-align: right'>0.00</td>
                                             ";
                                         }
                                     }

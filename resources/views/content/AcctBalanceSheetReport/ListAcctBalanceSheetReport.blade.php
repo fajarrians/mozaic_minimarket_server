@@ -91,7 +91,7 @@
                     <tr>
                         <td colspan='2' style='text-align:center;'>
                             <div>
-                                Periode {{ $ABSR->getMonthName($month) }} {{ $year }}
+                                Periode Januari - {{ $ABSR->getMonthName($month) }} {{ $year }}
                             </div>
                         </td>
                     </tr>

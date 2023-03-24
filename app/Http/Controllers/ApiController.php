@@ -1001,6 +1001,7 @@ class ApiController extends Controller
             return $amount;
         }
     }
+	
 
     public function postDataSIIRemoveLog(Request $request)
     {

@@ -183,15 +183,15 @@
                                 <td>{{ date('d-m-Y', strtotime($val['purchase_invoice_date'])) }}</td>
                                 <td>{{ date('d-m-Y', strtotime($val['purchase_invoice_due_date'])) }}</td>
                                 <td>{{ $val['purchase_invoice_no'] }}</td>
-                                <td class="text-right">{{ number_format($val['return_amount'],2,'.',',') }}</td>
-                                <td class="text-right">{{ number_format($val['total_amount'] - $val['return_amount'],2,'.',',') }}</td>
+                                <td class="text-right">{{ number_format((int)$val['return_amount'],2,'.',',') }}</td>
+                                <td class="text-right">{{ number_format((int)$val['total_amount'] - (int)$val['return_amount'],2,'.',',') }}</td>
                                 <td class="text-center">
-                                    <input class="checkbox-lg text-center" type="checkbox" id="purchase_invoice_id_{{ $no }}" name="purchase_invoice_id_{{ $no }}" value="{{ $val['purchase_invoice_id'] }}" onchange="count_amount('purchase_invoice_id',{{ $val['total_amount'] - $val['return_amount'] }},{{ $no }})">
+                                    <input class="checkbox-lg text-center" type="checkbox" id="purchase_invoice_id_{{ $no }}" name="purchase_invoice_id_{{ $no }}" value="{{ $val['purchase_invoice_id'] }}" onchange="count_amount('purchase_invoice_id',{{ (int)$val['total_amount'] - (int)$val['return_amount'] }},{{ $no }})">
                                 </td>
                             </tr>
                             @php
-                                $total_retur += $val['return_amount'];
-                                $total_payable += $val['total_amount'] - $val['return_amount'];
+                                $total_retur += (int)$val['return_amount'];
+                                $total_payable += (int)$val['total_amount'] - (int)$val['return_amount'];
                             @endphp
                         @endforeach
                         <tr>

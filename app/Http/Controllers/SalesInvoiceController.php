@@ -11,6 +11,7 @@ use App\Models\InvtItemCategory;
 use App\Models\InvtItemPackge;
 use App\Models\InvtItemStock;
 use App\Models\InvtItemUnit;
+use App\Models\InvtItemBarcode;
 use App\Models\JournalVoucher;
 use App\Models\JournalVoucherItem;
 use App\Models\PreferenceCompany;
@@ -805,12 +806,24 @@ class SalesInvoiceController extends Controller
 
     public function selectSalesInvoice($item_barcode)
     {
+        // $data = InvtItemPackge::where('invt_item_packge.data_state',0)
+        // ->join('invt_item', 'invt_item_packge.item_id','=','invt_item.item_id')
+        // ->join('invt_item_unit','invt_item_packge.item_unit_id','=','invt_item_unit.item_unit_id')
+        // ->join('invt_item_barcode','invt_item_barcode.item_packge_id','=','invt_item_packge.item_packge_id')
+        // ->where('invt_item_packge.company_id', Auth::user()->company_id)
+        // ->where('invt_item_barcode.item_barcode', $item_barcode)
+        // ->first();
+
+        $itembarcode = InvtItemBarcode::where('data_state', 0)
+        ->where('item_barcode', $item_barcode)
+        ->first();
+
         $data = InvtItemPackge::where('invt_item_packge.data_state',0)
         ->join('invt_item', 'invt_item_packge.item_id','=','invt_item.item_id')
         ->join('invt_item_unit','invt_item_packge.item_unit_id','=','invt_item_unit.item_unit_id')
-        ->join('invt_item_barcode','invt_item_barcode.item_packge_id','=','invt_item_packge.item_packge_id')
+        ->join('invt_item_barcode','invt_item_barcode.item_id','=','invt_item.item_id')
         ->where('invt_item_packge.company_id', Auth::user()->company_id)
-        ->where('invt_item_barcode.item_barcode', $item_barcode)
+        ->where('invt_item_barcode.item_barcode_id', $itembarcode['item_barcode_id'])
         ->first();
 
         if ($data != null) {

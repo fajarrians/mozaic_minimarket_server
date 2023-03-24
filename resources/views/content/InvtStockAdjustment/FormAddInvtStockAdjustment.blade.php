@@ -23,8 +23,12 @@
     function function_last_balance_physical(value){
         last_data =  document.getElementById("last_balance_data").value;
         last_adjustment =  document.getElementById("last_balance_adjustment").value || 0;
+        // if (last_data > 0) {
+            var last_physical = parseInt(last_adjustment) - parseInt(last_data);
+        // } else {
+        //     var last_physical = parseInt(last_adjustment) + parseInt(last_data);
+        // }
         
-        var last_physical = parseInt(last_adjustment) - parseInt(last_data);
         $('#last_balance_physical').val(last_physical);
     }
     // nostr = $("#no").val();

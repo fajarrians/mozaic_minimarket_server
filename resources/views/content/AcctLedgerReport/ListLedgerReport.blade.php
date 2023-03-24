@@ -10,8 +10,7 @@
       <li class="breadcrumb-item"><a href="{{ url('home') }}">Beranda</a></li>
       <li class="breadcrumb-item active" aria-current="page"> Daftar Buku Besar </li>
     </ol>
-  </nav>
-
+</nav>
 @stop
 
 @section('content')
@@ -76,32 +75,6 @@
                             {!! Form::select('account_id', $accountlist, $account_id, ['class' => 'selection-search-clear select-form', 'id' => 'account_id', 'name' => 'account_id']) !!}
                         </div>
                     </div>
-
-                    {{-- <div class = "col-md-6">
-                        <div class="form-group form-md-line-input">
-                            <section class="control-label">Nama Supplier
-                                <span class="required text-danger">
-                                    *
-                                </span>
-                            </section>
-                            <select  class="form-control "  type="text" name="end_date" id="end_date" onChange="function_elements_add(this.name, this.value);" value="" >
-                                <option value=""></option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class = "col-md-6">
-                        <div class="form-group form-md-line-input">
-                            <section class="control-label">Nama Gudang
-                                <span class="required text-danger">
-                                    *
-                                </span>
-                            </section>
-                            <select class="form-control"  type="text" name="end_date" id="end_date" onChange="function_elements_add(this.name, this.value);" value="">
-                                <option value=""></option>
-                            </select>
-                        </div>
-                    </div> --}}
                 </div>
             </div>
             <div class="card-footer text-muted">
@@ -198,13 +171,19 @@
                     </tr>
                     
                         <?php
-                        $no = 1;
-                        $voucher_debit = 0;
-                        $voucher_credit = 0;
-                        $last_balance_debit = 0;
-                        $last_balance_credit = 0;
+                        $no                     = 1;
+                        $voucher_debit          = 0;
+                        $voucher_credit         = 0;
+                        $last_balance_debit     = 0;
+                        $last_balance_credit    = 0;
+                        $last_balance           = $accountbalancedetail_old['last_balance'];
                         foreach ($acctgeneralledgerreport as $key => $val) {
                             if($val['data_state']==0){
+                                if($val['account_in'] > 0){
+                                    $last_balance += $val['account_in'];
+                                }else{
+                                    $last_balance -= $val['account_out'];
+                                }
                                 echo "<tr>
                                     <td class='text-center'>".$no++.".</td>
                                     <td>".$val['date']."</td>
@@ -212,15 +191,52 @@
                                     <td>".$val['description']."</td>
                                     <td>".$AcctLedgerReport->getAccountName($val['account_id'])."</td>
                                     <td style='text-align: right'>".number_format($val['account_in'],2,'.',',')."</td>
-                                    <td style='text-align: right'>".number_format($val['account_out'],2,'.',',')."</td>
-                                    <td style='text-align: right'>".number_format($val['last_balance_debit'],2,'.',',')."</td>
-                                    <td style='text-align: right'>".number_format($val['last_balance_credit'],2,'.',',')."</td>
-                                ";
+                                    <td style='text-align: right'>".number_format($val['account_out'],2,'.',',')."</td>";
+                                    if($account['account_default_status']==0){
+                                        if($last_balance>0){
+                                            echo "
+                                                <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
+                                                <td style='text-align: right'>0</td>
+                                            ";
+                                        }else{
+                                            echo "
+                                                <td style='text-align: right'>0</td>
+                                                <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
+                                            ";
+                                        }
+                                    }else{
+                                        if($last_balance>0){
+                                            echo "
+                                                <td style='text-align: right'>0</td>
+                                                <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
+                                            ";
+                                        }else{
+                                            echo "
+                                                <td style='text-align: right'>".number_format($last_balance, 2,'.',',')."</td>
+                                                <td style='text-align: right'>0</td>
+                                            ";
+                                        }
+                                    }
                             }
                                 $voucher_debit += $val['account_in'];
                                 $voucher_credit += $val['account_out'];
-                                $last_balance_debit = $val['last_balance_debit'];
-                                $last_balance_credit = $val['last_balance_credit'];
+                                if($account['account_default_status']==0){
+                                    if($last_balance>=0){
+                                        $last_balance_debit  = $last_balance;
+                                        $last_balance_credit = 0;
+                                    }else{
+                                        $last_balance_debit  = 0;
+                                        $last_balance_credit = $last_balance;
+                                    }
+                                }else{
+                                    if($last_balance>=0){
+                                        $last_balance_credit = $last_balance;
+                                        $last_balance_debit  = 0;
+                                    }else{
+                                        $last_balance_credit = 0;
+                                        $last_balance_debit  = $last_balance;
+                                    }
+                                }
                         }
                         ?>
                     

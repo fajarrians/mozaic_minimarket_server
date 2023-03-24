@@ -223,7 +223,7 @@ class InvtStockAdjustmentReportController extends Controller
         ->where('warehouse_id',$warehouse_id)
         ->first();
 
-        return $data['last_balance'];
+        return (int)$data['last_balance'];
     }
 
     public function getRackName($rack_id)
@@ -387,7 +387,7 @@ class InvtStockAdjustmentReportController extends Controller
                     <td style=\"text-align:right\">".$this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id'])."</td>
                     <td style=\"text-align:right\">".number_format($val['item_unit_price'],2,'.',',')."</td>
                     <td style=\"text-align:right\">".number_format($val['item_unit_cost'],2,'.',',')."</td>
-                    <td style=\"text-align:right\">".number_format(($val['item_unit_cost'] * $this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id'])),2,'.',',')."</td>
+                    <td style=\"text-align:right\">".number_format(((int)$val['item_unit_cost'] * $this->getStock($val['item_id'],$val['item_category_id'],$val['item_unit_id'],$val['warehouse_id'])),2,'.',',')."</td>
                 </tr>
                 
             ";

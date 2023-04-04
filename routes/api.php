@@ -43,3 +43,5 @@ Route::post('post-data-close-cashier', [ApiController::class, 'postDataCloseCash
 Route::post('post-data-core-member-kopkar', [ApiController::class, 'postDataCoreMemberKopkar']);
 Route::get('get-data-preference-voucher', [ApiController::class, 'getDataPreferenceVoucher']);
 Route::post('post-amount-account', [ApiController::class, 'getAmountAccount']);
+Route::post('post-data', [ApiController::class, 'postData']);
+Route::get('get-data', [ApiController::class, 'getData']);

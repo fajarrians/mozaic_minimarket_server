@@ -1034,7 +1034,6 @@ class ApiController extends Controller
 
             foreach ($request->salesRemove as $key => $val) {
                 $data = array(
-                    'sii_remove_log_id'         => $val['sii_remove_log_id'],
                     'company_id'                => $val['company_id'],
                     'sales_invoice_id'          => $val['sales_invoice_id'],
                     'sales_invoice_item_id'     => $val['sales_invoice_item_id'],

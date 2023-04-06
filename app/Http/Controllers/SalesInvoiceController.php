@@ -21,6 +21,7 @@ use App\Models\SalesCustomer;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
 use App\Models\SIIRemoveLog;
+use App\Models\User;
 use Elibyy\TCPDF\Facades\TCPDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1041,6 +1042,242 @@ class SalesInvoiceController extends Controller
     
             return $data_itemses;
         }
+    }
+
+    public function getUsername($user_id)
+    {
+        $data = User::where('user_id', $user_id)
+        ->where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first();
+
+        return $data['name'];
+    }
+
+    public function printRepeatSalesInvoice($sales_invoice_id)
+    {
+        $data_company = PreferenceCompany::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->first();
+
+        $sales_invoice = SalesInvoice::where('data_state',0)
+        ->where('company_id', Auth::user()->company_id)
+        ->where('sales_invoice_id',$sales_invoice_id)
+        ->first();
+
+        $sales_invoice_item = SalesInvoiceItem::where('sales_invoice_id',$sales_invoice_id)
+        ->get();
+
+        $sales_payment_method_list = [
+            1 => 'Tunai',
+            2 => 'Piutang',
+            3 => 'Gopay',
+            4 => 'Ovo',
+            5 => 'Shopeepay'
+        ];
+
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+
+        $pdf::SetPrintHeader(false);
+        $pdf::SetPrintFooter(false);
+
+        $pdf::SetMargins(5, 1, 5, 1); // put space of 10 on top
+
+        $pdf::setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            $pdf::setLanguageArray($l);
+        }
+
+        $pdf::AddPage('P', array(75, 3276));
+
+        $pdf::SetFont('helvetica', '', 10);
+
+        $tbl = "
+        <table style=\" font-size:9px; \">
+            <tr>
+                <td style=\"text-align: center; font-size:12px; font-weight: bold\">".$data_company['company_name']."</td>
+            </tr>
+            <tr>
+                <td style=\"text-align: center; font-size:9px;\">".$data_company['company_address']."</td>
+            </tr>
+        </table>
+       
+        ";
+        $pdf::writeHTML($tbl, true, false, false, false, '');
+            
+        $tblStock1 = "
+        <div>-------------------------------------------------------</div>
+        <table style=\" font-size:9px; \">
+            <tr>
+                <td width=\" 20% \">Tgl.</td>
+                <td width=\" 10% \" style=\"text-align: center; \"> : </td>
+                <td width=\" 70% \">".date('d-m-Y', strtotime($sales_invoice['created_at']))."&nbsp;&nbsp;&nbsp;".date('H:i',strtotime($sales_invoice['created_at']))."</td>
+            </tr>
+            <tr>
+                <td width=\" 20% \">No.</td>
+                <td width=\" 10% \" style=\"text-align: center; \"> : </td>
+                <td width=\" 70% \">".$sales_invoice['sales_invoice_no']."</td>
+            </tr>
+            <tr>
+                <td width=\" 20% \">Kasir</td>
+                <td width=\" 10% \" style=\"text-align: center; \"> : </td>
+                <td width=\" 70% \">".ucfirst($this->getUsername($sales_invoice['created_id']))."</td>
+            </tr>
+        </table>
+        <div>-------------------------------------------------------</div>
+        ";
+
+        $tblStock2 = "
+        <table style=\" font-size:9px; \" width=\" 100% \" border=\"0\">
+        ";
+
+        $tblStock3 = "";
+        foreach ($sales_invoice_item as $key => $val) {
+            $tblStock3 .= "
+                <tr>
+                    <td width=\" 100% \" style=\"text-align: left; \">".$this->getItemName($val['item_id'])."</td>
+                </tr>
+                <tr>
+                    <td width=\" 32% \" style=\"text-align: right; \">".$val['quantity']."&nbsp;".$this->getItemUnitName($val['item_unit_id'])."</td>
+                    <td width=\" 9% \" style=\"text-align: center; \">X</td>
+                    <td width=\" 29% \" style=\"text-align: left; \">".number_format($val['item_unit_price'])."</td>
+                    <td width=\" 30% \" style=\"text-align: right; \">".number_format($val['subtotal_amount_after_discount'])."</td>
+                </tr>
+            ";
+        }
+        
+        $tblStock4 = "
+        </table>
+        <div>-------------------------------------------------------</div>
+        <table style=\" font-size:9px; \" width=\" 100% \" border=\"0\">
+        ";
+
+        if (($sales_invoice['discount_amount_total'] + $sales_invoice['voucher_amount']) != 0) {
+            $tblStock4 .= "
+            <tr>
+                <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">Sub Total</td>
+                <td width=\" 15% \" style=\"text-align: center; font-weight:bold;\">:</td>
+                <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['subtotal_amount'])."</td>
+            </tr>
+            ";
+        }
+
+        if ($sales_invoice['voucher_amount'] != 0) {
+            $tblStock4 .= "
+            <tr>
+                <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">Voucher</td>
+                <td width=\" 15% \" style=\"text-align: center;\">:</td>
+                <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['voucher_amount'])."</td>
+            </tr>
+            ";
+        }
+
+        if ($sales_invoice['discount_amount_total'] != 0) {
+            $tblStock4 .= "
+            <tr>
+                <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">Diskon</td>
+                <td width=\" 15% \" style=\"text-align: center;\">:</td>
+                <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['discount_amount_total'])."</td>
+            </tr>
+            ";
+        }
+
+        $tblStock4 .= "
+        <tr>
+            <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">Total</td>
+            <td width=\" 15% \" style=\"text-align: center; font-weight:bold;\">:</td>
+            <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['total_amount'])."</td>
+        </tr>
+        ";
+
+        if ($sales_invoice['sales_payment_method'] == 2) {
+            $coremember = CoreMember::where('member_id', $sales_invoice['customer_id'])
+            ->first();
+            $tblStock4 .= "
+            <tr>
+                <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">".$sales_payment_method_list[$sales_invoice['sales_payment_method']]."</td>
+                <td width=\" 15% \" style=\"text-align: center; font-weight:bold;\">:</td>
+                <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['total_amount'])."</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">Menyetujui,</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\"></td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">".$coremember['member_name']." - ".$coremember['division_name']."</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">NIK. ".$coremember['member_no']."</td>
+            </tr>
+            ";
+        } else {
+            $tblStock4 .= "
+            <tr>
+                <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">".$sales_payment_method_list[$sales_invoice['sales_payment_method']]."</td>
+                <td width=\" 15% \" style=\"text-align: center; font-weight:bold;\">:</td>
+                <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['paid_amount'])."</td>
+            </tr>
+            <tr>
+                <td width=\" 35% \" style=\"text-align: left; font-weight:bold;\">Kembalian</td>
+                <td width=\" 15% \" style=\"text-align: center; font-weight:bold;\">:</td>
+                <td width=\" 50% \" style=\"text-align: right; font-weight:bold;\">".number_format($sales_invoice['change_amount'])."</td>
+            </tr>
+            ";
+        }
+
+        if ($sales_invoice['voucher_id'] != null) {
+            $coremember = CoreMember::where('member_id', $sales_invoice['customer_id'])
+            ->first();
+            $voucher = PreferenceVoucher::where('voucher_id', $sales_invoice['voucher_id'])
+            ->first();
+            $tblStock4 .= "
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">Keterangan,</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\"></td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">".$voucher['voucher_code']."</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">No. Voucher : ".$sales_invoice['voucher_no']."</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">".$coremember['member_name']." - ".$coremember['division_name']."</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: left;\">NIK. ".$coremember['member_no']."</td>
+            </tr>
+            ";
+        }
+
+        $tblStock5 = "
+        </table>
+        <div>-------------------------------------------------------</div>
+        <table style=\" font-size:9px; \" width=\" 100% \" border=\"0\">
+            <tr>
+                <td width=\" 100% \" style=\"text-align: center;\">Terima Kasih</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: center;\">Barang yang telah dibeli</td>
+            </tr>
+            <tr>
+                <td width=\" 100% \" style=\"text-align: center;\">Tidak dapat dikembalikan</td>
+            </tr>
+        </table>
+        ";
+
+        $pdf::writeHTML($tblStock1.$tblStock2.$tblStock3.$tblStock4.$tblStock5, true, false, false, false, '');
+
+
+        $filename = 'Nota_Penjualan.pdf';
+        $pdf::Output($filename, 'I');
     }
 
     public function printSalesInvoice()

@@ -103,6 +103,7 @@
                         <th style='text-align:center;'>Total Transaksi</th>
                         <th style='text-align:center;'>Total Barang</th>
                         <th style='text-align:center;'>Total Pembelian</th>
+                        <th style='text-align:center;'>Total Piutang</th>
                         <th style='text-align:center;'>Aksi</th>
                     </tr>
                 </thead>
@@ -111,10 +112,11 @@
                   @foreach ($data_member as $row)
                   <tr>
                     <td class="text-center">{{ $no++ }}.</td>
-                    <td>{{ $row['member_name'] }}</td>
+                    <td>{{ $row['member_name'] }} - {{ $row['division_name'] }}</td>
                     <td style="text-align: right">{{ $CMRC->getTotalTransaction($row['member_id']) }}</td>
                     <td style="text-align: right">{{ $CMRC->getTotalItem($row['member_id']) }}</td>
                     <td style="text-align: right">{{ number_format($CMRC->getTotalAmount($row['member_id']),2,'.',',') }}</td>
+                    <td style="text-align: right">{{ number_format($CMRC->getTotalCredit($row['member_id']),2,'.',',') }}</td>
                     <td class="text-center">
                         <a class="btn btn-secondary btn-sm" href="{{ url('core-member-report/print-card/'.$row['member_id']) }}"><i class="fa fa-file-pdf"></i> Kartu Piutang</a>
                     </td>

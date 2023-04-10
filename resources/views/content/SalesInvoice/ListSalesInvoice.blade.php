@@ -136,7 +136,7 @@
                         <td class="text-center">
                             <a type="button" class="btn btn-outline-warning btn-sm" href="{{ url('/sales-invoice/detail/'.$row['sales_invoice_id']) }}">Detail</a>
                             <a type="button" class="btn btn-outline-success btn-sm" href="{{ url('/sales-invoice/print-repeat/'.$row['sales_invoice_id']) }}">Nota</a>
-                            <a type="button" class="btn btn-outline-danger btn-sm" href="{{ url('/sales-invoice/delete/'.$row['sales_invoice_id']) }}">Hapus</a>
+                            <a type="button" class="btn btn-outline-danger btn-sm" href="{{ url('/sales-invoice/delete/'.$row['sales_invoice_id']) }}" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data Ini ?')">Hapus</a>
                         </td>
                     </tr>
                     @endforeach

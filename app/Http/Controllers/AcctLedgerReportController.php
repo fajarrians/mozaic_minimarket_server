@@ -265,13 +265,6 @@ class AcctLedgerReportController extends Controller
             $description = JournalVoucher::where('journal_voucher_id', $val['transaction_id'])->first('journal_voucher_description');
             $no_journal = JournalVoucher::where('journal_voucher_id', $val['transaction_id'])->first('journal_voucher_no');
             $data_state = JournalVoucher::where('journal_voucher_id', $val['transaction_id'])->first('data_state');
-            if($val['last_balance'] <= 0){
-                $debit = 0;
-                $credit = $val['last_balance'];
-            } else {
-                $debit = $val['last_balance'];
-                $credit = 0;
-            }
         
             $acctgeneralledgerreport_detail = array(
                 'date' => $val['transaction_date'],
@@ -280,8 +273,6 @@ class AcctLedgerReportController extends Controller
                 'account_id' => $val['account_id'],
                 'account_in' => $val['account_in'],
                 'account_out' => $val['account_out'],
-                'debit' => $debit,
-                'credit' => $credit,
                 'data_state' => $data_state['data_state']
             );
             array_push($acctgeneralledgerreport, $acctgeneralledgerreport_detail);
@@ -372,39 +363,50 @@ class AcctLedgerReportController extends Controller
         $tblStock1 = "
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
-                <td width=\"5%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">No</div></td>
-                <td width=\"12%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Tanggal</div></td>
-                <td width=\"25%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Uraian</div></td>
-                <td width=\"15%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Debet </div></td>
-                <td width=\"15%\" rowspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Kredit </div></td>
-                <td width=\"30%\" colspan=\"2\"><div style=\"text-align: center; font-weight: bold\">Saldo </div></td>
-            </tr>
-            
-            <tr>
+                <td width=\"5%\"><div style=\"text-align: center; font-weight: bold\">No</div></td>
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Tanggal</div></td>
+                <td width=\"35%\"><div style=\"text-align: center; font-weight: bold\">Uraian</div></td>
                 <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Debet </div></td>
                 <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Kredit </div></td>
-            </tr>
-        
-             ";
+                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Saldo </div></td>
+            </tr>";
 
         $tblStock2 = " ";
         $no = 1;
+        $total_credit   = 0;
+        $total_debit    = 0;
+        $last_balance   = $accountbalancedetail_old['last_balance'];
+
         foreach ($acctgeneralledgerreport as $key => $val) {
+
+            $total_credit   += $val['account_in'];
+            $total_debit    += $val['account_out'];
+            if($val['account_in'] > 0){
+                $last_balance += $val['account_in'];
+            }else{
+                $last_balance -= $val['account_out'];
+            }
+
             $tblStock2 .="
                     <tr nobr=\"true\">			
                         <td style=\"text-align:center\">$no.</td>
-                        <td style=\"text-align:center\">".$val['date']."</td>
+                        <td>".date('d-m-Y', strtotime($val['date']))."</td>
                         <td>".$val['description']."</td>
                         <td><div style=\"text-align: right;\">".number_format($val['account_in'],2,'.',',')."</div></td>
                         <td><div style=\"text-align: right;\">".number_format($val['account_out'],2,'.',',')."</div></td>
-                        <td><div style=\"text-align: right;\">".number_format($val['debit'],2,'.',',')."</div></td>
-                        <td><div style=\"text-align: right;\">".number_format($val['credit'],2,'.',',')."</div></td>
+                        <td><div style=\"text-align: right;\">".number_format($last_balance,2,'.',',')."</div></td>
                     </tr>
-                    
                 ";
             $no++;
         }
+
         $tblStock4 = " 
+        <tr>
+            <td colspan=\"3\"><div style=\"text-align: center; font-weight: bold\">Total Debet Kredit</div></td>
+            <td><div style=\"text-align: right; font-weight: bold\">".number_format($total_debit,2,'.',',')."</div></td>
+            <td><div style=\"text-align: right; font-weight: bold\">".number_format($total_credit,2,'.',',')."</div></td>
+            <td></td>
+        </tr>
         </table>";
 
         $pdf::writeHTML($tblStock1.$tblStock2.$tblStock4, true, false, false, false, '');
@@ -488,13 +490,6 @@ class AcctLedgerReportController extends Controller
             $description = JournalVoucher::where('journal_voucher_id', $val['transaction_id'])->first('journal_voucher_description');
             $no_journal = JournalVoucher::where('journal_voucher_id', $val['transaction_id'])->first('journal_voucher_no');
             $data_state = JournalVoucher::where('journal_voucher_id', $val['transaction_id'])->first('data_state');
-            if($val['last_balance'] <= 0){
-                $debit = 0;
-                $credit = $val['last_balance'];
-            } else {
-                $debit = $val['last_balance'];
-                $credit = 0;
-            }
         
             $acctgeneralledgerreport_detail = array(
                 'date' => $val['transaction_date'],
@@ -503,8 +498,6 @@ class AcctLedgerReportController extends Controller
                 'account_id' => $val['account_id'],
                 'account_in' => $val['account_in'],
                 'account_out' => $val['account_out'],
-                'debit' => $debit,
-                'credit' => $credit,
                 'data_state' => $data_state['data_state']
             );
             array_push($acctgeneralledgerreport, $acctgeneralledgerreport_detail);
@@ -526,32 +519,22 @@ class AcctLedgerReportController extends Controller
             $spreadsheet->getActiveSheet()->setTitle("Buku Besar");
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
-            $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(5);
+            $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(10);
             $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(40);
             $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(20);
-            $spreadsheet->getActiveSheet()->getColumnDimension('H')->setWidth(20);
     
             $spreadsheet->getActiveSheet()->mergeCells("B1:G1");
 
-            $spreadsheet->getActiveSheet()->mergeCells("B8:B9");
-            $spreadsheet->getActiveSheet()->mergeCells("C8:C9");
-            $spreadsheet->getActiveSheet()->mergeCells("D8:D9");
-            $spreadsheet->getActiveSheet()->mergeCells("E8:E9");
-            $spreadsheet->getActiveSheet()->mergeCells("F8:F9");
-
-            
-            $spreadsheet->getActiveSheet()->mergeCells("G8:H8");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
+            $spreadsheet->getActiveSheet()->getStyle('B8:G8')->getFont()->setBold(true);
 
-            $spreadsheet->getActiveSheet()->getStyle('B8:H8')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-            $spreadsheet->getActiveSheet()->getStyle('B9:H9')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('B8:G8')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
-            $spreadsheet->getActiveSheet()->getStyle('B8:H8')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $spreadsheet->getActiveSheet()->getStyle('B9:H9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('B8:G8')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             $spreadsheet->getActiveSheet()->mergeCells("B5:C5");
             $spreadsheet->getActiveSheet()->getStyle('B5:D5')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
@@ -581,22 +564,27 @@ class AcctLedgerReportController extends Controller
             $sheet->setCellValue('F8',"Kredit");
             $sheet->setCellValue('G8',"Saldo");
 
-            
-            $sheet->setCellValue('G9',"Debet");
-            $sheet->setCellValue('H9',"Kredit");
-            
-            
-            $j=10;
+            $j=9;
             $no=0;
+            $total_credit   = 0;
+            $total_debit    = 0;
+            $last_balance   = $accountbalancedetail_old['last_balance'];
             
             foreach($acctgeneralledgerreport as $key=>$val){
 
                 if(is_numeric($key)){
+                    $total_credit   += $val['account_in'];
+                    $total_debit    += $val['account_out'];
+                    if($val['account_in'] > 0){
+                        $last_balance += $val['account_in'];
+                    }else{
+                        $last_balance -= $val['account_out'];
+                    }
                     
                     $spreadsheet->setActiveSheetIndex(0);
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':H'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
                     
-                    $spreadsheet->getActiveSheet()->getStyle('E'.$j.':H'.$j)->getNumberFormat()->setFormatCode('0.00');
+                    $spreadsheet->getActiveSheet()->getStyle('E'.$j.':G'.$j)->getNumberFormat()->setFormatCode('0.00');
 
                     $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
@@ -604,26 +592,34 @@ class AcctLedgerReportController extends Controller
                     $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
                     $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
                     $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                    $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
                         $no++;
-                        $sheet->setCellValue('B'.$j, $no);
-                        $sheet->setCellValue('C'.$j, $val['date']);
+                        $sheet->setCellValue('B'.$j, $no.'.');
+                        $sheet->setCellValue('C'.$j, date('d-m-Y', strtotime($val['date'])));
                         $sheet->setCellValue('D'.$j, $val['description']);
                         $sheet->setCellValue('E'.$j, $val['account_in']);
                         $sheet->setCellValue('F'.$j, $val['account_out']);
-                        $sheet->setCellValue('G'.$j, $val['debit']);
-                        $sheet->setCellValue('H'.$j, $val['credit']);
+                        $sheet->setCellValue('G'.$j, $last_balance);
                         
-                        
-                    
                 }else{
                     continue;
                 }
                 $j++;
         
             }
-            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':H'.$j);
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':D'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('E'.$j.':F'.$j)->getNumberFormat()->setFormatCode('0.00');
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->setCellValue('B'.$j, 'Total Debet Kredit');
+            $sheet->setCellValue('E'.$j, $total_debit);
+            $sheet->setCellValue('F'.$j, $total_credit);
+
+            $j++;
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':G'.$j);
             $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             $sheet->setCellValue('B'.$j, Auth::user()->name.", ".date('d-m-Y H:i'));
 

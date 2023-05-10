@@ -105,22 +105,65 @@
             <table id="" style="width:100%" class="table table-striped table-bordered table-hover table-full-width">
                 <thead>
                     <tr>
-                        <th width="5%" rowspan="2" style="vertical-align : middle;text-align:center;">No</th>
-                        <th width="10%" rowspan="2" style="vertical-align : middle;text-align:center;">Tanggal</th>
-                        <th width="10%" rowspan="2" style="vertical-align : middle;text-align:center;">No. Jurnal</th>
-                        <th width="25%" rowspan="2" style="vertical-align : middle;text-align:center;">Deskripsi</th>
-                        <th width="20%" rowspan="2" style="vertical-align : middle;text-align:center;">Nama Perkiraan</th>
-                        <th width="15%" rowspan="2" style="vertical-align : middle;text-align:center;">Debit</th>
-                        <th width="15%" rowspan="2" style="vertical-align : middle;text-align:center;">Kredit</th>
-                        <th width="15%" colspan="2" style="vertical-align : middle;text-align:center;">Saldo</th>
-                    </tr>
-                    <tr>
-                        <th width="15%" style="vertical-align : middle;text-align:center;">Debit</th>
-						<th width="15%" style="vertical-align : middle;text-align:center;">Kredit</th>
+                        <th style="vertical-align : middle;text-align:center;">No</th>
+                        <th style="vertical-align : middle;text-align:center;">Tanggal</th>
+                        <th style="vertical-align : middle;text-align:center;">No. Jurnal</th>
+                        <th style="vertical-align : middle;text-align:center;">Deskripsi</th>
+                        <th style="vertical-align : middle;text-align:center;">Nama Perkiraan</th>
+                        <th style="vertical-align : middle;text-align:center;">Debit</th>
+                        <th style="vertical-align : middle;text-align:center;">Kredit</th>
+                        <th style="vertical-align : middle;text-align:center;">Saldo</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php
+                        $no             = 1;
+                        $total_credit   = 0;
+                        $total_debit    = 0;
+                        $last_balance   = $accountbalancedetail_old['last_balance'];
+                        ?>
                     <tr>
+                        <th style="text-align: center" colspan="5">Saldo Awal</th>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">{{ number_format($accountbalancedetail_old['last_balance'],2,'.',',') }}</td>
+                    </tr>
+
+                    @foreach ($acctgeneralledgerreport as $val)
+                        <?php
+                            $total_credit   += $val['account_in'];
+                            $total_debit    += $val['account_out'];
+                            if($val['account_in'] > 0){
+                                $last_balance += $val['account_in'];
+                            }else{
+                                $last_balance -= $val['account_out'];
+                            }
+                            ?>
+                        <tr>
+                            <td class="text-center">{{ $no++ }}.</td>
+                            <td>{{ date('d-m-Y', strtotime($val['date'])) }}</td>
+                            <td>{{ $val['no_journal'] }}</td>
+                            <td>{{ $val['description'] }}</td>
+                            <td>{{ $AcctLedgerReport->getAccountName($val['account_id']) }}</td>
+                            <td class="text-right">{{ number_format($val['account_in'],2,'.',',') }}</td>
+                            <td class="text-right">{{ number_format($val['account_out'],2,'.',',') }}</td>
+                            <td class="text-right">{{ number_format($last_balance,2,'.',',') }}</td>
+                        </tr>
+                    @endforeach
+
+                    <tr>
+                        <th style="text-align: center" colspan="5">Total Debet Kredit</th>
+                        <td class="text-right">{{ number_format($total_debit,2,'.',',') }}</td>
+                        <td class="text-right">{{ number_format($total_credit,2,'.',',') }}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th style="text-align: center" colspan="5">Saldo Akhir</th>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">{{ number_format($last_balance,2,'.',',') }}</td>
+                    </tr>
+                    {{-- <tr>
                         <th style="text-align: center" colspan="5">Saldo Awal</th>
                         <td></td>
                         <td></td>
@@ -258,7 +301,7 @@
                         <td style="text-align: right">{{ number_format($last_balance_debit,2,'.',',') }}</td>
                         <td style="text-align: right">{{ number_format($last_balance_credit,2,'.',',') }}</td>
                     </tr>
-                </tbody>
+                </tbody> --}}
             </table>
         </div>
     </div>

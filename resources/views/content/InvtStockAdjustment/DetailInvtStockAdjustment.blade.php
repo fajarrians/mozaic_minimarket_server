@@ -160,17 +160,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($data_item as $row)
-                                <tr>
-                                  <td> {{ $ISAC->getItemName($row['item_id']) }}</td>
-                                  <td>{{ $ISAC->getItemUnitName($row['item_unit_id']) }}</td>
-                                  <td>{{ $ISAC->getWarehouseName($row['warehouse_id']) }} </td>
-                                  <td style="text-align: right">{{ $row['last_balance_data'] }}</td>
-                                  <td style="text-align: right">{{ $row['last_balance_adjustment'] }}</td>
-                                  <td style="text-align: right">{{ $row['last_balance_physical'] }}</td>
-                                  <td>{{ $row['stock_adjustment_item_remark'] }}</td>
-                                </tr>
-                            @endforeach
+                            <tr>
+                                <td> {{ $ISAC->getItemName($data['item_id']) }}</td>
+                                <td>{{ $ISAC->getItemUnitName($data['item_unit_id']) }}</td>
+                                <td>{{ $ISAC->getWarehouseName($data['warehouse_id']) }} </td>
+                                <td style="text-align: right">{{ $data['last_balance_data'] }}</td>
+                                <td style="text-align: right">{{ $data['last_balance_adjustment'] }}</td>
+                                <td style="text-align: right">{{ $data['last_balance_physical'] }}</td>
+                                <td>{{ $data['stock_adjustment_item_remark'] }}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

@@ -454,11 +454,11 @@ class InvtStockAdjustmentReportController extends Controller
         if(count($data)>=0){
             $spreadsheet->getProperties()->setCreator("IBS CJDW")
                                         ->setLastModifiedBy("IBS CJDW")
-                                        ->setTitle("Stock Adjustment Report")
+                                        ->setTitle("Stock Report")
                                         ->setSubject("")
-                                        ->setDescription("Stock Adjustment Report")
-                                        ->setKeywords("Stock, Adjustment, Report")
-                                        ->setCategory("Stock Adjustment Report");
+                                        ->setDescription("Stock Report")
+                                        ->setKeywords("Stock, Report")
+                                        ->setCategory("Stock Report");
                                  
             $sheet = $spreadsheet->getActiveSheet(0);
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);

@@ -37,10 +37,12 @@
             <table id="example" style="width:100%" class="table table-striped table-bordered table-hover table-full-width">
                 <thead>
                     <tr>
-                        <th width="7%" style='text-align:center'>No</th>
-                        <th width="31%" style='text-align:center'>Nama Anggota</th>
-                        <th width="31%" style='text-align:center'>Total Simpanan Wajib</th>
-                        <th width="31%" style='text-align:center'>Total Piutang</th>
+                        <th style='text-align:center'>No</th>
+                        <th style='text-align:center'>No. NIK</th>
+                        <th style='text-align:center'>Nama Anggota</th>
+                        <th style='text-align:center'>Devisi</th>
+                        <th style='text-align:center'>Total Simpanan Wajib</th>
+                        <th style='text-align:center'>Total Piutang</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,7 +50,9 @@
                     @foreach ($data as $row)
                         <tr>
                           <td style="text-align: center">{{ $no++ }}.</td>
+                          <td>{{ $row['member_no'] }}</td>
                           <td>{{ $row['member_name'] }}</td>
+                          <td>{{ $row['division_name'] }}</td>
                           <td>{{ number_format($row['member_mandatory_savings'],2,',','.') }}</td>
                           <td>{{ number_format($row['member_account_receivable_amount'],2,',','.') }}</td>
                         </tr>

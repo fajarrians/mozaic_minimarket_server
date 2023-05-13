@@ -30,10 +30,11 @@ class CoreMemberReportController extends Controller
         } else {
             $end_date = Session::get('end_date');
         }
-        $data_member = CoreMember::select('member_name', 'member_id', 'division_name')
+        $data_member = CoreMember::select('member_name', 'member_id', 'division_name', 'member_no')
         ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get();
+
         return view('content.CoreMemberReport.ListCoreMemberReport', compact('data_member','start_date','end_date'));
     }
 
@@ -73,9 +74,9 @@ class CoreMemberReportController extends Controller
         ->where('customer_id', $member_id)
         ->where('sales_invoice_date','>=',$start_date)
         ->where('sales_invoice_date','<=',$end_date)
-        ->get();
+        ->count();
 
-        return count($data_sales);
+        return $data_sales;
     }
 
     public function getTotalItem($member_id)
@@ -124,7 +125,7 @@ class CoreMemberReportController extends Controller
         ->where('customer_id', $member_id)
         ->where('sales_invoice_date','>=',$start_date)
         ->where('sales_invoice_date','<=',$end_date)
-        ->get();;
+        ->get();
 
         $total_amount = 0;
         foreach($data_sales as $key=>$val) {
@@ -153,7 +154,7 @@ class CoreMemberReportController extends Controller
         ->where('sales_payment_method', 2)
         ->where('sales_invoice_date','>=',$start_date)
         ->where('sales_invoice_date','<=',$end_date)
-        ->get();;
+        ->get();
 
         $total_amount = 0;
         foreach($data_sales as $key=>$val) {
@@ -175,7 +176,7 @@ class CoreMemberReportController extends Controller
         } else {
             $end_date = Session::get('end_date');
         }
-        $data_member = CoreMember::select('member_name', 'member_id', 'division_name')
+        $data_member = CoreMember::select('member_name', 'member_id', 'division_name', 'member_no')
         ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get();
@@ -220,8 +221,6 @@ class CoreMemberReportController extends Controller
             $pdf::setLanguageArray($l);
         }
 
-        $pdf::SetFont('helvetica', 'B', 20);
-
         $pdf::AddPage();
 
         $pdf::SetFont('helvetica', '', 8);
@@ -229,7 +228,7 @@ class CoreMemberReportController extends Controller
         $tbl = "
         <table cellspacing=\"0\" cellpadding=\"2\" border=\"0\">
             <tr>
-                <td><div style=\"text-align: center; font-size:14px; font-weight: bold\">LAPORAN PEMBELIAN ANGGOTA</div></td>
+                <td><div style=\"text-align: center; font-size:14px; font-weight: bold\">LAPORAN PIUTANG</div></td>
             </tr>
             <tr>
                 <td><div style=\"text-align: center; font-size:12px\">PERIODE : ".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date))."</div></td>
@@ -243,11 +242,13 @@ class CoreMemberReportController extends Controller
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
                 <td width=\"5%\"><div style=\"text-align: center; font-weight: bold\">No</div></td>
-                <td width=\"35%\"><div style=\"text-align: center; font-weight: bold\">Nama Anggota</div></td>
-                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Total Transaksi</div></td>
-                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Total Barang</div></td>
-                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Total Pembelian</div></td>
-                <td width=\"15%\"><div style=\"text-align: center; font-weight: bold\">Total Piutang</div></td>
+                <td width=\"13%\"><div style=\"text-align: center; font-weight: bold\">No. NIK</div></td>
+                <td width=\"21%\"><div style=\"text-align: center; font-weight: bold\">Nama Anggota</div></td>
+                <td width=\"13%\"><div style=\"text-align: center; font-weight: bold\">Devisi</div></td>
+                <td width=\"12%\"><div style=\"text-align: center; font-weight: bold\">Total Transaksi</div></td>
+                <td width=\"12%\"><div style=\"text-align: center; font-weight: bold\">Total Barang</div></td>
+                <td width=\"12%\"><div style=\"text-align: center; font-weight: bold\">Total Pembelian</div></td>
+                <td width=\"12%\"><div style=\"text-align: center; font-weight: bold\">Total Piutang</div></td>
 
             </tr>
         
@@ -264,7 +265,9 @@ class CoreMemberReportController extends Controller
             $tblStock2 .="
                 <tr nobr=\"true\">			
                     <td style=\"text-align:center\">$no.</td>
-                    <td style=\"text-align:left\">".$val['member_name']." - ".$val['division_name']."</td>
+                    <td style=\"text-align:left\">".$val['member_no']."</td>
+                    <td style=\"text-align:left\">".$val['member_name']."</td>
+                    <td style=\"text-align:left\">".$val['division_name']."</td>
                     <td style=\"text-align:right\">".$this->getTotalTransaction($val['member_id'])."</td>
                     <td style=\"text-align:right\">".$this->getTotalItem($val['member_id'])."</td>
                     <td style=\"text-align:right\">".number_format($this->getTotalAmount($val['member_id']),2,'.',',')."</td>
@@ -280,7 +283,7 @@ class CoreMemberReportController extends Controller
         }
         $tblStock3 = " 
         <tr nobr=\"true\">
-            <td colspan=\"2\"><div style=\"text-align: center;  font-weight: bold\">TOTAL</div></td>
+            <td colspan=\"4\"><div style=\"text-align: center;  font-weight: bold\">TOTAL</div></td>
             <td style=\"text-align: right\"><div style=\"font-weight: bold\">". $TotalTransaction ."</div></td>
             <td style=\"text-align: right\"><div style=\"font-weight: bold\">". $TotalItem ."</div></td>
             <td style=\"text-align: right\"><div style=\"font-weight: bold\">". number_format($TotalAmount,2,'.',',') ."</div></td>
@@ -306,7 +309,7 @@ class CoreMemberReportController extends Controller
         } else {
             $end_date = Session::get('end_date');
         }
-        $data_member = CoreMember::select('member_name', 'member_id', 'division_name')
+        $data_member = CoreMember::select('member_name', 'member_id', 'division_name', 'member_no')
         ->where('data_state',0)
         ->where('company_id', Auth::user()->company_id)
         ->get();
@@ -316,38 +319,42 @@ class CoreMemberReportController extends Controller
         if(count($data_member)>=0){
             $spreadsheet->getProperties()->setCreator("CST MOZAIQ POS")
                                         ->setLastModifiedBy("CST MOZAIQ POS")
-                                        ->setTitle("Laporan Pembelian Anggota")
+                                        ->setTitle("Laporan Piutang")
                                         ->setSubject("")
-                                        ->setDescription("Laporan Pembelian Anggota")
-                                        ->setKeywords("Laporan, Pembelian, Anggota")
-                                        ->setCategory("Laporan Pembelian Anggota");
+                                        ->setDescription("Laporan Piutang")
+                                        ->setKeywords("Laporan, Piutang")
+                                        ->setCategory("Laporan Piutang");
                                  
             $sheet = $spreadsheet->getActiveSheet(0);
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
             $spreadsheet->getActiveSheet()->getPageSetup()->setFitToWidth(1);
             $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(5);
-            $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(35);
-            $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(35);
             $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('I')->setWidth(20);
 
     
-            $spreadsheet->getActiveSheet()->mergeCells("B1:G1");
+            $spreadsheet->getActiveSheet()->mergeCells("B1:I1");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
-            $spreadsheet->getActiveSheet()->getStyle('B3:G3')->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getFont()->setBold(true);
 
-            $spreadsheet->getActiveSheet()->getStyle('B3:G3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-            $spreadsheet->getActiveSheet()->getStyle('B3:G3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('B3:I3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-            $sheet->setCellValue('B1',"Laporan Pembelian Anggota Dari Periode ".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
-            $sheet->setCellValue('B3',"No");
-            $sheet->setCellValue('C3',"Nama Anggota");
-            $sheet->setCellValue('D3',"Total Transaksi");
-            $sheet->setCellValue('E3',"Total Barang");
-            $sheet->setCellValue('F3',"Total Pembelian");
-            $sheet->setCellValue('G3',"Total Piutang");
+            $sheet->setCellValue('B1',"Laporan Piutang Dari Periode ".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
+            $sheet->setCellValue('B3', "No");
+            $sheet->setCellValue('C3', "No. NIK");
+            $sheet->setCellValue('D3', "Nama Anggota");
+            $sheet->setCellValue('E3', "Devisi");
+            $sheet->setCellValue('F3', "Total Transaksi");
+            $sheet->setCellValue('G3', "Total Barang");
+            $sheet->setCellValue('H3', "Total Pembelian");
+            $sheet->setCellValue('I3', "Total Piutang");
             
             $j=4;
             $no=0;
@@ -360,27 +367,31 @@ class CoreMemberReportController extends Controller
                 if(is_numeric($key)){
                     
                     $sheet = $spreadsheet->getActiveSheet(0);
-                    $spreadsheet->getActiveSheet()->setTitle("Laporan Pembelian Anggota");
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $spreadsheet->getActiveSheet()->setTitle("Laporan Piutang");
+                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
-                    $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getNumberFormat()->setFormatCode('0.00');
-                    $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getNumberFormat()->setFormatCode('0.00');
+                    $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getNumberFormat()->setFormatCode('0.00');
+                    $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getNumberFormat()->setFormatCode('0.00');
             
                     $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                    $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+                    $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                    $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
                     $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
                     $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+                    $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+                    $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
 
                         $no++;
                         $sheet->setCellValue('B'.$j, $no);
-                        $sheet->setCellValue('C'.$j, $val['member_name']." - ".$val['division_name']);
-                        $sheet->setCellValue('D'.$j, $this->getTotalTransaction($val['member_id']));
-                        $sheet->setCellValue('E'.$j, $this->getTotalItem($val['member_id']));
-                        $sheet->setCellValue('F'.$j, $this->getTotalAmount($val['member_id']));
-                        $sheet->setCellValue('G'.$j, $this->getTotalCredit($val['member_id']));
+                        $sheet->setCellValue('C'.$j, $val['member_no']);
+                        $sheet->setCellValue('D'.$j, $val['member_name']);
+                        $sheet->setCellValue('E'.$j, $val['division_name']);
+                        $sheet->setCellValue('F'.$j, $this->getTotalTransaction($val['member_id']));
+                        $sheet->setCellValue('G'.$j, $this->getTotalItem($val['member_id']));
+                        $sheet->setCellValue('H'.$j, $this->getTotalAmount($val['member_id']));
+                        $sheet->setCellValue('I'.$j, $this->getTotalCredit($val['member_id']));
 
                 }else{
                     continue;
@@ -392,24 +403,24 @@ class CoreMemberReportController extends Controller
                 $TotalCredit += $this->getTotalCredit($val['member_id']);
         
             }
-            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':C'.$j);
-            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getFont()->setBold(true);
-            $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getNumberFormat()->setFormatCode('0.00');
-            $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getNumberFormat()->setFormatCode('0.00');
-            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':E'.$j);
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getNumberFormat()->setFormatCode('0.00');
+            $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getNumberFormat()->setFormatCode('0.00');
+            $spreadsheet->getActiveSheet()->getStyle('B'.$j.':I'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
             $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $spreadsheet->getActiveSheet()->getStyle('D'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-            $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $spreadsheet->getActiveSheet()->getStyle('I'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             $sheet->setCellValue('B'.$j, 'TOTAL');
-            $sheet->setCellValue('D'.$j, $TotalTransaction);
-            $sheet->setCellValue('E'.$j, $TotalItem);
-            $sheet->setCellValue('F'.$j, $TotalAmount);
-            $sheet->setCellValue('G'.$j, $TotalCredit);
+            $sheet->setCellValue('F'.$j, $TotalTransaction);
+            $sheet->setCellValue('G'.$j, $TotalItem);
+            $sheet->setCellValue('H'.$j, $TotalAmount);
+            $sheet->setCellValue('I'.$j, $TotalCredit);
 
             $j++;
-            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':G'.$j);
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':I'.$j);
             $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             $sheet->setCellValue('B'.$j, Auth::user()->name.", ".date('d-m-Y H:i'));
             

@@ -104,11 +104,12 @@
                 <thead>
                     <tr>
                         <th style='text-align:center; width: 5%'>No</th>
-                        <th style='text-align:center'>Kode Voucher</th>
-                        <th style='text-align:center'>No. Voucher</th>
-                        <th style='text-align:center'>Tanggal</th>
+                        <th style='text-align:center'>No. NIK</th>
                         <th style='text-align:center'>Nama Anggota</th>
                         <th style='text-align:center'>Jabatan</th></th>
+                        <th style='text-align:center'>Tanggal</th>
+                        <th style='text-align:center'>Kode Voucher</th>
+                        <th style='text-align:center'>No. Voucher</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,11 +117,12 @@
                     @foreach ($data as $row)
                         <tr>
                             <td class="text-center">{{ $no++ }}.</td>
-                            <td>{{ $PVRC->getVoucherCode($row['voucher_id']) }}</td>
-                            <td>{{ $row['voucher_no'] }}</td>
-                            <td>{{ date('d-m-Y', strtotime($row['sales_invoice_date'])) }}</td>
+                            <td>{{ $PVRC->getMemberNo($row['customer_id']) }}</td>
                             <td>{{ $PVRC->getMemberName($row['customer_id']) }}</td>
                             <td>{{ $PVRC->getDivisionName($row['customer_id']) }}</td>
+                            <td>{{ date('d-m-Y', strtotime($row['sales_invoice_date'])) }}</td>
+                            <td>{{ $PVRC->getVoucherCode($row['voucher_id']) }}</td>
+                            <td>{{ $row['voucher_no'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>

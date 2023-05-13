@@ -202,6 +202,8 @@ Route::post('/stock-adjustment/filter-add', [InvtStockAdjustmentController::clas
 Route::post('/stock-adjustment/filter-list', [InvtStockAdjustmentController::class, 'filterListStockAdjustment'])->name('filter-list-stock-adjustment');
 Route::post('/stock-adjustment/process-add', [InvtStockAdjustmentController::class, 'processAddStockAdjustment'])->name('process-add-stock-adjustment');
 Route::get('/stock-adjustment/detail/{stock_adjustment_id}',[InvtStockAdjustmentController::class, 'detailStockAdjustment'])->name('detail-stock-adjustment');
+Route::get('/stock-adjustment/print',[InvtStockAdjustmentController::class,'printStockAdjustment'])->name('stock-adjustment-print');
+Route::get('/stock-adjustment/export',[InvtStockAdjustmentController::class,'exportStockAdjustment'])->name('stock-adjustment-export');
 
 Route::get('/stock-adjustment-report',[InvtStockAdjustmentReportController::class, 'index'])->name('stock-adjustment-report');
 Route::post('/stock-adjustment-report/filter',[InvtStockAdjustmentReportController::class, 'filterStockAdjustmentReport'])->name('stock-adjustment-report-filter');

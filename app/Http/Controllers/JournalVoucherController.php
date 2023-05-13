@@ -7,6 +7,7 @@ use App\Models\AcctAccount;
 use App\Models\JournalVoucher;
 use App\Models\JournalVoucherItem;
 use App\Models\PreferenceTransactionModule;
+use App\Models\User;
 use DateTime;
 use Elibyy\TCPDF\Facades\TCPDF;
 use Illuminate\Http\Request;
@@ -231,6 +232,14 @@ class JournalVoucherController extends Controller
         return $data['transaction_module_id'];
     }
 
+    public function getUserName($user_id)
+    {
+        $data = User::where('user_id', $user_id)
+        ->first();
+
+        return $data['full_name'];
+    }
+
     public function printJournalVoucher($journal_voucher_id)
     {
 
@@ -313,6 +322,10 @@ class JournalVoucherController extends Controller
             <tr>
                 <td width=\"20%\"><div style=\"text-align: left;\">No. Jurnal</div></td>
                 <td width=\"80%\"><div style=\"text-align: left;\">: ".$data['journal_voucher_no']."</div></td>
+            </tr>
+            <tr>
+                <td width=\"20%\"><div style=\"text-align: left;\">Dibuat</div></td>
+                <td width=\"80%\"><div style=\"text-align: left;\">: ".$this->getUserName($data['created_id'])."</div></td>
             </tr>
             <tr>
                 <td width=\"20%\"><div style=\"text-align: left;\">Uraian</div></td>

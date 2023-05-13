@@ -114,13 +114,14 @@
                 <thead>
                     <tr>
                         <th style="text-align: center; width: 5%">No </th>
-                        <th style="text-align: center; width: 12%">Tanggal </th>
-                        <th style="text-align: center; width: 20%">Uraian</th>
-                        <th style="text-align: center; width: 15%">No. Perkiraan</th>
-                        <th style="text-align: center; width: 15%">Nama Perkiraan</th>		
-                        <th style="text-align: center; width: 10%">Jumlah</th>
-                        <th style="text-align: center; width: 10%">D/K</th>
-                        <th style="text-align: center; width: 10%">Aksi</th>
+                        <th style="text-align: center;">Tanggal</th>
+                        <th style="text-align: center;">Dibuat</th>
+                        <th style="text-align: center;">Uraian</th>
+                        <th style="text-align: center;">No. Perkiraan</th>
+                        <th style="text-align: center;">Nama Perkiraan</th>		
+                        <th style="text-align: center;">Jumlah</th>
+                        <th style="text-align: center;">D/K</th>
+                        <th style="text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,6 +154,7 @@
                                         <tr class='table-active'>			
                                             <td style='text-align:center'>$no.</td>
                                             <td>".date('d-m-Y', strtotime($val['journal_voucher_date']))."</td>
+                                            <td>".$JournalVoucher->getUserName($val['created_id'])."</td>
                                             <td>".$val['journal_voucher_description']."</td>
                                             <td>".$JournalVoucher->getAccountCode($val['account_id'])."</td>
                                             <td>".$JournalVoucher->getAccountName($val['account_id'])."</td>
@@ -168,6 +170,7 @@
                                     echo"
                                         <tr>			
                                             <td style='text-align:center'></td>
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                             <td>".$JournalVoucher->getAccountCode($val['account_id'])."</td>

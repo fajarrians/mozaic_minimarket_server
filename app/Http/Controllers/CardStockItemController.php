@@ -400,7 +400,7 @@ class CardStockItemController extends Controller
             <tr>
                 <td width=\"13%\">Periode</td>
                 <td width=\"2%\">:</td>
-                <td width=\"85%\">".date('d-m-Y', strtotime($start_date))." s/d ".date('d-m-Y', strtotime($start_date))."</td>
+                <td width=\"85%\">".date('d-m-Y', strtotime($start_date))." s/d ".date('d-m-Y', strtotime($end_date))."</td>
             </tr>
             <tr>
                 <td width=\"13%\">Nama Barang</td>

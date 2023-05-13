@@ -99,6 +99,14 @@ class PreferenceVoucherReportController extends Controller
         return $data['member_name'];
     }
 
+    public function getMemberNo($member_id)
+    {
+        $data = CoreMember::where('member_id',$member_id)
+        ->first();
+
+        return $data['member_no'];
+    }
+
     public function getDivisionName($member_id)
     {
         $data = CoreMember::where('member_id',$member_id)
@@ -204,11 +212,12 @@ class PreferenceVoucherReportController extends Controller
         <table cellspacing=\"0\" cellpadding=\"1\" border=\"1\" width=\"100%\">
             <tr>
                 <th width=\"5%\" ><div style=\"text-align: center; font-weight: bold\">No</div></th>
+                <th width=\"12%\" ><div style=\"text-align: center; font-weight: bold\">No. NIK</div></th>
+                <th width=\"20%\" ><div style=\"text-align: center; font-weight: bold\">Nama Anggota</div></th>
+                <th width=\"13%\" ><div style=\"text-align: center; font-weight: bold\">Jabatan</div></th>
+                <th width=\"10%\" ><div style=\"text-align: center; font-weight: bold\">Tanggal</div></th>
                 <th width=\"20%\" ><div style=\"text-align: center; font-weight: bold\">Kode Voucher</div></th>
                 <th width=\"20%\" ><div style=\"text-align: center; font-weight: bold\">No. Voucher</div></th>
-                <th width=\"15%\" ><div style=\"text-align: center; font-weight: bold\">Tanggal</div></th>
-                <th width=\"20%\" ><div style=\"text-align: center; font-weight: bold\">Nama Anggota</div></th>
-                <th width=\"20%\" ><div style=\"text-align: center; font-weight: bold\">Jabatan</div></th>
             </tr>
         ";
 
@@ -218,11 +227,12 @@ class PreferenceVoucherReportController extends Controller
             $tblStock2 .="
                 <tr nobr=\"true\">			
                     <td style=\"text-align:center\">$no.</td>
-                    <td>".$this->getVoucherCode($val['voucher_id'])."</td>
-                    <td>".$val['voucher_no']."</td>
-                    <td>".date('d-m-Y', strtotime($val['sales_invoice_date']))."</td>
+                    <td>".$this->getMemberNo($val['customer_id'])."</td>
                     <td>".$this->getMemberName($val['customer_id'])."</td>
                     <td>".$this->getDivisionName($val['customer_id'])."</td>
+                    <td>".date('d-m-Y', strtotime($val['sales_invoice_date']))."</td>
+                    <td>".$this->getVoucherCode($val['voucher_id'])."</td>
+                    <td>".$val['voucher_no']."</td>
                     
                 </tr>
                 
@@ -293,25 +303,27 @@ class PreferenceVoucherReportController extends Controller
             $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(20);
             $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(20);
+            $spreadsheet->getActiveSheet()->getColumnDimension('H')->setWidth(20);
     
-            $spreadsheet->getActiveSheet()->mergeCells("B1:G1");
-            $spreadsheet->getActiveSheet()->mergeCells("B2:G2");
+            $spreadsheet->getActiveSheet()->mergeCells("B1:H1");
+            $spreadsheet->getActiveSheet()->mergeCells("B2:H2");
             $spreadsheet->getActiveSheet()->getStyle('B1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $spreadsheet->getActiveSheet()->getStyle('B1')->getFont()->setBold(true)->setSize(16);
-            $spreadsheet->getActiveSheet()->getStyle('B4:G4')->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('B4:H4')->getFont()->setBold(true);
 
-            $spreadsheet->getActiveSheet()->getStyle('B4:G4')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-            $spreadsheet->getActiveSheet()->getStyle('B4:G4')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('B4:H4')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $spreadsheet->getActiveSheet()->getStyle('B4:H4')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             $sheet->setCellValue('B1',"Laporan Voucher".date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
             $sheet->setCellValue('B2',date('d M Y', strtotime($start_date))." s.d. ".date('d M Y', strtotime($end_date)));	
             $sheet->setCellValue('B4',"No");
-            $sheet->setCellValue('C4',"Kode Voucher");
-            $sheet->setCellValue('D4',"No. Voucher");
-            $sheet->setCellValue('E4',"Tanggal");
-            $sheet->setCellValue('F4',"Nama Anggota");
-            $sheet->setCellValue('G4',"Jabatan");
+            $sheet->setCellValue('C4',"No. NIK");
+            $sheet->setCellValue('D4',"Nama Anggota");
+            $sheet->setCellValue('E4',"Jabatan");
+            $sheet->setCellValue('F4',"Tanggal");
+            $sheet->setCellValue('G4',"Kode Voucher");
+            $sheet->setCellValue('H4',"No. Voucher");
             
             $j=5;
             $no=0;
@@ -322,7 +334,7 @@ class PreferenceVoucherReportController extends Controller
                     
                     $sheet = $spreadsheet->getActiveSheet(0);
                     $spreadsheet->getActiveSheet()->setTitle("Laporan Voucher");
-                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $spreadsheet->getActiveSheet()->getStyle('B'.$j.':H'.$j)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
             
                     $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     $spreadsheet->getActiveSheet()->getStyle('C'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
@@ -330,19 +342,21 @@ class PreferenceVoucherReportController extends Controller
                     $spreadsheet->getActiveSheet()->getStyle('E'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
                     $spreadsheet->getActiveSheet()->getStyle('F'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
                     $spreadsheet->getActiveSheet()->getStyle('G'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                    $spreadsheet->getActiveSheet()->getStyle('H'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
                     $no++;
                     $sheet->setCellValue('B'.$j, $no);
-                    $sheet->setCellValue('C'.$j, $this->getVoucherCode($val['voucher_id']));
-                    $sheet->setCellValue('D'.$j, $val['voucher_no']);
-                    $sheet->setCellValue('E'.$j, date('d-m-Y', strtotime($val['sales_invoice_date'])));
-                    $sheet->setCellValue('F'.$j, $this->getMemberName($val['customer_id']));
-                    $sheet->setCellValue('G'.$j, $this->getDivisionName($val['customer_id']));
+                    $sheet->setCellValue('C'.$j, $this->getMemberNo($val['customer_id']));
+                    $sheet->setCellValue('D'.$j, $this->getMemberName($val['customer_id']));
+                    $sheet->setCellValue('E'.$j, $this->getDivisionName($val['customer_id']));
+                    $sheet->setCellValue('F'.$j, date('d-m-Y', strtotime($val['sales_invoice_date'])));
+                    $sheet->setCellValue('G'.$j, $this->getVoucherCode($val['voucher_id']));
+                    $sheet->setCellValue('H'.$j, $val['voucher_no']);
                 }
                 $j++;
         
             }
-            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':G'.$j);
+            $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':H'.$j);
             $spreadsheet->getActiveSheet()->getStyle('B'.$j)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             $sheet->setCellValue('B'.$j, Auth::user()->name.", ".date('d-m-Y H:i'));
 

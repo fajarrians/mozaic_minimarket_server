@@ -139,6 +139,12 @@
             </table>
         </div>
     </div>
+    <div class="card-footer text-muted">
+        <div class="form-actions float-right">
+            <a class="btn btn-secondary" href="{{ route('stock-adjustment-print') }}"><i class="fa fa-file-pdf"></i> Pdf</a>
+            <a class="btn btn-dark" href="{{ route('stock-adjustment-export') }}"><i class="fa fa-download"></i> Export Data</a>
+        </div>
+    </div>
   </div>
 </div>
 

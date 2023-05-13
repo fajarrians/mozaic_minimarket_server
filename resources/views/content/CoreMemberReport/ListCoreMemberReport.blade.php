@@ -22,7 +22,7 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{{ url('home') }}">Beranda</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Laporan Pembelian Anggota</li>
+      <li class="breadcrumb-item active" aria-current="page">Laporan Piutang</li>
     </ol>
 </nav>
 
@@ -31,7 +31,7 @@
 @section('content')
 
 <h3 class="page-title">
-    <b>Laporan Pembelian Anggota</b>
+    <b>Laporan Piutang</b>
 </h3>
 <br/>
 <div id="accordion">
@@ -99,7 +99,9 @@
                 <thead>
                     <tr>
                         <th style='text-align:center; width: 5%'>No</th>
+                        <th style='text-align:center;'>No. NIK</th>
                         <th style='text-align:center;'>Nama Anggota</th>
+                        <th style='text-align:center;'>Devisi</th>
                         <th style='text-align:center;'>Total Transaksi</th>
                         <th style='text-align:center;'>Total Barang</th>
                         <th style='text-align:center;'>Total Pembelian</th>
@@ -112,7 +114,9 @@
                   @foreach ($data_member as $row)
                   <tr>
                     <td class="text-center">{{ $no++ }}.</td>
-                    <td>{{ $row['member_name'] }} - {{ $row['division_name'] }}</td>
+                    <td>{{ $row['member_no'] }}</td>
+                    <td>{{ $row['member_name'] }}</td>
+                    <td>{{ $row['division_name'] }}</td>
                     <td style="text-align: right">{{ $CMRC->getTotalTransaction($row['member_id']) }}</td>
                     <td style="text-align: right">{{ $CMRC->getTotalItem($row['member_id']) }}</td>
                     <td style="text-align: right">{{ number_format($CMRC->getTotalAmount($row['member_id']),2,'.',',') }}</td>

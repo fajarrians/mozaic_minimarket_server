@@ -151,20 +151,7 @@ class PurchaseReturnController extends Controller
         
         if(PurchaseReturn::create($datases)){
             $purchase_return_id = PurchaseReturn::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
-            $journal = array(
-                'company_id'                    => Auth::user()->company_id,
-                'transaction_module_id'         => $transaction_module_id,
-                'transaction_module_code'       => $transaction_module_code,
-                'transaction_journal_no'        => $purchase_return_id['purchase_return_no'],
-                'journal_voucher_status'        => 1,
-                'journal_voucher_date'          => $fields['purchase_return_date'],
-                'journal_voucher_description'   => $this->getTransactionModuleName($transaction_module_code),
-                'journal_voucher_period'        => date('Ym'),
-                'journal_voucher_title'         => $this->getTransactionModuleName($transaction_module_code),
-                'updated_id'                    => Auth::id(),
-                'created_id'                    => Auth::id()
-            );
-            JournalVoucher::create($journal);
+            $purchase_invoice   = PurchaseInvoice::where('purchase_invoice_id', $request->purchase_invoice_no)->first();
             $arraydatases       = Session::get('arraydatases');
             foreach ($arraydatases AS $key => $val){
                 $dataarray = array (
@@ -199,61 +186,79 @@ class PurchaseReturnController extends Controller
                 }
             }
 
-            $account_setting_name = 'purchase_return_cash_account';
-            $account_id = $this->getAccountId($account_setting_name);
-            $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
-            $account_default_status = $this->getAccountDefaultStatus($account_id);
-            $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
-            if ($account_setting_status == 0){
-                $debit_amount = $fields['total_amount'];
-                $credit_amount = 0;
-            } else {
-                $debit_amount = 0;
-                $credit_amount = $fields['total_amount'];
+            if ($purchase_invoice['paid_amount'] == 0) {
+                $journal = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'transaction_module_id'         => $transaction_module_id,
+                    'transaction_module_code'       => $transaction_module_code,
+                    'transaction_journal_no'        => $purchase_return_id['purchase_return_no'],
+                    'journal_voucher_status'        => 1,
+                    'journal_voucher_date'          => $fields['purchase_return_date'],
+                    'journal_voucher_description'   => $this->getTransactionModuleName($transaction_module_code),
+                    'journal_voucher_period'        => date('Ym'),
+                    'journal_voucher_title'         => $this->getTransactionModuleName($transaction_module_code),
+                    'updated_id'                    => Auth::id(),
+                    'created_id'                    => Auth::id()
+                );
+                JournalVoucher::create($journal);
+    
+                $account_setting_name = 'purchase_return_cash_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if ($account_setting_status == 0){
+                    $debit_amount = $fields['total_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $fields['total_amount'];
+                }
+                $journal_debit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $fields['total_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'updated_id'                    => Auth::id(),
+                    'created_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_debit);
+    
+                $account_setting_name = 'purchase_return_account';
+                $account_id = $this->getAccountId($account_setting_name);
+                $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
+                $account_default_status = $this->getAccountDefaultStatus($account_id);
+                $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
+                if ($account_setting_status == 0){
+                    $debit_amount = $fields['total_amount'];
+                    $credit_amount = 0;
+                } else {
+                    $debit_amount = 0;
+                    $credit_amount = $fields['total_amount'];
+                }
+                $journal_credit = array(
+                    'company_id'                    => Auth::user()->company_id,
+                    'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
+                    'account_id'                    => $account_id,
+                    'journal_voucher_amount'        => $fields['total_amount'],
+                    'account_id_default_status'     => $account_default_status,
+                    'account_id_status'             => $account_setting_status,
+                    'journal_voucher_debit_amount'  => $debit_amount,
+                    'journal_voucher_credit_amount' => $credit_amount,
+                    'updated_id'                    => Auth::id(),
+                    'created_id'                    => Auth::id()
+                );
+                JournalVoucherItem::create($journal_credit);
+    
             }
-            $journal_debit = array(
-                'company_id'                    => Auth::user()->company_id,
-                'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
-                'account_id'                    => $account_id,
-                'journal_voucher_amount'        => $fields['total_amount'],
-                'account_id_default_status'     => $account_default_status,
-                'account_id_status'             => $account_setting_status,
-                'journal_voucher_debit_amount'  => $debit_amount,
-                'journal_voucher_credit_amount' => $credit_amount,
-                'updated_id'                    => Auth::id(),
-                'created_id'                    => Auth::id()
-            );
-            JournalVoucherItem::create($journal_debit);
-
-            $account_setting_name = 'purchase_return_account';
-            $account_id = $this->getAccountId($account_setting_name);
-            $account_setting_status = $this->getAccountSettingStatus($account_setting_name);
-            $account_default_status = $this->getAccountDefaultStatus($account_id);
-            $journal_voucher_id = JournalVoucher::orderBy('created_at', 'DESC')->where('company_id', Auth::user()->company_id)->first();
-            if ($account_setting_status == 0){
-                $debit_amount = $fields['total_amount'];
-                $credit_amount = 0;
-            } else {
-                $debit_amount = 0;
-                $credit_amount = $fields['total_amount'];
-            }
-            $journal_credit = array(
-                'company_id'                    => Auth::user()->company_id,
-                'journal_voucher_id'            => $journal_voucher_id['journal_voucher_id'],
-                'account_id'                    => $account_id,
-                'journal_voucher_amount'        => $fields['total_amount'],
-                'account_id_default_status'     => $account_default_status,
-                'account_id_status'             => $account_setting_status,
-                'journal_voucher_debit_amount'  => $debit_amount,
-                'journal_voucher_credit_amount' => $credit_amount,
-                'updated_id'                    => Auth::id(),
-                'created_id'                    => Auth::id()
-            );
-            JournalVoucherItem::create($journal_credit);
-
+            
             PurchaseInvoice::where('purchase_invoice_id', $request->purchase_invoice_no)
             ->update([
-                'return_amount' => $fields['total_amount'],
+                'return_amount' => $purchase_invoice['return_amount'] + $fields['total_amount'],
                 'updated_id'    => Auth::id()
             ]);
 

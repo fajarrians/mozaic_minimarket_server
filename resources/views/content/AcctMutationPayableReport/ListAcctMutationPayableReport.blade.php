@@ -101,7 +101,7 @@
                         <td class="text-right">{{ number_format($AMPR->getOpeningBalance($val['supplier_id']),2 ,',','.') }}</td>
                         <td class="text-right">{{ number_format($AMPR->getPayableAmount($val['supplier_id']),2 ,',','.') }}</td>
                         <td class="text-right">{{ number_format($AMPR->getPaymentAmount($val['supplier_id']),2 ,',','.') }}</td>
-                        <td class="text-right">{{ number_format($AMPR->getLastBalance($val['supplier_id']),2 ,',','.') }}</td>
+                        <td class="text-right">{{ number_format($AMPR->getOpeningBalance($val['supplier_id']) + $AMPR->getPayableAmount($val['supplier_id']) - $AMPR->getPaymentAmount($val['supplier_id']),2 ,',','.') }}</td>
                     </tr>
                   @endforeach
                 </tbody>

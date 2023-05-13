@@ -316,7 +316,7 @@ class AcctMutationPayableReportController extends Controller
                     <td style=\"text-align:right\">".number_format($this->getOpeningBalance($val['supplier_id']),2,'.',',')."</td>
                     <td style=\"text-align:right\">".number_format($this->getPayableAmount($val['supplier_id']),2,'.',',')."</td>
                     <td style=\"text-align:right\">".number_format($this->getPaymentAmount($val['supplier_id']),2,'.',',')."</td>
-                    <td style=\"text-align:right\">".number_format($this->getLastBalance($val['supplier_id']),2,'.',',')."</td>
+                    <td style=\"text-align:right\">".number_format($this->getOpeningBalance($val['supplier_id']) + $this->getPayableAmount($val['supplier_id']) - $this->getPaymentAmount($val['supplier_id']),2,'.',',')."</td>
                 </tr>
                 
             ";
@@ -324,7 +324,7 @@ class AcctMutationPayableReportController extends Controller
             $totalOpeningBalance += $this->getOpeningBalance($val['supplier_id']);
             $totalPayable += $this->getPayableAmount($val['supplier_id']);
             $totalPayment += $this->getPaymentAmount($val['supplier_id']);
-            $totalLastBalance += $this->getLastBalance($val['supplier_id']);
+            $totalLastBalance += $this->getOpeningBalance($val['supplier_id']) + $this->getPayableAmount($val['supplier_id']) - $this->getPaymentAmount($val['supplier_id']);
         }
         $tblStock3 = " 
 
@@ -430,13 +430,13 @@ class AcctMutationPayableReportController extends Controller
                         $sheet->setCellValue('D'.$j, $this->getOpeningBalance($val['supplier_id']));
                         $sheet->setCellValue('E'.$j, $this->getPayableAmount($val['supplier_id']));
                         $sheet->setCellValue('F'.$j, $this->getPaymentAmount($val['supplier_id']));
-                        $sheet->setCellValue('G'.$j, $this->getLastBalance($val['supplier_id']));
+                        $sheet->setCellValue('G'.$j, $this->getOpeningBalance($val['supplier_id']) + $this->getPayableAmount($val['supplier_id']) - $this->getPaymentAmount($val['supplier_id']));
                 }
                 $j++;
                 $totalOpeningBalance += $this->getOpeningBalance($val['supplier_id']);
                 $totalPayable += $this->getPayableAmount($val['supplier_id']);
                 $totalPayment += $this->getPaymentAmount($val['supplier_id']);
-                $totalLastBalance += $this->getLastBalance($val['supplier_id']);
+                $totalLastBalance += $this->getOpeningBalance($val['supplier_id']) + $this->getPayableAmount($val['supplier_id']) - $this->getPaymentAmount($val['supplier_id']);
             }
             $spreadsheet->getActiveSheet()->mergeCells('B'.$j.':C'.$j);
             $spreadsheet->getActiveSheet()->getStyle('B'.$j.':G'.$j)->getFont()->setBold(true);

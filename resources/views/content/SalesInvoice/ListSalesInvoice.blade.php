@@ -116,12 +116,14 @@
             <table id="example" style="width:100%" class="table table-striped table-bordered table-hover table-full-width">
                 <thead>
                     <tr>
-                        <th width="2%" style='text-align:center'>No</th>
-                        <th width="15%" style='text-align:center'>Tanggal Invoice</th>
-                        <th width="15%" style='text-align:center'>Nomor Invoice</th>
-                        <th width="15%" style='text-align:center'>Anggota</th>
-                        <th width="15%" style='text-align:center'>Subtotal</th>
-                        <th width="10%" style='text-align:center'>Aksi</th>
+                        <th style='text-align:center'>No</th>
+                        <th style='text-align:center'>Tanggal Invoice</th>
+                        <th style='text-align:center'>Nomor Invoice</th>
+                        <th style='text-align:center'>Anggota</th>
+                        <th style='text-align:center'>Devisi</th>
+                        <th style='text-align:center'>No. NIK</th>
+                        <th style='text-align:center'>Subtotal</th>
+                        <th style='text-align:center'>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,7 +133,9 @@
                         <td style='text-align:center'>{{ $no++ }}.</td>
                         <td>{{ date('d-m-Y', strtotime($row['sales_invoice_date'])) }}</td>
                         <td>{{ $row['sales_invoice_no'] }}</td>
-                        <td>{{ $SalesInvoice->getCustomerName($row['customer_id']) }}</td>
+                        <td>{{ $row['member_name'] }}</td>
+                        <td>{{ $row['division_name'] }}</td>
+                        <td>{{ $row['member_no'] }}</td>
                         <td style="text-align: right">{{ number_format($row['total_amount'],2,'.',',') }}</td>
                         <td class="text-center">
                             <a type="button" class="btn btn-outline-warning btn-sm" href="{{ url('/sales-invoice/detail/'.$row['sales_invoice_id']) }}">Detail</a>
